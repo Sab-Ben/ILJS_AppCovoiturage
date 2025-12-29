@@ -44,7 +44,7 @@ public class UserController {
                 .firstname(user.getFirstname())
                 .lastname(user.getLastname())
                 .email(user.getEmail())
-                .pointBalance(user.getPointBalance()) // US6
+                .pointBalance(user.getPointBalance())
                 .role(user.getRole())
                 .build();
     }
