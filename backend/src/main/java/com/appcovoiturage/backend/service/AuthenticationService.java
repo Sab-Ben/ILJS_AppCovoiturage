@@ -22,7 +22,6 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    // US1 : Créer un compte
     public AuthenticationResponse register(RegisterRequest request) {
         var user = User.builder()
                 .firstname(request.getFirstname())
@@ -30,7 +29,7 @@ public class AuthenticationService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
-                .pointBalance(0) // US6 : Initialisation du solde à 0
+                .pointBalance(0)
                 .build();
 
         repository.save(user);
@@ -40,7 +39,6 @@ public class AuthenticationService {
                 .build();
     }
 
-    // US2 : Se connecter
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -48,7 +46,6 @@ public class AuthenticationService {
                         request.getPassword()
                 )
         );
-        // Si l'authentification réussit, on récupère l'user pour générer le token
         var user = repository.findByEmail(request.getEmail())
                 .orElseThrow();
 

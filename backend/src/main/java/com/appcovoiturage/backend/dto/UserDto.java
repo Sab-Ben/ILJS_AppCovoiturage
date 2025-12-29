@@ -11,6 +11,6 @@ public class UserDto {
     private String firstname;
     private String lastname;
     private String email;
-    private Integer pointBalance; // Important pour l'affichage du solde
+    private Integer pointBalance;
     private Role role;
 }
