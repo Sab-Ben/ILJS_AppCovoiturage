@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserRepository userRepository; // Ajouté pour US4
+    private final UserRepository userRepository;
 
-    // US5 & US6 : Consulter son profil et son solde
+
     @GetMapping("/me")
     public ResponseEntity<UserDto> getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -25,30 +25,26 @@ public class UserController {
         return ResponseEntity.ok(mapToDto(currentUser));
     }
 
-    // US4 : Modifier son profil
+
     @PutMapping("/me")
     public ResponseEntity<UserDto> updateProfile(@RequestBody UserDto userDto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
 
-        // Mise à jour des champs autorisés
         if (userDto.getFirstname() != null) currentUser.setFirstname(userDto.getFirstname());
         if (userDto.getLastname() != null) currentUser.setLastname(userDto.getLastname());
-
-        // On ne permet pas de modifier l'email ou le solde ici par sécurité
 
         User updatedUser = userRepository.save(currentUser);
         return ResponseEntity.ok(mapToDto(updatedUser));
     }
 
-    // Méthode utilitaire pour transformer l'Entity en DTO
     private UserDto mapToDto(User user) {
         return UserDto.builder()
                 .id(user.getId())
                 .firstname(user.getFirstname())
                 .lastname(user.getLastname())
                 .email(user.getEmail())
-                .pointBalance(user.getPointBalance()) // US6
+                .pointBalance(user.getPointBalance())
                 .role(user.getRole())
                 .build();
     }
