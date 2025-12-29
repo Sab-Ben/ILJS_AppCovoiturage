@@ -1,40 +1,57 @@
 package com.appcovoiturage.backend.controller;
 
+import com.appcovoiturage.backend.dto.UpdateUserRequest;
 import com.appcovoiturage.backend.dto.UserDto;
 import com.appcovoiturage.backend.entity.User;
+import com.appcovoiturage.backend.repository.UserRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
 
-    /**
-     * Récupère le profil de l'utilisateur actuellement connecté.
-     * L'utilisateur est identifié grâce au Token JWT dans le header.
-     */
+    private final UserRepository userRepository;
+
+    // US5 & US6 : Récupérer profil et solde
     @GetMapping("/me")
     public ResponseEntity<UserDto> getCurrentUser() {
-        // 1. Récupérer l'utilisateur depuis le contexte de sécurité (peuplé par le JwtAuthenticationFilter)
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) authentication.getPrincipal();
+        User user = getAuthenticatedUser();
+        return ResponseEntity.ok(mapToDto(user));
+    }
 
-        // 2. Mapper l'entité User vers le DTO pour ne pas renvoyer le mot de passe
-        UserDto userDto = UserDto.builder()
-                .id(currentUser.getId())
-                .firstname(currentUser.getFirstname())
-                .lastname(currentUser.getLastname())
-                .email(currentUser.getEmail())
-                .pointBalance(currentUser.getPointBalance())
-                .role(currentUser.getRole())
+    // US4 : Modifier le profil
+    @PutMapping("/me")
+    public ResponseEntity<UserDto> updateProfile(@RequestBody @Valid UpdateUserRequest request) {
+        User user = getAuthenticatedUser();
+
+        user.setFirstname(request.getFirstname());
+        user.setLastname(request.getLastname());
+
+        User updatedUser = userRepository.save(user); // Persistence en base
+        return ResponseEntity.ok(mapToDto(updatedUser));
+    }
+
+    // Méthode utilitaire pour récupérer l'user connecté
+    private User getAuthenticatedUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return (User) auth.getPrincipal();
+    }
+
+    // Méthode utilitaire de mapping (User -> UserDto)
+    private UserDto mapToDto(User user) {
+        return UserDto.builder()
+                .id(user.getId())
+                .firstname(user.getFirstname())
+                .lastname(user.getLastname())
+                .email(user.getEmail())
+                .pointBalance(user.getPointBalance())
+                .role(user.getRole())
                 .build();
-
-        return ResponseEntity.ok(userDto);
     }
 }
