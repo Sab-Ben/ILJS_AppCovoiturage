@@ -22,15 +22,19 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    // US1 : Créer un compte
     public AuthenticationResponse register(RegisterRequest request) {
+        var userOptional = repository.findByEmail(request.getEmail());
+        if (userOptional.isPresent()) {
+            throw new RuntimeException("Cet email est déjà utilisé par un autre compte.");
+        }
+
         var user = User.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER)
-                .pointBalance(0) // US6 : Initialisation du solde à 0
+                .role(Role.CLIENT)
+                .pointBalance(0)
                 .build();
 
         repository.save(user);
@@ -40,7 +44,6 @@ public class AuthenticationService {
                 .build();
     }
 
-    // US2 : Se connecter
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -48,7 +51,6 @@ public class AuthenticationService {
                         request.getPassword()
                 )
         );
-        // Si l'authentification réussit, on récupère l'user pour générer le token
         var user = repository.findByEmail(request.getEmail())
                 .orElseThrow();
 
