@@ -23,12 +23,17 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     public AuthenticationResponse register(RegisterRequest request) {
+        var userOptional = repository.findByEmail(request.getEmail());
+        if (userOptional.isPresent()) {
+            throw new RuntimeException("Cet email est déjà utilisé par un autre compte.");
+        }
+
         var user = User.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER)
+                .role(Role.CLIENT)
                 .pointBalance(0)
                 .build();
 

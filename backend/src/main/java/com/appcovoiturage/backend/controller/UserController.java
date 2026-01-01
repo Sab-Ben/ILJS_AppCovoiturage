@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/users")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -33,6 +34,7 @@ public class UserController {
 
         if (userDto.getFirstname() != null) currentUser.setFirstname(userDto.getFirstname());
         if (userDto.getLastname() != null) currentUser.setLastname(userDto.getLastname());
+        if (userDto.getRole() != null) currentUser.setRole(userDto.getRole());
 
         User updatedUser = userRepository.save(currentUser);
         return ResponseEntity.ok(mapToDto(updatedUser));

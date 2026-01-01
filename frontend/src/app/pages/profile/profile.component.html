@@ -1,0 +1,37 @@
+<div *ngIf="user" class="profile-container">
+    <h1>Mon Espace</h1>
+
+    <div class="card points-card">
+        <h2>💰 Solde de points</h2>
+        <p class="points-value">{{ user.pointBalance }} pts</p>
+    </div>
+
+    <div class="card info-card">
+        <h2>👤 Mes Informations</h2>
+
+        <div *ngIf="!isEditing">
+            <p><strong>Prénom :</strong> {{ user.firstname }}</p>
+            <p><strong>Nom :</strong> {{ user.lastname }}</p>
+            <p><strong>Email :</strong> {{ user.email }}</p>
+            <p><strong>Statut :</strong> {{ user.role }}</p>
+            <button (click)="isEditing = true">Modifier mon profil</button>
+        </div>
+
+        <div *ngIf="isEditing">
+            <label>Prénom : <input [(ngModel)]="user.firstname"></label>
+            <label>Nom : <input [(ngModel)]="user.lastname"></label>
+            <label>Statut :</label>
+            <select [(ngModel)]="user.role" name="role">
+                <option *ngFor="let r of roles" [value]="r">
+                    {{ r }}
+                </option>
+            </select>
+            <button (click)="saveProfile()">Enregistrer</button>
+            <button (click)="isEditing = false">Annuler</button>
+        </div>
+
+        <p class="success" *ngIf="successMessage">{{ successMessage }}</p>
+    </div>
+
+    <button class="logout-btn" (click)="logout()">Se déconnecter</button>
+</div>

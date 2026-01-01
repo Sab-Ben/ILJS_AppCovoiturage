@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // Important pour [(ngModel)]
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { Router, RouterModule } from '@angular/router';
 
@@ -19,7 +19,7 @@ export class LoginComponent {
   onSubmit() {
     this.authService.login(this.credentials).subscribe({
       next: () => {
-        //this.router.navigate(['/profile']);
+        this.router.navigate(['/profile']);
       },
       error: (err) => {
         this.errorMessage = 'Identifiants invalides';
