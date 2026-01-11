@@ -1,5 +1,5 @@
 <div class="register-container">
-    <h2>Créer un compte</h2>
+    <h2 i18n="@@createAccountHeader">Créer un compte</h2>
 
     <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
         <div *ngIf="errorMessage" style="color: red; margin-bottom: 10px; font-weight: bold;">
@@ -11,29 +11,30 @@
         </div>
 
         <div class="form-group">
-            <label for="firstname">Prénom</label>
+            <label for="firstname" i18n="@@firstNameLabel">Prénom</label>
             <input
                     type="text"
                     id="firstname"
                     name="firstname"
                     [(ngModel)]="user.firstname"
                     required
-                    placeholder="Votre prénom">
-        </div>
+                    placeholder="Votre prénom"
+                    i18n-placeholder="@@firstNamePlaceholder"> </div>
 
         <div class="form-group">
-            <label for="lastname">Nom</label>
+            <label for="lastname" i18n="@@lastNameLabel">Nom</label>
             <input
                     type="text"
                     id="lastname"
                     name="lastname"
                     [(ngModel)]="user.lastname"
                     required
-                    placeholder="Votre nom">
+                    placeholder="Votre nom"
+                    i18n-placeholder="@@lastNamePlaceholder">
         </div>
 
         <div class="form-group">
-            <label for="email">Email</label>
+            <label for="email" i18n="@@emailLabel">Email</label>
             <input
                     type="email"
                     id="email"
@@ -41,11 +42,12 @@
                     [(ngModel)]="user.email"
                     required
                     email
-                    placeholder="exemple@email.com">
+                    placeholder="exemple@email.com"
+                    i18n-placeholder="@@emailPlaceholder">
         </div>
 
         <div class="form-group">
-            <label for="password">Mot de passe</label>
+            <label for="password" i18n="@@passwordLabel">Mot de passe</label>
             <input
                     type="password"
                     id="password"
@@ -53,12 +55,16 @@
                     [(ngModel)]="user.password"
                     required
                     minlength="6"
-                    placeholder="Mot de passe sécurisé">
+                    placeholder="Mot de passe sécurisé"
+                    i18n-placeholder="@@passwordPlaceholder">
         </div>
 
-        <button type="submit" [disabled]="!registerForm.form.valid">S'inscrire</button>
+        <button type="submit" [disabled]="!registerForm.form.valid" i18n="@@registerBtn">S'inscrire</button>
 
     </form>
 
-    <p>Déjà un compte ? <a routerLink="/login">Se connecter</a></p>
+    <p>
+        <span i18n="@@alreadyAccountQuestion">Déjà un compte ?</span>
+        <a routerLink="/login" i18n="@@loginLink">Se connecter</a>
+    </p>
 </div>

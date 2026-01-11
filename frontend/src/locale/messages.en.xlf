@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file datatype="plaintext" original="ng2.template" source-language="en-US" target-language="en-GB">
+    <body>
+      <trans-unit id="loginHeader" datatype="html">
+        <source>Connexion</source>
+        <target>Log in</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/login/login.component.html</context>
+          <context context-type="linenumber">2,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="emailLabel" datatype="html">
+        <source>Email</source>
+        <target>Email</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/login/login.component.html</context>
+          <context context-type="linenumber">6,7</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/profile/profile.component.html</context>
+          <context context-type="linenumber">15</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/register/register.component.html</context>
+          <context context-type="linenumber">37,38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="passwordLabel" datatype="html">
+        <source>Mot de passe</source>
+        <target>Password</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/login/login.component.html</context>
+          <context context-type="linenumber">10,11</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/register/register.component.html</context>
+          <context context-type="linenumber">50,51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="loginBtn" datatype="html">
+        <source>Se connecter</source>
+        <target>Sign In</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/login/login.component.html</context>
+          <context context-type="linenumber">16,17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="noAccountQuestion" datatype="html">
+        <source>Pas encore de compte ?</source>
+        <target>Don't have an account yet?</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/login/login.component.html</context>
+          <context context-type="linenumber">20,21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="registerLink" datatype="html">
+        <source>S'inscrire</source>
+        <target>To register</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/login/login.component.html</context>
+          <context context-type="linenumber">21,23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="mySpaceHeader" datatype="html">
+        <source>Mon Espace</source>
+        <target>My space</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/profile/profile.component.html</context>
+          <context context-type="linenumber">2,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="pointsBalanceHeader" datatype="html">
+        <source>💰 Solde de points</source>
+        <target>💰 Points balance</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/profile/profile.component.html</context>
+          <context context-type="linenumber">5,6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="pointsUnit" datatype="html">
+        <source>pts</source>
+        <target>pts</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/profile/profile.component.html</context>
+          <context context-type="linenumber">6,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="myInfoHeader" datatype="html">
+        <source>👤 Mes Informations</source>
+        <target>👤 My Information</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/profile/profile.component.html</context>
+          <context context-type="linenumber">10,12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="firstNameLabel" datatype="html">
+        <source>Prénom :</source>
+        <target>First name:</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/profile/profile.component.html</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/profile/profile.component.html</context>
+          <context context-type="linenumber">22,23</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/register/register.component.html</context>
+          <context context-type="linenumber">14,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lastNameLabel" datatype="html">
+        <source>Nom :</source>
+        <target>Name:</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/profile/profile.component.html</context>
+          <context context-type="linenumber">14</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/profile/profile.component.html</context>
+          <context context-type="linenumber">26,27</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/register/register.component.html</context>
+          <context context-type="linenumber">25,26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="roleLabel" datatype="html">
+        <source>Statut :</source>
+        <target>Status:</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/profile/profile.component.html</context>
+          <context context-type="linenumber">16</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/profile/profile.component.html</context>
+          <context context-type="linenumber">30,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="editProfileBtn" datatype="html">
+        <source>Modifier mon profil</source>
+        <target>Edit my Profile</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/profile/profile.component.html</context>
+          <context context-type="linenumber">17,20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="saveBtn" datatype="html">
+        <source>Enregistrer</source>
+        <target>Save</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/profile/profile.component.html</context>
+          <context context-type="linenumber">36,37</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cancelBtn" datatype="html">
+        <source>Annuler</source>
+        <target>Cancel</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/profile/profile.component.html</context>
+          <context context-type="linenumber">37,38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="logoutBtn" datatype="html">
+        <source>Se déconnecter</source>
+        <target>Sign Out</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/profile/profile.component.html</context>
+          <context context-type="linenumber">43,44</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="createAccountHeader" datatype="html">
+        <source>Créer un compte</source>
+        <target>Create an account</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/register/register.component.html</context>
+          <context context-type="linenumber">2,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="firstNamePlaceholder" datatype="html">
+        <source>Votre prénom</source>
+        <target>Your first name</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/register/register.component.html</context>
+          <context context-type="linenumber">21,22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lastNamePlaceholder" datatype="html">
+        <source>Votre nom</source>
+        <target>Your name</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/register/register.component.html</context>
+          <context context-type="linenumber">32,33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="emailPlaceholder" datatype="html">
+        <source>exemple@email.com</source>
+        <target>exemple@email.com</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/register/register.component.html</context>
+          <context context-type="linenumber">45,46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="passwordPlaceholder" datatype="html">
+        <source>Mot de passe sécurisé</source>
+        <target>Secure password</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/register/register.component.html</context>
+          <context context-type="linenumber">58,59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="registerBtn" datatype="html">
+        <source>S'inscrire</source>
+        <target>To register</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/register/register.component.html</context>
+          <context context-type="linenumber">62,65</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="alreadyAccountQuestion" datatype="html">
+        <source>Déjà un compte ?</source>
+        <target>Already an account?</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/register/register.component.html</context>
+          <context context-type="linenumber">67,68</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="loginLink" datatype="html">
+        <source>Se connecter</source>
+        <target>Sign In</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/register/register.component.html</context>
+          <context context-type="linenumber">68,70</context>
+        </context-group>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
