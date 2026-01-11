@@ -1,16 +1,23 @@
 <div class="login-container">
-    <h2>Connexion</h2>
+    <h2 i18n="@@loginHeader">Connexion</h2>
+
     <form (ngSubmit)="onSubmit()">
         <div>
-            <label>Email</label>
+            <label i18n="@@emailLabel">Email</label>
             <input type="email" [(ngModel)]="credentials.email" name="email" required>
         </div>
         <div>
-            <label>Mot de passe</label>
+            <label i18n="@@passwordLabel">Mot de passe</label>
             <input type="password" [(ngModel)]="credentials.password" name="password" required>
         </div>
+
         <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
-        <button type="submit">Se connecter</button>
+
+        <button type="submit" i18n="@@loginBtn">Se connecter</button>
     </form>
-    <p>Pas encore de compte ? <a routerLink="/register">S'inscrire</a></p>
+
+    <p>
+        <span i18n="@@noAccountQuestion">Pas encore de compte ?</span>
+        <a routerLink="/register" i18n="@@registerLink">S'inscrire</a>
+    </p>
 </div>
