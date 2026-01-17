@@ -1,0 +1,27 @@
+<div class="container mt-4">
+    <div class="mb-3">
+        <a routerLink="/profile" class="btn-back">
+            ⬅ Retour au profil
+        </a>
+    </div>
+
+    <h2>Mes trajets publiés</h2>
+
+    <div *ngIf="isLoading">Chargement...</div>
+
+    <div *ngIf="!isLoading && trajets.length === 0" class="alert alert-info">
+        Vous n'avez proposé aucun trajet pour le moment.
+    </div>
+
+    <div class="rides-list" *ngIf="trajets.length > 0">
+        <div *ngFor="let trajet of trajets" class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">{{ trajet.villeDepart }} ➝ {{ trajet.villeArrivee }}</h5>
+                <p class="card-text">
+                    <strong>Date :</strong> {{ trajet.dateHeureDepart | date:'dd/MM/yyyy HH:mm' }}<br>
+                    <strong>Places :</strong> {{ trajet.placesDisponibles }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

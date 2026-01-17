@@ -43,4 +43,19 @@ describe('TrajetService', () => {
         req.flush(dummyTrajet);
     });
 
+    it('should retrieve my trajets via GET', () => {
+        const dummyTrajets: Trajet[] = [
+            { villeDepart: 'Paris', villeArrivee: 'Lyon', dateHeureDepart: '2025-05-01T10:00', placesDisponibles: 2 }
+        ];
+
+        service.getMyTrajets().subscribe(trajets => {
+            expect(trajets.length).toBe(1);
+            expect(trajets).toEqual(dummyTrajets);
+        });
+
+        const req = httpMock.expectOne(`${environment.apiUrl}/trajets/me`);
+        expect(req.request.method).toBe('GET');
+        req.flush(dummyTrajets);
+    });
+
 });

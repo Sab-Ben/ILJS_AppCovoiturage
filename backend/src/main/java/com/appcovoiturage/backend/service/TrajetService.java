@@ -30,4 +30,10 @@ public class TrajetService {
         return trajetRepository.save(trajet);
     }
 
+    public java.util.List<Trajet> getTrajetsByConducteur(String email) {
+        User conducteur = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        return trajetRepository.findByConducteurId(conducteur.getId());
+    }
+
 }
