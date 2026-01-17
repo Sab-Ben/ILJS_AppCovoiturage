@@ -22,6 +22,11 @@
                     <strong>Places :</strong> {{ trajet.placesDisponibles }}
                 </p>
             </div>
+
+            <button class="btn btn-danger btn-sm" (click)="trajet.id && deleteTrajet(trajet.id)">
+                Supprimer
+            </button>
+
         </div>
     </div>
 </div>

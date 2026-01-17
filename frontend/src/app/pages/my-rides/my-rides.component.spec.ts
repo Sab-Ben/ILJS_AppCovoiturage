@@ -18,7 +18,8 @@ describe('MyRidesComponent', () => {
 
   beforeEach(async () => {
     trajetServiceMock = {
-      getMyTrajets: vi.fn().mockReturnValue(of(mockTrajets))
+      getMyTrajets: vi.fn().mockReturnValue(of(mockTrajets)),
+      deleteTrajet: vi.fn().mockReturnValue(of(void 0))
     };
 
     await TestBed.configureTestingModule({
@@ -52,5 +53,28 @@ describe('MyRidesComponent', () => {
   it('should display correct information in the card', () => {
     const firstCardTitle = fixture.debugElement.query(By.css('.card-title')).nativeElement;
     expect(firstCardTitle.textContent).toContain('Paris ➝ Lyon');
+  });
+
+  it('should delete a ride when user confirms', () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    component.deleteTrajet(1);
+
+    expect(confirmSpy).toHaveBeenCalled();
+
+    expect(trajetServiceMock.deleteTrajet).toHaveBeenCalledWith(1);
+
+    expect(component.trajets.length).toBe(1);
+    expect(component.trajets[0].id).toBe(2);
+  });
+
+  it('should NOT delete a ride when user cancels', () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+    component.deleteTrajet(1);
+
+    expect(trajetServiceMock.deleteTrajet).not.toHaveBeenCalled();
+
+    expect(component.trajets.length).toBe(2);
   });
 });

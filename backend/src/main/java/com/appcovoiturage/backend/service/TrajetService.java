@@ -36,4 +36,14 @@ public class TrajetService {
         return trajetRepository.findByConducteurId(conducteur.getId());
     }
 
+    public void deleteTrajet(Long id, String email) {
+        Trajet trajet = trajetRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Trajet non trouvé"));
+
+        if (!trajet.getConducteur().getEmail().equals(email)) {
+            throw new RuntimeException("Vous n'avez pas le droit de supprimer ce trajet");
+        }
+
+        trajetRepository.delete(trajet);
+    }
 }
