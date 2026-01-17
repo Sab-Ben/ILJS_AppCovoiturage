@@ -29,4 +29,19 @@ export class MyRidesComponent implements OnInit {
       }
     });
   }
+
+  deleteTrajet(id: number): void {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce trajet ?')) {
+      this.trajetService.deleteTrajet(id).subscribe({
+        next: () => {
+          // On retire le trajet supprimé de la liste affichée
+          this.trajets = this.trajets.filter(t => t.id !== id);
+        },
+        error: (err) => {
+          console.error('Erreur lors de la suppression', err);
+          alert("Impossible de supprimer ce trajet.");
+        }
+      });
+    }
+  }
 }

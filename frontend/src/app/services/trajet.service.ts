@@ -19,4 +19,8 @@ export class TrajetService {
     getMyTrajets(): Observable<Trajet[]> {
         return this.http.get<Trajet[]>(`${this.apiUrl}/me`);
     }
+
+    deleteTrajet(id: number): Observable<void> {
+        return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    }
 }

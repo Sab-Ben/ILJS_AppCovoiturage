@@ -25,4 +25,10 @@ public class TrajetController {
     public ResponseEntity<java.util.List<Trajet>> getMyTrajets(Principal principal) {
         return ResponseEntity.ok(trajetService.getTrajetsByConducteur(principal.getName()));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTrajet(@PathVariable Long id, Principal principal) {
+        trajetService.deleteTrajet(id, principal.getName());
+        return ResponseEntity.noContent().build(); // Renvoie 204 No Content (succès sans corps)
+    }
 }
