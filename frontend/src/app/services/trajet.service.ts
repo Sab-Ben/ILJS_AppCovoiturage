@@ -15,4 +15,8 @@ export class TrajetService {
     createTrajet(trajet: Trajet): Observable<Trajet> {
         return this.http.post<Trajet>(this.apiUrl, trajet);
     }
+
+    getMyTrajets(): Observable<Trajet[]> {
+        return this.http.get<Trajet[]>(`${this.apiUrl}/me`);
+    }
 }

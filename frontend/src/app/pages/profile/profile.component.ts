@@ -32,7 +32,6 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  // US4 : Sauvegarder modifications
   saveProfile() {
     this.userService.updateProfile(this.user).subscribe({
       next: (updatedUser) => {

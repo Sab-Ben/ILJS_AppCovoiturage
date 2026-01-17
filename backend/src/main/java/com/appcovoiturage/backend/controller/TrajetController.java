@@ -21,5 +21,8 @@ public class TrajetController {
         return ResponseEntity.ok(trajetService.createTrajet(dto, principal.getName()));
     }
 
-
+    @GetMapping("/me")
+    public ResponseEntity<java.util.List<Trajet>> getMyTrajets(Principal principal) {
+        return ResponseEntity.ok(trajetService.getTrajetsByConducteur(principal.getName()));
+    }
 }
