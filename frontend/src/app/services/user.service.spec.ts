@@ -27,7 +27,7 @@ describe('UserService', () => {
     });
 
     it('devrait récupérer le profil (GET)', () => {
-        const dummyUser: User = { id: 1, firstname: 'Test', lastname: 'User', email: 'test@test.com', role: Role.CLIENT };
+        const dummyUser: User = { id: 1, firstname: 'Test', lastname: 'User', email: 'test@test.com', role: Role.DRIVER };
 
         service.getMyProfile().subscribe(user => {
             expect(user).toEqual(dummyUser);
@@ -35,11 +35,11 @@ describe('UserService', () => {
 
         const req = httpMock.expectOne(`${environment.apiUrl}/users/me`);
         expect(req.request.method).toBe('GET');
-        req.flush(dummyUser); // Simule la réponse du backend
+        req.flush(dummyUser);
     });
 
     it('devrait mettre à jour le profil (PUT)', () => {
-        const updatedData: User = { id: 1, firstname: 'NewName', lastname: 'User', email: 'test@test.com', role: Role.CLIENT };
+        const updatedData: User = { id: 1, firstname: 'NewName', lastname: 'User', email: 'test@test.com', role: Role.PASSAGER };
 
         service.updateProfile(updatedData).subscribe(res => {
             expect(res).toBeTruthy();
@@ -47,7 +47,7 @@ describe('UserService', () => {
 
         const req = httpMock.expectOne(`${environment.apiUrl}/users/me`);
         expect(req.request.method).toBe('PUT');
-        expect(req.request.body).toEqual(updatedData); // Vérifie que le corps contient bien les données
+        expect(req.request.body).toEqual(updatedData);
         req.flush({ success: true });
     });
 });

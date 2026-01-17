@@ -6,6 +6,7 @@ import { of } from 'rxjs';
 import { vi } from 'vitest';
 import { Role } from '../../models/role.enum';
 import { FormsModule } from '@angular/forms';
+import { provideRouter } from '@angular/router';
 
 describe('ProfileComponent', () => {
   let component: ProfileComponent;
@@ -13,19 +14,18 @@ describe('ProfileComponent', () => {
   let userServiceMock: any;
   let authServiceMock: any;
 
-  // Données fictives pour les tests
-  const dummyUser = {
+  const passagerUser = {
     id: 1,
     firstname: 'Jean',
     lastname: 'Test',
     email: 'jean@test.com',
-    role: Role.CLIENT,
+    role: Role.PASSAGER,
     pointBalance: 100
   };
 
   beforeEach(async () => {
     userServiceMock = {
-      getMyProfile: vi.fn().mockReturnValue(of(dummyUser)),
+      getMyProfile: vi.fn().mockReturnValue(of(passagerUser)),
       updateProfile: vi.fn()
     };
 
@@ -37,13 +37,14 @@ describe('ProfileComponent', () => {
       imports: [ProfileComponent, FormsModule],
       providers: [
         { provide: UserService, useValue: userServiceMock },
-        { provide: AuthService, useValue: authServiceMock }
+        { provide: AuthService, useValue: authServiceMock },
+        provideRouter([])
       ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProfileComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges(); // Déclenche ngOnInit
+    fixture.detectChanges();
   });
 
   it('should create', () => {
@@ -52,24 +53,19 @@ describe('ProfileComponent', () => {
 
   it('devrait charger le profil au démarrage', () => {
     expect(userServiceMock.getMyProfile).toHaveBeenCalled();
-    expect(component.user).toEqual(dummyUser);
+    expect(component.user).toEqual(passagerUser);
   });
 
   it('doit sauvegarder le profil et afficher un message de succès', () => {
-    // On simule une réponse de mise à jour réussie
-    userServiceMock.updateProfile.mockReturnValue(of({ ...dummyUser, firstname: 'Modifié' }));
-
-    // On met composant en mode édition
+    userServiceMock.updateProfile.mockReturnValue(of({ ...passagerUser, firstname: 'Modifié' }));
     component.isEditing = true;
     if (component.user) component.user.firstname = 'Modifié';
 
-    // Action
     component.saveProfile();
 
-    // Vérifications
     expect(userServiceMock.updateProfile).toHaveBeenCalled();
     expect(component.user?.firstname).toBe('Modifié');
-    expect(component.isEditing).toBe(false); // Doit repasser en mode lecture
+    expect(component.isEditing).toBe(false);
     expect(component.successMessage).toContain('succès');
   });
 

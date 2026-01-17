@@ -5,11 +5,12 @@ import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
 import {User} from "../../models/user.model";
 import {Role} from "../../models/role.enum";
+import {RouterLink} from "@angular/router";
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './profile.component.html'
 })
 export class ProfileComponent implements OnInit {

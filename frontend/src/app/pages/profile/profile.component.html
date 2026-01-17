@@ -40,5 +40,11 @@
         <p class="success" *ngIf="successMessage">{{ successMessage }}</p>
     </div>
 
+    <div class="actions-container" style="margin: 20px 0; text-align: center;">
+        <button routerLink="/create-ride" class="btn-primary-action">
+            Créer un trajet
+        </button>
+    </div>
+
     <button class="logout-btn" (click)="logout()" i18n="@@logoutBtn">Se déconnecter</button>
 </div>
