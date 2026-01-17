@@ -1,0 +1,36 @@
+<div class="container mt-4">
+    <h2>Proposer un trajet</h2>
+
+    <form [formGroup]="trajetForm" (ngSubmit)="onSubmit()">
+
+        <div class="mb-3">
+            <label class="form-label">Ville de départ</label>
+            <input type="text" class="form-control" formControlName="villeDepart" placeholder="Ex: Paris">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Ville d'arrivée</label>
+            <input type="text" class="form-control" formControlName="villeArrivee" placeholder="Ex: Lyon">
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Date</label>
+                <input type="date" class="form-control" formControlName="dateDepart">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Heure</label>
+                <input type="time" class="form-control" formControlName="heureDepart">
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Nombre de places</label>
+            <input type="number" class="form-control" formControlName="placesDisponibles" min="1">
+        </div>
+
+        <div *ngIf="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
+
+        <button type="submit" class="btn btn-primary" [disabled]="trajetForm.invalid">Publier le trajet</button>
+    </form>
+</div>

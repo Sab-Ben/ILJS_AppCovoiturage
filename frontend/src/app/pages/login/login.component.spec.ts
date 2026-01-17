@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { LoginComponent } from './login.component';
 import { AuthService } from '../../services/auth.service';
-import { Router, provideRouter } from '@angular/router'; // 👈 Import provideRouter
+import { Router, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { FormsModule } from '@angular/forms';
@@ -21,7 +21,6 @@ describe('LoginComponent', () => {
       imports: [LoginComponent, FormsModule],
       providers: [
         { provide: AuthService, useValue: authServiceMock },
-        // 👇 On fournit le vrai routeur pour satisfaire RouterLink
         provideRouter([])
       ]
     }).compileComponents();
@@ -29,7 +28,6 @@ describe('LoginComponent', () => {
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
 
-    // 👇 On injecte et on espionne
     router = TestBed.inject(Router);
     vi.spyOn(router, 'navigate');
 

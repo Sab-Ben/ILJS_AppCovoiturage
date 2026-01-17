@@ -32,7 +32,7 @@ public class User implements UserDetails {
 
     private String password;
 
-    private Integer pointBalance; // Solde de points
+    private Integer pointBalance;
 
     @Enumerated(EnumType.STRING)
     private Role role;
