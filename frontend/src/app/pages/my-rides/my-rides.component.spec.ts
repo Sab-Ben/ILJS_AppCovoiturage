@@ -11,14 +11,34 @@ describe('MyRidesComponent', () => {
   let fixture: ComponentFixture<MyRidesComponent>;
   let trajetServiceMock: any;
 
+  const today = new Date();
+
+  const futureDate = new Date(today);
+  futureDate.setDate(today.getDate() + 5);
+
+  const pastDate = new Date(today);
+  pastDate.setDate(today.getDate() - 1);
+
   const mockTrajets = [
-    { id: 1, villeDepart: 'Paris', villeArrivee: 'Lyon', dateHeureDepart: '2025-05-01T10:00', placesDisponibles: 3 },
-    { id: 2, villeDepart: 'Lille', villeArrivee: 'Bruxelles', dateHeureDepart: '2025-06-15T14:00', placesDisponibles: 2 }
+    {
+      id: 1,
+      villeDepart: 'Paris',
+      villeArrivee: 'Lyon',
+      dateHeureDepart: futureDate.toISOString(),
+      placesDisponibles: 3
+    },
+    {
+      id: 2,
+      villeDepart: 'Lille',
+      villeArrivee: 'Bruxelles',
+      dateHeureDepart: futureDate.toISOString(),
+      placesDisponibles: 2
+    }
   ];
 
   beforeEach(async () => {
     trajetServiceMock = {
-      getMyTrajets: vi.fn().mockReturnValue(of(mockTrajets)),
+      getMyTrajets: vi.fn().mockReturnValue(of([...mockTrajets])),
       deleteTrajet: vi.fn().mockReturnValue(of(void 0))
     };
 
@@ -61,7 +81,6 @@ describe('MyRidesComponent', () => {
     component.deleteTrajet(1);
 
     expect(confirmSpy).toHaveBeenCalled();
-
     expect(trajetServiceMock.deleteTrajet).toHaveBeenCalledWith(1);
 
     expect(component.trajets.length).toBe(1);
@@ -74,7 +93,6 @@ describe('MyRidesComponent', () => {
     component.deleteTrajet(1);
 
     expect(trajetServiceMock.deleteTrajet).not.toHaveBeenCalled();
-
     expect(component.trajets.length).toBe(2);
   });
 });

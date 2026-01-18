@@ -30,6 +30,17 @@ export class MyRidesComponent implements OnInit {
     });
   }
 
+  isDeletable(dateHeureDepart: string): boolean {
+    const now = new Date();
+    const depart = new Date(dateHeureDepart);
+
+    const diffMs = depart.getTime() - now.getTime();
+
+    const diffHours = diffMs / (1000 * 60 * 60);
+
+    return diffHours >= 24;
+  }
+
   deleteTrajet(id: number): void {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce trajet ?')) {
       this.trajetService.deleteTrajet(id).subscribe({

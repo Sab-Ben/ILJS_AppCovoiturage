@@ -8,6 +8,9 @@ import com.appcovoiturage.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
 @Service
 @RequiredArgsConstructor
 public class TrajetService {
@@ -42,6 +45,13 @@ public class TrajetService {
 
         if (!trajet.getConducteur().getEmail().equals(email)) {
             throw new RuntimeException("Vous n'avez pas le droit de supprimer ce trajet");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        long heuresAvantDepart = ChronoUnit.HOURS.between(now, trajet.getDateHeureDepart());
+
+        if (heuresAvantDepart < 24) {
+            throw new RuntimeException("Impossible de supprimer le trajet moins de 24 heures avant le départ.");
         }
 
         trajetRepository.delete(trajet);
