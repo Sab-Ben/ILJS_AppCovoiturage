@@ -1,18 +1,20 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Important pour *ngFor et *ngIf
+import { CommonModule } from '@angular/common';
 import { TrajetService } from '../../services/trajet.service';
 import { Trajet } from '../../models/trajet.model';
 import {RouterLink} from "@angular/router";
+import {MapComponent} from "../../components/map/map.component";
 
 @Component({
   selector: 'app-my-rides',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, MapComponent],
   templateUrl: './my-rides.component.html',
   styleUrls: ['./my-rides.component.scss']
 })
 export class MyRidesComponent implements OnInit {
   trajets: Trajet[] = [];
+  selectedTrajet: Trajet | null = null;
   isLoading = true;
 
   constructor(private trajetService: TrajetService) {}
@@ -45,7 +47,6 @@ export class MyRidesComponent implements OnInit {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce trajet ?')) {
       this.trajetService.deleteTrajet(id).subscribe({
         next: () => {
-          // On retire le trajet supprimé de la liste affichée
           this.trajets = this.trajets.filter(t => t.id !== id);
         },
         error: (err) => {
@@ -54,5 +55,9 @@ export class MyRidesComponent implements OnInit {
         }
       });
     }
+  }
+
+  selectTrajet(trajet: Trajet): void {
+    this.selectedTrajet = trajet;
   }
 }

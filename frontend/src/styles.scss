@@ -1,1 +1,9 @@
-/* You can add global styles to this file, and also import other style files */
+@import 'leaflet/dist/leaflet.css';
+
+/* Fix pour l'affichage des cartes Leaflet */
+.map-container {
+  height: 400px;
+  width: 100%;
+  border-radius: 8px;
+  z-index: 1;
+}
