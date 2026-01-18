@@ -5,11 +5,13 @@ import { of } from 'rxjs';
 import { vi } from 'vitest';
 import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
+import {GeocodingService} from "../../services/geocoding.service";
 
 describe('MyRidesComponent', () => {
   let component: MyRidesComponent;
   let fixture: ComponentFixture<MyRidesComponent>;
   let trajetServiceMock: any;
+  let geocodingServiceMock: any;
 
   const today = new Date();
 
@@ -42,10 +44,15 @@ describe('MyRidesComponent', () => {
       deleteTrajet: vi.fn().mockReturnValue(of(void 0))
     };
 
+    geocodingServiceMock = {
+      getCoordinates: vi.fn().mockReturnValue(of([0, 0]))
+    };
+
     await TestBed.configureTestingModule({
       imports: [MyRidesComponent],
       providers: [
         { provide: TrajetService, useValue: trajetServiceMock },
+        { provide: GeocodingService, useValue: geocodingServiceMock },
         provideRouter([])
       ]
     }).compileComponents();
@@ -66,7 +73,7 @@ describe('MyRidesComponent', () => {
   });
 
   it('should display the correct number of ride cards', () => {
-    const cards = fixture.debugElement.queryAll(By.css('.card'));
+    const cards = fixture.debugElement.queryAll(By.css('.rides-list .card'));
     expect(cards.length).toBe(2);
   });
 
