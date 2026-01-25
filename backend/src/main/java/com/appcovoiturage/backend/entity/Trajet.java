@@ -37,15 +37,25 @@ public class Trajet {
     @Column(nullable = false)
     private String dureeEstimee;
 
+    @Column(nullable = false)
+    private Double latitudeDepart;
+
+    @Column(nullable = false)
+    private Double longitudeDepart;
+
+    @Column(nullable = false)
+    private Double latitudeArrivee;
+
+    @Column(nullable = false)
+    private Double longitudeArrivee;
+
     @ManyToOne
     @JoinColumn(name = "conducteur_id", nullable = false)
     private User conducteur;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "trajet_etapes", joinColumns = @JoinColumn(name = "trajet_id"))
     @Column(name = "ville")
     private List<String> etapes = new ArrayList<>();
-
-
 
 }

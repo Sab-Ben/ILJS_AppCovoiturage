@@ -3,26 +3,23 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TrajetService } from '../../services/trajet.service';
-import {RoutingService} from "../../services/routing.service";
-import {GeocodingService} from "../../services/geocoding.service";
-import {forkJoin, switchMap} from "rxjs";
+import { RoutingService } from '../../services/routing.service';
+import { GeocodingService } from '../../services/geocoding.service';
+import { forkJoin, switchMap, map } from "rxjs"; //
 
-// --- Définition du validateur en dehors de la classe ---
+// --- Définition du validateur ---
 function futureDateValidator(control: AbstractControl): ValidationErrors | null {
   if (!control.value) return null;
-
   const inputDate = new Date(control.value);
   const today = new Date();
-
   today.setHours(0, 0, 0, 0);
   inputDate.setHours(0, 0, 0, 0);
-
   if (inputDate <= today) {
     return { 'pastDate': true };
   }
   return null;
 }
-// ------------------------------------------------------------------------
+// -------------------------------
 
 @Component({
   selector: 'app-create-trajet',
@@ -48,9 +45,7 @@ export class CreateTrajetComponent implements OnInit {
       villeDepart: ['', Validators.required],
       villeArrivee: ['', Validators.required],
       etapes: this.fb.array([]),
-
       dateDepart: ['', [Validators.required, futureDateValidator]],
-
       heureDepart: ['', Validators.required],
       placesDisponibles: [1, [Validators.required, Validators.min(1), Validators.max(4)]]
     });
@@ -96,10 +91,20 @@ export class CreateTrajetComponent implements OnInit {
             throw new Error('Impossible de trouver les coordonnées des villes.');
           }
 
-          return this.routingService.getRouteData(validCoords);
+          const startCoords = validCoords[0];
+          const endCoords = validCoords[validCoords.length - 1];
+
+          return this.routingService.getRouteData(validCoords).pipe(
+              map(routeData => ({
+                routeData,
+                startCoords,
+                endCoords
+              }))
+          );
         })
     ).subscribe({
-      next: (routeData) => {
+      next: (result) => {
+        const { routeData, startCoords, endCoords } = result;
         const dateHeure = `${formVal.dateDepart}T${formVal.heureDepart}:00`;
 
         const nouveauTrajet = {
@@ -108,8 +113,14 @@ export class CreateTrajetComponent implements OnInit {
           etapes: etapesNettoyees,
           dateHeureDepart: dateHeure,
           placesDisponibles: formVal.placesDisponibles,
+
           distanceKm: routeData.distanceKm,
-          dureeEstimee: routeData.duree
+          dureeEstimee: routeData.duree,
+
+          latitudeDepart: startCoords[0],
+          longitudeDepart: startCoords[1],
+          latitudeArrivee: endCoords[0],
+          longitudeArrivee: endCoords[1]
         };
 
         this.trajetService.createTrajet(nouveauTrajet).subscribe({

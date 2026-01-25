@@ -72,7 +72,14 @@
                         <app-map
                                 [villeDepart]="selectedTrajet?.villeDepart || ''"
                                 [villeArrivee]="selectedTrajet?.villeArrivee || ''"
-                                [etapes]="selectedTrajet?.etapes || []">
+                                [etapes]="selectedTrajet?.etapes || []"
+                                [coordsDepart]="selectedTrajet?.latitudeDepart
+                                    ? [selectedTrajet!.latitudeDepart!, selectedTrajet!.longitudeDepart!]
+                                    : undefined"
+
+                                [coordsArrivee]="selectedTrajet?.latitudeArrivee
+                                    ? [selectedTrajet!.latitudeArrivee!, selectedTrajet!.longitudeArrivee!]
+                                    : undefined">
                         </app-map>
                     </div>
                 </div>

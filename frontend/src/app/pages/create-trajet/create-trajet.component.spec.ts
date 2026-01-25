@@ -28,7 +28,11 @@ describe('CreateTrajetComponent', () => {
     };
 
     geocodingServiceMock = {
-      getCoordinates: vi.fn().mockReturnValue(of([48.85, 2.35]))
+      getCoordinates: vi.fn().mockImplementation((city: string) => {
+        if (city === 'Paris') return of([48.85, 2.35]);
+        if (city === 'Lyon') return of([45.76, 4.83]);
+        return of([0, 0]); // Fallback
+      })
     };
 
     routingServiceMock = {
@@ -78,7 +82,7 @@ describe('CreateTrajetComponent', () => {
     expect(component.etapesControls.at(0).value).toBe('Tours');
   });
 
-  it('should call service with formatted data AND routing info on submit', () => {
+  it('should call service with formatted data AND coordinates AND routing info on submit', () => {
     const tomorrow = getRelativeDate(1);
 
     component.trajetForm.patchValue({
@@ -92,16 +96,9 @@ describe('CreateTrajetComponent', () => {
     component.addEtape();
     component.etapesControls.at(0).setValue('Auxerre');
 
-    component.addEtape();
-    component.etapesControls.at(1).setValue('');
-
-    component.addEtape();
-    component.etapesControls.at(2).setValue('Mâcon');
-
     component.onSubmit();
 
     expect(geocodingServiceMock.getCoordinates).toHaveBeenCalled();
-
     expect(routingServiceMock.getRouteData).toHaveBeenCalled();
 
     expect(trajetServiceMock.createTrajet).toHaveBeenCalledWith(expect.objectContaining({
@@ -109,9 +106,15 @@ describe('CreateTrajetComponent', () => {
       villeArrivee: 'Lyon',
       dateHeureDepart: `${tomorrow}T08:00:00`,
       placesDisponibles: 3,
-      etapes: ['Auxerre', 'Mâcon'],
+      etapes: ['Auxerre'],
+
       distanceKm: 450.5,
-      dureeEstimee: '4h 15min'
+      dureeEstimee: '4h 15min',
+
+      latitudeDepart: 48.85,
+      longitudeDepart: 2.35,
+      latitudeArrivee: 45.76,
+      longitudeArrivee: 4.83
     }));
   });
 
@@ -146,7 +149,6 @@ describe('CreateTrajetComponent', () => {
     });
 
     expect(component.trajetForm.valid).toBe(false);
-
     expect(component.trajetForm.get('placesDisponibles')?.hasError('max')).toBe(true);
 
     component.onSubmit();

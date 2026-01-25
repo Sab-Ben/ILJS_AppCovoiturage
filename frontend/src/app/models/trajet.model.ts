@@ -5,6 +5,10 @@ export interface Trajet {
     etapes?: string[];
     dateHeureDepart: string;
     placesDisponibles: number;
-    distanceKm?: number;
-    dureeEstimee?: string;
+    distanceKm: number;
+    dureeEstimee: string;
+    latitudeDepart?: number;
+    longitudeDepart?: number;
+    latitudeArrivee?: number;
+    longitudeArrivee?: number;
 }

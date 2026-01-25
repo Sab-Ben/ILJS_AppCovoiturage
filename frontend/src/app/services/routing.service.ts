@@ -3,50 +3,53 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class RoutingService {
-  // API OSRM publique (Driving = voiture)
-  private apiUrl = 'https://router.project-osrm.org/route/v1/driving';
+    // API OSRM publique (Driving = voiture)
+    private apiUrl = 'https://router.project-osrm.org/route/v1/driving';
 
-  constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) {}
 
-  getRouteData(coordinates: number[][]): Observable<{ distanceKm: number, duree: string }> {
+    // Ajout de 'geometry' dans le type de retour
+    getRouteData(coordinates: number[][]): Observable<{ distanceKm: number, duree: string, geometry: any }> {
 
-    const formattedCoords = coordinates
-        .map(coord => `${coord[1]},${coord[0]}`)
-        .join(';');
+        const formattedCoords = coordinates
+            .map(coord => `${coord[1]},${coord[0]}`)
+            .join(';');
 
-    const url = `${this.apiUrl}/${formattedCoords}?overview=false`;
 
-    return this.http.get<any>(url).pipe(
-        map(response => {
-          if (!response.routes || response.routes.length === 0) {
-            throw new Error('Aucun itinéraire trouvé');
-          }
+        const url = `${this.apiUrl}/${formattedCoords}?overview=full&geometries=geojson`;
 
-          const route = response.routes[0];
+        return this.http.get<any>(url).pipe(
+            map(response => {
+                if (!response.routes || response.routes.length === 0) {
+                    throw new Error('Aucun itinéraire trouvé');
+                }
 
-          const distKm = Math.round((route.distance / 1000) * 10) / 10;
-          const durationSec = route.duration;
+                const route = response.routes[0];
 
-          return {
-            distanceKm: distKm,
-            duree: this.formatDuration(durationSec)
-          };
-        })
-    );
-  }
+                const distKm = Math.round((route.distance / 1000) * 10) / 10;
+                const durationSec = route.duration;
 
-  // Convertit secondes en "Xh Ymin"
-  private formatDuration(seconds: number): string {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-
-    if (hours > 0) {
-      return `${hours}h ${minutes}min`;
-    } else {
-      return `${minutes}min`;
+                return {
+                    distanceKm: distKm,
+                    duree: this.formatDuration(durationSec),
+                    geometry: route.geometry
+                };
+            })
+        );
     }
-  }
+
+    // Convertit secondes en "Xh Ymin"
+    private formatDuration(seconds: number): string {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+
+        if (hours > 0) {
+            return `${hours}h ${minutes}min`;
+        } else {
+            return `${minutes}min`;
+        }
+    }
 }
