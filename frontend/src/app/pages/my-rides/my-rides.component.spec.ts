@@ -79,7 +79,7 @@ describe('MyRidesComponent', () => {
 
   it('should display correct information in the card', () => {
     const firstCardTitle = fixture.debugElement.query(By.css('.card-title')).nativeElement;
-    expect(firstCardTitle.textContent).toContain('Paris ➝ Lyon');
+    expect(firstCardTitle.textContent).toContain('Paris➝Lyon');
   });
 
   it('should delete a ride when user confirms', () => {

@@ -2,6 +2,7 @@ import { Component, Input, OnChanges, SimpleChanges, AfterViewInit } from '@angu
 import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
 import { GeocodingService } from '../../services/geocoding.service';
+import { forkJoin } from 'rxjs'; // <--- Import nécessaire pour gérer plusieurs requêtes
 
 @Component({
   selector: 'app-map',
@@ -13,13 +14,14 @@ import { GeocodingService } from '../../services/geocoding.service';
 export class MapComponent implements AfterViewInit, OnChanges {
   @Input() villeDepart: string = '';
   @Input() villeArrivee: string = '';
+  @Input() etapes: string[] = [];
 
   private map: L.Map | undefined;
   private markers: L.Marker[] = [];
   private routeLine: L.Polyline | undefined;
 
   private defaultIcon = L.icon({
-    iconUrl: 'assets/marker-icon.png', // Todo ajouter une icone
+    iconUrl: 'assets/marker-icon.png',
     shadowUrl: 'assets/marker-shadow.png',
     iconSize: [25, 41],
     iconAnchor: [12, 41]
@@ -47,7 +49,7 @@ export class MapComponent implements AfterViewInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if ((changes['villeDepart'] || changes['villeArrivee']) && this.map) {
+    if ((changes['villeDepart'] || changes['villeArrivee'] || changes['etapes']) && this.map) {
       this.updateRoute();
     }
   }
@@ -71,20 +73,42 @@ export class MapComponent implements AfterViewInit, OnChanges {
       this.map.removeLayer(this.routeLine);
     }
 
-    this.geocodingService.getCoordinates(this.villeDepart).subscribe(coordDepart => {
-      this.geocodingService.getCoordinates(this.villeArrivee).subscribe(coordArrivee => {
+    const villesA_Geocoder = [
+      this.villeDepart,
+      ...(this.etapes || []),
+      this.villeArrivee
+    ];
 
-        if (coordDepart && coordArrivee && this.map) {
-          const markerDep = L.marker(coordDepart).addTo(this.map).bindPopup(`Départ: ${this.villeDepart}`).openPopup();
-          const markerArr = L.marker(coordArrivee).addTo(this.map).bindPopup(`Arrivée: ${this.villeArrivee}`);
-          this.markers.push(markerDep, markerArr);
+    const requetes = villesA_Geocoder.map(ville => this.geocodingService.getCoordinates(ville));
 
-          const latlngs: L.LatLngExpression[] = [coordDepart, coordArrivee];
-          this.routeLine = L.polyline(latlngs, { color: 'blue', weight: 4 }).addTo(this.map);
+    forkJoin(requetes).subscribe(resultats => {
+      const pointsValides: L.LatLngExpression[] = [];
+      const bounds = L.latLngBounds([]);
 
-          this.map.fitBounds(L.latLngBounds(latlngs), { padding: [50, 50] });
+      resultats.forEach((coord, index) => {
+        if (coord) {
+          pointsValides.push(coord);
+          bounds.extend(coord);
+
+          let label = '';
+          if (index === 0) label = `Départ: ${villesA_Geocoder[index]}`;
+          else if (index === resultats.length - 1) label = `Arrivée: ${villesA_Geocoder[index]}`;
+          else label = `Étape: ${villesA_Geocoder[index]}`;
+
+          const marker = L.marker(coord).addTo(this.map!).bindPopup(label);
+
+          if (index === 0 || index === resultats.length - 1) {
+            marker.openPopup();
+          }
+
+          this.markers.push(marker);
         }
       });
+
+      if (pointsValides.length > 1 && this.map) {
+        this.routeLine = L.polyline(pointsValides, { color: 'blue', weight: 4 }).addTo(this.map);
+        this.map.fitBounds(bounds, { padding: [50, 50] });
+      }
     });
   }
 }

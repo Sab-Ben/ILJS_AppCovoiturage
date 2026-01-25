@@ -8,6 +8,25 @@
             <input type="text" class="form-control" formControlName="villeDepart" placeholder="Ex: Paris">
         </div>
 
+        <div class="mb-3 p-3 bg-light rounded">
+            <label class="form-label fw-bold">Étapes intermédiaires (Optionnel)</label>
+
+            <div formArrayName="etapes">
+                <div *ngFor="let etape of etapesControls.controls; let i = index" class="d-flex mb-2">
+
+                    <input type="text"
+                           class="form-control me-2"
+                           [formControlName]="i"
+                           placeholder="Ville étape">
+
+                    <button type="button" class="btn btn-outline-danger" (click)="removeEtape(i)">✕</button>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-sm btn-secondary mt-2" (click)="addEtape()">
+                + Ajouter une étape
+            </button>
+        </div>
         <div class="mb-3">
             <label class="form-label">Ville d'arrivée</label>
             <input type="text" class="form-control" formControlName="villeArrivee" placeholder="Ex: Lyon">
@@ -16,8 +35,17 @@
         <div class="row">
             <div class="col-md-6 mb-3">
                 <label class="form-label">Date</label>
-                <input type="date" class="form-control" formControlName="dateDepart">
+                <input type="date"
+                       class="form-control"
+                       formControlName="dateDepart"
+                       [min]="minDate">
+
+                <div *ngIf="trajetForm.get('dateDepart')?.hasError('pastDate') && trajetForm.get('dateDepart')?.touched"
+                     class="text-danger small">
+                    La date doit être ultérieure à aujourd'hui.
+                </div>
             </div>
+
             <div class="col-md-6 mb-3">
                 <label class="form-label">Heure</label>
                 <input type="time" class="form-control" formControlName="heureDepart">
@@ -25,12 +53,28 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Nombre de places</label>
-            <input type="number" class="form-control" formControlName="placesDisponibles" min="1">
+            <label class="form-label">Places disponibles</label>
+            <input type="number"
+                   class="form-control"
+                   formControlName="placesDisponibles"
+                   min="1"
+                   max="4">
+
+            <div *ngIf="trajetForm.get('placesDisponibles')?.touched && trajetForm.get('placesDisponibles')?.invalid" class="text-danger small">
+                <div *ngIf="trajetForm.get('placesDisponibles')?.hasError('required')">
+                    Le nombre de places est requis.
+                </div>
+                <div *ngIf="trajetForm.get('placesDisponibles')?.hasError('min')">
+                    Minimum 1 place.
+                </div>
+                <div *ngIf="trajetForm.get('placesDisponibles')?.hasError('max')">
+                    Maximum 4 places autorisées.
+                </div>
+            </div>
         </div>
 
         <div *ngIf="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
 
-        <button type="submit" class="btn btn-primary" [disabled]="trajetForm.invalid">Publier le trajet</button>
+        <button type="submit" class="btn btn-primary" [disabled]="trajetForm.invalid">Publier</button>
     </form>
 </div>
