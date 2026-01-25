@@ -15,4 +15,6 @@ public class TrajetDto {
     private String villeArrivee;
     private LocalDateTime dateHeureDepart;
     private Integer placesDisponibles;
+    private Double distanceKm;
+    private String dureeEstimee;
 }

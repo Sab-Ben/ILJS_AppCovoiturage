@@ -31,20 +31,28 @@
                             <span class="mx-2 text-muted">➝</span>
                             <span class="fw-bold">{{ trajet.villeArrivee }}</span>
                         </h5>
+
                         <p class="card-text mb-2">
-                            <strong>Date :</strong> {{ trajet.dateHeureDepart | date:'dd/MM/yyyy HH:mm' }}
+                            <strong>Date :</strong> {{ trajet.dateHeureDepart | date:'dd/MM/yyyy HH:mm' }}<br>
+                            <strong>Places :</strong> {{ trajet.placesDisponibles }}<br>
+
+                            <span *ngIf="trajet.distanceKm" class="d-inline-block mt-1 text-primary">
+                                🚗 {{ trajet.distanceKm }} km
+                                <span class="text-muted mx-1">|</span>
+                                ⏱ {{ trajet.dureeEstimee }}
+                            </span>
                         </p>
 
                         <div class="d-flex justify-content-between align-items-center">
                             <button class="btn btn-sm btn-outline-primary">👁 Voir sur la carte</button>
 
                             <span [title]="isDeletable(trajet.dateHeureDepart) ? '' : 'Trop tard pour supprimer'">
-                    <button class="btn btn-danger btn-sm"
-                            [disabled]="!isDeletable(trajet.dateHeureDepart)"
-                            (click)="$event.stopPropagation(); deleteTrajet(trajet.id!)">
-                        🗑 Supprimer
-                    </button>
-                </span>
+                                <button class="btn btn-danger btn-sm"
+                                        [disabled]="!isDeletable(trajet.dateHeureDepart)"
+                                        (click)="$event.stopPropagation(); deleteTrajet(trajet.id!)">
+                                     Supprimer
+                                </button>
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -55,15 +63,15 @@
             <div class="sticky-top" style="top: 20px;">
                 <div class="card">
                     <div class="card-header bg-light">
-            <span *ngIf="selectedTrajet">
-                Trajet : {{ selectedTrajet.villeDepart }} - {{ selectedTrajet.villeArrivee }}
-            </span>
+                        <span *ngIf="selectedTrajet">
+                            Trajet : {{ selectedTrajet.villeDepart }} - {{ selectedTrajet.villeArrivee }}
+                        </span>
                         <span *ngIf="!selectedTrajet">Sélectionnez un trajet pour voir la carte</span>
                     </div>
                     <div class="card-body p-0">
                         <app-map
                                 [villeDepart]="selectedTrajet?.villeDepart || ''"
-                                [villeArrivee]="selectedTrajet?.villeArrivee || ''">
+                                [villeArrivee]="selectedTrajet?.villeArrivee || ''"
                                 [etapes]="selectedTrajet?.etapes || []">
                         </app-map>
                     </div>

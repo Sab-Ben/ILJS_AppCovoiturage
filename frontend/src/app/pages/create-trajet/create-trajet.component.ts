@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TrajetService } from '../../services/trajet.service';
+import {RoutingService} from "../../services/routing.service";
+import {GeocodingService} from "../../services/geocoding.service";
+import {forkJoin, switchMap} from "rxjs";
 
 // --- Définition du validateur en dehors de la classe ---
 function futureDateValidator(control: AbstractControl): ValidationErrors | null {
@@ -32,10 +35,13 @@ export class CreateTrajetComponent implements OnInit {
   trajetForm: FormGroup;
   errorMsg: string = '';
   minDate: string = '';
+  calculatingRoute = false;
 
   constructor(
       private fb: FormBuilder,
       private trajetService: TrajetService,
+      private geocodingService: GeocodingService,
+      private routingService: RoutingService,
       private router: Router
   ) {
     this.trajetForm = this.fb.group({
@@ -69,29 +75,57 @@ export class CreateTrajetComponent implements OnInit {
   }
 
   onSubmit() {
-    if (this.trajetForm.valid) {
-      const formVal = this.trajetForm.value;
-      const dateHeure = `${formVal.dateDepart}T${formVal.heureDepart}:00`;
+    if (this.trajetForm.invalid) return;
 
-      const etapesNettoyees = formVal.etapes
-          ? formVal.etapes.filter((e: string) => e && e.trim() !== '')
-          : [];
+    this.calculatingRoute = true;
+    const formVal = this.trajetForm.value;
 
-      const nouveauTrajet = {
-        villeDepart: formVal.villeDepart,
-        villeArrivee: formVal.villeArrivee,
-        etapes: etapesNettoyees,
-        dateHeureDepart: dateHeure,
-        placesDisponibles: formVal.placesDisponibles
-      };
+    const etapesNettoyees = formVal.etapes
+        ? formVal.etapes.filter((e: string) => e && e.trim() !== '')
+        : [];
 
-      this.trajetService.createTrajet(nouveauTrajet).subscribe({
-        next: () => this.router.navigate(['/profile']),
-        error: (err) => {
-          console.error(err);
-          this.errorMsg = 'Erreur lors de la création du trajet';
-        }
-      });
-    }
+    const villes = [formVal.villeDepart, ...etapesNettoyees, formVal.villeArrivee];
+
+    const geocodingRequests = villes.map(v => this.geocodingService.getCoordinates(v));
+
+    forkJoin(geocodingRequests).pipe(
+        switchMap(coords => {
+          const validCoords = coords.filter(c => c !== null) as number[][];
+
+          if (validCoords.length < 2) {
+            throw new Error('Impossible de trouver les coordonnées des villes.');
+          }
+
+          return this.routingService.getRouteData(validCoords);
+        })
+    ).subscribe({
+      next: (routeData) => {
+        const dateHeure = `${formVal.dateDepart}T${formVal.heureDepart}:00`;
+
+        const nouveauTrajet = {
+          villeDepart: formVal.villeDepart,
+          villeArrivee: formVal.villeArrivee,
+          etapes: etapesNettoyees,
+          dateHeureDepart: dateHeure,
+          placesDisponibles: formVal.placesDisponibles,
+          distanceKm: routeData.distanceKm,
+          dureeEstimee: routeData.duree
+        };
+
+        this.trajetService.createTrajet(nouveauTrajet).subscribe({
+          next: () => this.router.navigate(['/my-rides']),
+          error: (err) => {
+            console.error(err);
+            this.errorMsg = 'Erreur lors de la sauvegarde du trajet.';
+            this.calculatingRoute = false;
+          }
+        });
+      },
+      error: (err) => {
+        console.error(err);
+        this.errorMsg = 'Impossible de calculer l\'itinéraire (vérifiez les noms des villes).';
+        this.calculatingRoute = false;
+      }
+    });
   }
 }

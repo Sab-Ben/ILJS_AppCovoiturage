@@ -27,6 +27,8 @@ public class TrajetService {
                 .villeArrivee(dto.getVilleArrivee())
                 .dateHeureDepart(dto.getDateHeureDepart())
                 .placesDisponibles(dto.getPlacesDisponibles())
+                .distanceKm(dto.getDistanceKm())
+                .dureeEstimee(dto.getDureeEstimee())
                 .conducteur(conducteur)
                 .build();
 
