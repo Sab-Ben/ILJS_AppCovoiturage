@@ -31,6 +31,12 @@ public class Trajet {
     @Column(nullable = false)
     private Integer placesDisponibles;
 
+    @Column(nullable = false)
+    private Double distanceKm;
+
+    @Column(nullable = false)
+    private String dureeEstimee;
+
     @ManyToOne
     @JoinColumn(name = "conducteur_id", nullable = false)
     private User conducteur;
@@ -39,4 +45,7 @@ public class Trajet {
     @CollectionTable(name = "trajet_etapes", joinColumns = @JoinColumn(name = "trajet_id"))
     @Column(name = "ville")
     private List<String> etapes = new ArrayList<>();
+
+
+
 }

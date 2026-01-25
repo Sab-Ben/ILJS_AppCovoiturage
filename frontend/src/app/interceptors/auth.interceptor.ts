@@ -1,17 +1,16 @@
-import { HttpInterceptorFn } from '@angular/common/http';
-import { inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import {HttpInterceptorFn} from '@angular/common/http';
+import {inject} from '@angular/core';
+import {AuthService} from "../services/auth.service";
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-    const platformId = inject(PLATFORM_ID);
+    const authService = inject(AuthService);
+    const token = authService.getToken();
+    const apiUrl = 'http://localhost:8080/api';
 
-    if (!isPlatformBrowser(platformId)) {
-        return next(req);
-    }
+    // Vérification : Est-ce que ça va vers notre backend ?
+    const isApiRequest = req.url.startsWith(apiUrl);
 
-    const token = sessionStorage.getItem('token');
-
-    if (token) {
+    if (token && isApiRequest) {
         const cloned = req.clone({
             setHeaders: {
                 Authorization: `Bearer ${token}`
