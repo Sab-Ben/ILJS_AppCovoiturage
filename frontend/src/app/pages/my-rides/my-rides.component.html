@@ -17,7 +17,20 @@
                      (click)="selectTrajet(trajet)">
 
                     <div class="card-body">
-                        <h5 class="card-title">{{ trajet.villeDepart }} ➝ {{ trajet.villeArrivee }}</h5>
+                        <h5 class="card-title d-flex align-items-center flex-wrap">
+                            <span class="fw-bold">{{ trajet.villeDepart }}</span>
+
+                            <ng-container *ngIf="trajet.etapes && trajet.etapes.length > 0">
+                                <span class="mx-2 text-muted"> ➝ </span>
+                                <span *ngFor="let etape of trajet.etapes; let last = last">
+                                    <span class="badge bg-secondary text-light">{{ etape }}</span>
+                                    <span *ngIf="!last" class="mx-1 text-muted">➝</span>
+                                </span>
+                            </ng-container>
+
+                            <span class="mx-2 text-muted">➝</span>
+                            <span class="fw-bold">{{ trajet.villeArrivee }}</span>
+                        </h5>
                         <p class="card-text mb-2">
                             <strong>Date :</strong> {{ trajet.dateHeureDepart | date:'dd/MM/yyyy HH:mm' }}
                         </p>
@@ -51,6 +64,7 @@
                         <app-map
                                 [villeDepart]="selectedTrajet?.villeDepart || ''"
                                 [villeArrivee]="selectedTrajet?.villeArrivee || ''">
+                                [etapes]="selectedTrajet?.etapes || []">
                         </app-map>
                     </div>
                 </div>

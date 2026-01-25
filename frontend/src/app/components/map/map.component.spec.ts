@@ -5,14 +5,11 @@ import { of } from 'rxjs';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { SimpleChange } from '@angular/core';
 
-// --- DEFINITION DU MOCK ---
 vi.mock('leaflet', () => {
-  // On définit les objets pour pouvoir les référencer circulairement
   const mapMock: any = {
     removeLayer: vi.fn(),
     fitBounds: vi.fn(),
     addLayer: vi.fn(),
-    // IMPORTANT : setView doit retourner l'objet map pour permettre le chaînage : L.map().setView()
     setView: vi.fn().mockReturnThis()
   };
 
@@ -30,13 +27,18 @@ vi.mock('leaflet', () => {
     addTo: vi.fn().mockReturnThis()
   };
 
+  const boundsMock = {
+    extend: vi.fn(),
+    isValid: vi.fn().mockReturnValue(true)
+  };
+
   const L = {
-    map: vi.fn().mockReturnValue(mapMock), // L.map() retourne mapMock
+    map: vi.fn().mockReturnValue(mapMock),
     tileLayer: vi.fn().mockReturnValue(tileLayerMock),
     marker: vi.fn().mockReturnValue(markerMock),
     polyline: vi.fn().mockReturnValue(polylineMock),
     icon: vi.fn(),
-    latLngBounds: vi.fn(),
+    latLngBounds: vi.fn().mockReturnValue(boundsMock),
     Marker: {
       prototype: { options: {} }
     }
@@ -67,7 +69,7 @@ describe('MapComponent', () => {
 
     fixture = TestBed.createComponent(MapComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges(); // InitMap est appelé ici
+    fixture.detectChanges();
   });
 
   afterEach(() => {
@@ -79,32 +81,30 @@ describe('MapComponent', () => {
     expect(L.default.map).toHaveBeenCalledWith('map');
   });
 
-  it('should update route when inputs change', async () => {
-    // Configuration du mock
+  it('should update route including intermediate stops', async () => {
     geocodingServiceMock.getCoordinates.mockImplementation((city: string) => {
       if (city === 'Paris') return of([48.85, 2.35]);
+      if (city === 'Orléans') return of([47.90, 1.90]);
       if (city === 'Lyon') return of([45.76, 4.83]);
       return of(null);
     });
 
-    // On s'assure que la carte est bien considérée comme initialisée
-    // (Grâce au fix du mock setView, this.map devrait être défini)
-
-    // Changement des inputs
     component.villeDepart = 'Paris';
     component.villeArrivee = 'Lyon';
+    component.etapes = ['Orléans'];
 
-    // Déclenchement manuel du cycle de vie
     component.ngOnChanges({
       villeDepart: new SimpleChange(null, 'Paris', true),
-      villeArrivee: new SimpleChange(null, 'Lyon', true)
+      villeArrivee: new SimpleChange(null, 'Lyon', true),
+      etapes: new SimpleChange(null, ['Orléans'], true)
     });
 
     const L = await import('leaflet');
 
-    // Vérifications
-    expect(geocodingServiceMock.getCoordinates).toHaveBeenCalledWith('Paris');
-    expect(geocodingServiceMock.getCoordinates).toHaveBeenCalledWith('Lyon');
-    expect(L.default.marker).toHaveBeenCalledTimes(2);
+    expect(geocodingServiceMock.getCoordinates).toHaveBeenCalledTimes(3);
+
+    expect(L.default.marker).toHaveBeenCalledTimes(3);
+
+    expect(L.default.polyline).toHaveBeenCalled();
   });
 });

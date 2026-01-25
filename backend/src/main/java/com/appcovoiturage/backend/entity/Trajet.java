@@ -3,6 +3,8 @@ package com.appcovoiturage.backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -33,4 +35,8 @@ public class Trajet {
     @JoinColumn(name = "conducteur_id", nullable = false)
     private User conducteur;
 
+    @ElementCollection
+    @CollectionTable(name = "trajet_etapes", joinColumns = @JoinColumn(name = "trajet_id"))
+    @Column(name = "ville")
+    private List<String> etapes = new ArrayList<>();
 }
