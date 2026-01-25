@@ -27,6 +27,7 @@ describe('TrajetService', () => {
 
     it('should create a trajet via POST', () => {
         const dummyTrajet: Trajet = {
+            distanceKm: 0, dureeEstimee: "",
             villeDepart: 'Paris',
             villeArrivee: 'Lyon',
             dateHeureDepart: '2025-05-01T10:00:00',
@@ -45,7 +46,11 @@ describe('TrajetService', () => {
 
     it('should retrieve my trajets via GET', () => {
         const dummyTrajets: Trajet[] = [
-            { villeDepart: 'Paris', villeArrivee: 'Lyon', dateHeureDepart: '2025-05-01T10:00', placesDisponibles: 2 }
+            {
+                villeDepart: 'Paris', villeArrivee: 'Lyon', dateHeureDepart: '2025-05-01T10:00', placesDisponibles: 2,
+                distanceKm: 0,
+                dureeEstimee: ""
+            }
         ];
 
         service.getMyTrajets().subscribe(trajets => {
@@ -57,5 +62,4 @@ describe('TrajetService', () => {
         expect(req.request.method).toBe('GET');
         req.flush(dummyTrajets);
     });
-
 });

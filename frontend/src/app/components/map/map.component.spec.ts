@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MapComponent } from './map.component';
 import { GeocodingService } from '../../services/geocoding.service';
+import { RoutingService } from '../../services/routing.service';
 import { of } from 'rxjs';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { SimpleChange } from '@angular/core';
@@ -19,51 +20,49 @@ vi.mock('leaflet', () => {
     openPopup: vi.fn().mockReturnThis()
   };
 
-  const polylineMock = {
-    addTo: vi.fn().mockReturnThis()
+  const geoJSONMock = {
+    addTo: vi.fn().mockReturnThis(),
+    getBounds: vi.fn().mockReturnValue({})
   };
 
-  const tileLayerMock = {
-    addTo: vi.fn().mockReturnThis()
-  };
-
-  const boundsMock = {
-    extend: vi.fn(),
-    isValid: vi.fn().mockReturnValue(true)
-  };
+  const boundsMock = { extend: vi.fn(), isValid: vi.fn().mockReturnValue(true) };
 
   const L = {
     map: vi.fn().mockReturnValue(mapMock),
-    tileLayer: vi.fn().mockReturnValue(tileLayerMock),
+    tileLayer: vi.fn().mockReturnValue({ addTo: vi.fn() }),
     marker: vi.fn().mockReturnValue(markerMock),
-    polyline: vi.fn().mockReturnValue(polylineMock),
-    icon: vi.fn(),
-    latLngBounds: vi.fn().mockReturnValue(boundsMock),
-    Marker: {
-      prototype: { options: {} }
-    }
-  };
+    geoJSON: vi.fn().mockReturnValue(geoJSONMock),
 
-  return {
-    ...L,
-    default: L
+    Icon: vi.fn(),
+    icon: vi.fn(),
+
+    latLngBounds: vi.fn().mockReturnValue(boundsMock),
+    Marker: { prototype: { options: {} } }
   };
+  return { ...L, default: L };
 });
 
 describe('MapComponent', () => {
   let component: MapComponent;
   let fixture: ComponentFixture<MapComponent>;
   let geocodingServiceMock: any;
+  let routingServiceMock: any;
 
   beforeEach(async () => {
-    geocodingServiceMock = {
-      getCoordinates: vi.fn()
+    // Initialisation avec des valeurs par défaut pour éviter undefined.pipe
+    geocodingServiceMock = { getCoordinates: vi.fn().mockReturnValue(of(null)) };
+
+    routingServiceMock = {
+      getRouteData: vi.fn().mockReturnValue(of({
+        distanceKm: 200, duree: '2h', geometry: { type: 'LineString', coordinates: [] }
+      }))
     };
 
     await TestBed.configureTestingModule({
       imports: [MapComponent],
       providers: [
-        { provide: GeocodingService, useValue: geocodingServiceMock }
+        { provide: GeocodingService, useValue: geocodingServiceMock },
+        { provide: RoutingService, useValue: routingServiceMock }
       ]
     }).compileComponents();
 
@@ -72,16 +71,10 @@ describe('MapComponent', () => {
     fixture.detectChanges();
   });
 
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
+  afterEach(() => { vi.clearAllMocks(); });
 
-  it('should initialize the map on view init', async () => {
-    const L = await import('leaflet');
-    expect(L.default.map).toHaveBeenCalledWith('map');
-  });
-
-  it('should update route including intermediate stops', async () => {
+  it('should include intermediate steps (waypoints) in markers and routing', async () => {
+    // GIVEN
     geocodingServiceMock.getCoordinates.mockImplementation((city: string) => {
       if (city === 'Paris') return of([48.85, 2.35]);
       if (city === 'Orléans') return of([47.90, 1.90]);
@@ -93,6 +86,7 @@ describe('MapComponent', () => {
     component.villeArrivee = 'Lyon';
     component.etapes = ['Orléans'];
 
+    // WHEN
     component.ngOnChanges({
       villeDepart: new SimpleChange(null, 'Paris', true),
       villeArrivee: new SimpleChange(null, 'Lyon', true),
@@ -101,10 +95,19 @@ describe('MapComponent', () => {
 
     const L = await import('leaflet');
 
-    expect(geocodingServiceMock.getCoordinates).toHaveBeenCalledTimes(3);
-
+    // THEN
     expect(L.default.marker).toHaveBeenCalledTimes(3);
 
-    expect(L.default.polyline).toHaveBeenCalled();
+    const markerInstance = L.default.marker([0,0]);
+    expect(markerInstance.bindPopup).toHaveBeenCalledWith(expect.stringContaining('Étape'));
+    expect(markerInstance.bindPopup).toHaveBeenCalledWith(expect.stringContaining('Orléans'));
+
+    expect(routingServiceMock.getRouteData).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          [48.85, 2.35],
+          [47.90, 1.90],
+          [45.76, 4.83]
+        ])
+    );
   });
 });

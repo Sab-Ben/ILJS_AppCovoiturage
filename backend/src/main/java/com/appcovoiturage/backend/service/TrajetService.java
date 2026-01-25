@@ -25,10 +25,15 @@ public class TrajetService {
         Trajet trajet = Trajet.builder()
                 .villeDepart(dto.getVilleDepart())
                 .villeArrivee(dto.getVilleArrivee())
+                .etapes(dto.getEtapes())
                 .dateHeureDepart(dto.getDateHeureDepart())
                 .placesDisponibles(dto.getPlacesDisponibles())
                 .distanceKm(dto.getDistanceKm())
                 .dureeEstimee(dto.getDureeEstimee())
+                .latitudeDepart(dto.getLatitudeDepart())
+                .longitudeDepart(dto.getLongitudeDepart())
+                .latitudeArrivee(dto.getLatitudeArrivee())
+                .longitudeArrivee(dto.getLongitudeArrivee())
                 .conducteur(conducteur)
                 .build();
 
