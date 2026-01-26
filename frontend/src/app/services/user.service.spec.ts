@@ -27,7 +27,7 @@ describe('UserService', () => {
     });
 
     it('devrait récupérer le profil (GET)', () => {
-        const dummyUser: User = { id: 1, firstname: 'Test', lastname: 'User', email: 'test@test.com', role: Role.DRIVER };
+        const dummyUser: User = { id: 1, firstname: 'Test', lastname: 'User', email: 'test@test.com', role: Role.CONDUCTEUR };
 
         service.getMyProfile().subscribe(user => {
             expect(user).toEqual(dummyUser);

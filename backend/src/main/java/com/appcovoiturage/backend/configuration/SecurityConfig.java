@@ -30,8 +30,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/trajets/**").hasAuthority("DRIVER")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/trajets/**").hasAuthority("DRIVER")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/trajets/**").hasAuthority("CONDUCTEUR")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/trajets/**").hasAuthority("CONDUCTEUR")
                         .requestMatchers("/api/v1/users/**").authenticated()
                         .anyRequest().authenticated()
                 )

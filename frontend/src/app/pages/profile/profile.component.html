@@ -40,13 +40,13 @@
         <p class="success" *ngIf="successMessage">{{ successMessage }}</p>
     </div>
 
-    <div class="actions-container" *ngIf="user.role === 'DRIVER'">
+    <div class="actions-container" *ngIf="user.role === 'CONDUCTEUR'">
         <button routerLink="/create-ride" class="btn-primary-action">
             Créer un trajet
         </button>
     </div>
 
-    <a routerLink="/my-rides" *ngIf="user.role === 'DRIVER'">Voir mes trajets</a>
+    <a routerLink="/my-rides" *ngIf="user.role === 'CONDUCTEUR'">Voir mes trajets</a>
 
     <button class="logout-btn" (click)="logout()" i18n="@@logoutBtn">Se déconnecter</button>
 </div>
