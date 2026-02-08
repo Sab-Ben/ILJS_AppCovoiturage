@@ -1,9 +1,16 @@
 <div class="container mt-4">
-    <div class="mb-3">
-        <a routerLink="/profile" class="btn-back">⬅ Retour au profil</a>
-    </div>
+    <div class="page-header">
+        <h2 class="page-title">Mes trajets publiés</h2>
 
-    <h2>Mes trajets publiés</h2>
+        <div class="header-actions">
+            <a routerLink="/profile" class="btn-back-custom">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                </svg>
+                <span>Retour au profil</span>
+            </a>
+        </div>
+    </div>
 
     <div class="row">
         <div class="col-md-6">
@@ -66,7 +73,7 @@
                         <span *ngIf="selectedTrajet">
                             Trajet : {{ selectedTrajet.villeDepart }} - {{ selectedTrajet.villeArrivee }}
                         </span>
-                        <span *ngIf="!selectedTrajet">Sélectionnez un trajet pour voir la carte</span>
+                        <span *ngIf="!selectedTrajet">Sélectionnez un trajet pour voir sur la carte</span>
                     </div>
                     <div class="card-body p-0">
                         <app-map

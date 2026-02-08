@@ -6,6 +6,7 @@ import {
     BrowserDynamicTestingModule,
     platformBrowserDynamicTesting,
 } from '@angular/platform-browser-dynamic/testing';
+import { vi } from 'vitest';
 
 getTestBed().initTestEnvironment(
     BrowserDynamicTestingModule,
@@ -32,4 +33,18 @@ const mockLocalStorage = (() => {
 
 Object.defineProperty(window, 'localStorage', {
     value: mockLocalStorage,
+});
+
+Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: vi.fn().mockImplementation((query) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+    })),
 });

@@ -1,5 +1,16 @@
 <div *ngIf="user" class="profile-container">
-    <h1 i18n="@@mySpaceHeader">Mon Espace</h1>
+    <div class="header-row">
+        <h1 i18n="@@mySpaceHeader">Mon Espace</h1>
+
+        <div class="top-actions" *ngIf="user.role === 'CONDUCTEUR'">
+            <button routerLink="/create-ride" class="btn-create">
+                <span class="icon">+</span> Créer un trajet
+            </button>
+            <button routerLink="/my-rides" class="btn-view">
+                Voir mes trajets
+            </button>
+        </div>
+    </div>
 
     <div class="card points-card">
         <h2 i18n="@@pointsBalanceHeader">💰 Solde de points</h2>
@@ -14,7 +25,10 @@
             <p><strong i18n="@@lastNameLabel">Nom :</strong> {{ user.lastname }}</p>
             <p><strong i18n="@@emailLabel">Email :</strong> {{ user.email }}</p>
             <p><strong i18n="@@roleLabel">Statut :</strong> {{ user.role }}</p>
-            <button (click)="isEditing = true" i18n="@@editProfileBtn">Modifier mon profil</button>
+
+            <button (click)="isEditing = true" class="btn-edit" i18n="@@editProfileBtn">
+                Modifier mon profil
+            </button>
         </div>
 
         <div *ngIf="isEditing">
@@ -30,23 +44,17 @@
                 <span i18n="@@roleLabel">Statut :</span>
             </label>
             <select [(ngModel)]="user.role" name="role">
-                <option *ngFor="let r of roles" [value]="r">
-                    {{ r }} </option>
+                <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
             </select>
-            <button (click)="saveProfile()" i18n="@@saveBtn">Enregistrer</button>
-            <button (click)="isEditing = false" i18n="@@cancelBtn">Annuler</button>
+
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button (click)="saveProfile()" class="btn-create" style="margin:0">Enregistrer</button>
+                <button (click)="isEditing = false" class="btn-cancel" style="margin:0">Annuler</button>
+            </div>
         </div>
 
         <p class="success" *ngIf="successMessage">{{ successMessage }}</p>
     </div>
-
-    <div class="actions-container" *ngIf="user.role === 'CONDUCTEUR'">
-        <button routerLink="/create-ride" class="btn-primary-action">
-            Créer un trajet
-        </button>
-    </div>
-
-    <a routerLink="/my-rides" *ngIf="user.role === 'CONDUCTEUR'">Voir mes trajets</a>
 
     <button class="logout-btn" (click)="logout()" i18n="@@logoutBtn">Se déconnecter</button>
 </div>
