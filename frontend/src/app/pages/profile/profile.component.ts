@@ -11,7 +11,8 @@ import {RouterLink} from "@angular/router";
   selector: 'app-profile',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
-  templateUrl: './profile.component.html'
+  templateUrl: './profile.component.html',
+  styleUrl: './profile.component.scss'
 })
 export class ProfileComponent implements OnInit {
   user: User | undefined;

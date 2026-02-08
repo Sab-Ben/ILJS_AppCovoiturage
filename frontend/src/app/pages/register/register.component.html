@@ -2,11 +2,12 @@
     <h2 i18n="@@createAccountHeader">Créer un compte</h2>
 
     <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
-        <div *ngIf="errorMessage" style="color: red; margin-bottom: 10px; font-weight: bold;">
+
+        <div *ngIf="errorMessage" class="alert error">
             {{ errorMessage }}
         </div>
 
-        <div *ngIf="successMessage" style="color: green; margin-bottom: 15px; padding: 10px; background-color: #e6ffe6; border: 1px solid green; border-radius: 4px; font-weight: bold;">
+        <div *ngIf="successMessage" class="alert success">
             {{ successMessage }}
         </div>
 
@@ -19,7 +20,8 @@
                     [(ngModel)]="user.firstname"
                     required
                     placeholder="Votre prénom"
-                    i18n-placeholder="@@firstNamePlaceholder"> </div>
+                    i18n-placeholder="@@firstNamePlaceholder">
+        </div>
 
         <div class="form-group">
             <label for="lastname" i18n="@@lastNameLabel">Nom</label>
@@ -65,6 +67,6 @@
 
     <p>
         <span i18n="@@alreadyAccountQuestion">Déjà un compte ?</span>
-        <a routerLink="/login" i18n="@@loginLink">Se connecter</a>
+        &nbsp;<a routerLink="/login" i18n="@@loginLink">Se connecter</a>
     </p>
 </div>

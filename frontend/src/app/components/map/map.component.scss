@@ -1,0 +1,12 @@
+.map-container {
+  height: 500px; /* Hauteur fixe pour donner de l'espace */
+  width: 100%;
+  border-radius: 12px; /* Arrondi les angles */
+  z-index: 1;
+  background-color: #e5e7eb; /* Couleur de fond pendant le chargement */
+
+  // Correction pour Leaflet en Dark Mode
+  :host-context(.dark) & {
+    filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+  }
+}

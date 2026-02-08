@@ -5,6 +5,10 @@ import { GeocodingService } from '../../services/geocoding.service';
 import { RoutingService } from '../../services/routing.service';
 import { forkJoin, of, switchMap, map } from 'rxjs';
 
+// Constantes pour le centrage sur la France
+const FRANCE_COORDS: [number, number] = [46.603354, 1.888334];
+const FRANCE_ZOOM = 6;
+
 @Component({
   selector: 'app-map',
   standalone: true,
@@ -24,8 +28,7 @@ export class MapComponent implements AfterViewInit, OnChanges {
   private markers: L.Marker[] = [];
   private routeLayer: L.Layer | undefined;
 
-
-  // Départ : Vert
+  // --- Icônes personnalisées ---
   private startIcon = new L.Icon({
     iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -35,7 +38,6 @@ export class MapComponent implements AfterViewInit, OnChanges {
     shadowSize: [41, 41]
   });
 
-  // Arrivée : Rouge
   private endIcon = new L.Icon({
     iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -45,7 +47,6 @@ export class MapComponent implements AfterViewInit, OnChanges {
     shadowSize: [41, 41]
   });
 
-  // Étapes : Or
   private stepIcon = new L.Icon({
     iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -65,6 +66,7 @@ export class MapComponent implements AfterViewInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    // On met à jour la route uniquement si la carte est prête et qu'il y a des changements pertinents
     if (this.map && (
         changes['villeDepart'] || changes['villeArrivee'] || changes['etapes'] ||
         changes['coordsDepart'] || changes['coordsArrivee']
@@ -74,20 +76,37 @@ export class MapComponent implements AfterViewInit, OnChanges {
   }
 
   private initMap(): void {
-    this.map = L.map('map').setView([46.603354, 1.888334], 6);
+    // Si la carte existe déjà, on ne la recrée pas
+    if (this.map) return;
+
+    // Initialisation centrée sur la France avec le Zoom 6
+    this.map = L.map('map', {
+      center: FRANCE_COORDS,
+      zoom: FRANCE_ZOOM
+    });
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(this.map);
-    this.updateRoute();
+
+    // On lance le calcul d'itinéraire seulement si on a déjà des données au chargement
+    if (this.villeDepart || this.coordsDepart) {
+      this.updateRoute();
+    }
   }
 
   private updateRoute(): void {
-    console.log('UpdateRoute - Etapes reçues:', this.etapes);
     if (!this.map) return;
 
+    // Nettoyage des anciens marqueurs/routes
     this.markers.forEach(m => this.map?.removeLayer(m));
     this.markers = [];
     if (this.routeLayer) this.map.removeLayer(this.routeLayer);
+
+    // Si pas de point de départ ni d'arrivée, on arrête là (la carte reste sur la France)
+    if ((!this.villeDepart && !this.coordsDepart) && (!this.villeArrivee && !this.coordsArrivee)) {
+      return;
+    }
 
     const pointsConfig = [
       { type: 'DEPART', nom: this.villeDepart, coords: this.coordsDepart },
@@ -127,6 +146,7 @@ export class MapComponent implements AfterViewInit, OnChanges {
             style: { color: '#007bff', weight: 5, opacity: 0.7 }
           }).addTo(this.map);
 
+          // Zoom automatique pour englober tout le trajet
           // @ts-ignore
           if (this.routeLayer.getBounds) {
             // @ts-ignore
@@ -144,19 +164,18 @@ export class MapComponent implements AfterViewInit, OnChanges {
       let iconToUse: L.Icon;
       let zIndex = 0;
 
-      // SELECTION DE L'ICÔNE, DU LABEL ET DE LA PRIORITÉ
       if (point.type === 'DEPART') {
         label = `<strong>Départ 🏁</strong><br>${point.nom}`;
-        iconToUse = this.startIcon; // Vert
+        iconToUse = this.startIcon;
         zIndex = 1000;
       } else if (point.type === 'ARRIVEE') {
         label = `<strong>Arrivée 🏁</strong><br>${point.nom}`;
-        iconToUse = this.endIcon;   // Rouge
+        iconToUse = this.endIcon;
         zIndex = 1000;
       } else {
         label = `<strong>Étape ☕</strong><br>${point.nom}`;
-        iconToUse = this.stepIcon;  // Or
-        zIndex = 500; //
+        iconToUse = this.stepIcon;
+        zIndex = 500;
       }
 
       const marker = L.marker(point.latLng, {
