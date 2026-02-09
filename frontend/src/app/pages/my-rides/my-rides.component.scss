@@ -1,7 +1,11 @@
+@use 'mixins' as *;
+@use 'variables' as *;
+@use 'sass:color';
+
 .page-header {
   position: relative;
   display: flex;
-  justify-content: center; // Centre le titre
+  justify-content: center;
   align-items: center;
   margin-bottom: 3rem;
   padding-top: 1rem;
@@ -10,16 +14,16 @@
 .page-title {
   font-size: 2.5rem;
   font-weight: 800;
-  color: #1f2937;
+  color: $text-main;
   text-align: center;
   margin: 0;
 
-  background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+  background: linear-gradient(135deg, $primary 0%, #9333ea 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 
-  :host-context(.dark) & {
-    background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
+  @include dark-mode {
+    background: linear-gradient(135deg, $primary-dark-mode 0%, #c084fc 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
@@ -30,11 +34,10 @@
   right: 0;
   top: 50%;
   transform: translateY(-50%);
-}
-.container {
-  padding: 2rem 1rem;
+  margin-bottom: 1.5rem;
 }
 
+.container { padding: 2rem 1rem; }
 
 .rides-list {
   display: grid;
@@ -43,34 +46,24 @@
 }
 
 .card {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  @include card-style;
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
   overflow: hidden;
   cursor: pointer;
 
-  :host-context(.dark) & {
-    background: #1e293b;
-    border-color: #334155;
-    color: #cbd5e1;
-  }
-
   &:hover, &.border-primary {
-    border-color: #4f46e5;
+    border-color: $primary;
     transform: translateY(-3px);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   }
 
-  .card-body {
-    padding: 1.25rem;
-  }
+  .card-body { padding: 1.25rem; }
 
   .card-title {
     font-size: 1.1rem;
     margin-bottom: 1rem;
-    color: #1f2937;
-    :host-context(.dark) & { color: white; }
+    color: $text-main;
+    @include dark-mode { color: white; }
 
     .badge {
       font-size: 0.75rem;
@@ -82,10 +75,9 @@
   .card-text {
     font-size: 0.9rem;
     line-height: 1.6;
-    color: #4b5563;
-    :host-context(.dark) & { color: #94a3b8; }
+    color: $text-muted;
+    @include dark-mode { color: $text-muted-dark; }
   }
-
 
   .d-flex {
     margin-top: 1rem;
@@ -99,15 +91,10 @@
   }
 }
 
-
 .sticky-top {
   position: sticky;
   top: 80px !important;
   z-index: 10;
-}
-
-.header-actions {
-  margin-bottom: 1.5rem;
 }
 
 .btn-back-custom {
@@ -116,8 +103,8 @@
   gap: 0.75rem;
   padding: 0.6rem 1.25rem;
   background-color: #ffffff;
-  color: #4b5563;
-  border: 1px solid #e5e7eb;
+  color: $text-muted;
+  border: 1px solid $border-light;
   border-radius: 9999px;
   font-weight: 600;
   font-size: 0.95rem;
@@ -131,27 +118,23 @@
     transition: transform 0.2s;
   }
 
-
   &:hover {
-    color: #4f46e5;
-    border-color: #4f46e5;
-    background-color: #eef2ff;
-    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.1);
-
-    svg {
-      transform: translateX(-4px);
-    }
+    color: $primary;
+    border-color: $primary;
+    background-color: lighten($primary, 45%); // eef2ff
+    box-shadow: 0 4px 6px -1px rgba($primary, 0.1);
+    svg { transform: translateX(-4px); }
   }
 
-  :host-context(.dark) & {
-    background-color: #1e293b;
-    border-color: #334155;
-    color: #cbd5e1;
+  @include dark-mode {
+    background-color: $bg-dark;
+    border-color: $border-dark;
+    color: $text-muted-dark;
 
     &:hover {
-      border-color: #818cf8;
-      color: #818cf8;
-      background-color: rgba(79, 70, 229, 0.2);
+      border-color: $primary-dark-mode;
+      color: $primary-dark-mode;
+      background-color: rgba($primary, 0.2);
     }
   }
 }

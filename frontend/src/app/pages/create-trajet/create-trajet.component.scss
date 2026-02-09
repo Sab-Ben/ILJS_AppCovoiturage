@@ -1,61 +1,38 @@
-$primary: #4f46e5; // Indigo par défaut
-
-// Si tu veux le bouton "Créer" en vert comme demandé précédemment,
-// tu peux changer la variable ou créer une classe spécifique plus bas.
-$success: #10b981;
+@use 'mixins' as *;
+@use 'variables' as *;
+@use 'sass:color';
 
 :host {
   display: block;
-  /* Pour centrer le contenu si nécessaire */
   padding: 1rem;
 }
 
 .container {
+  @include card-style;
   max-width: 600px;
   margin: 2rem auto;
   padding: 2.5rem;
-  border-radius: 16px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-
-  // --- MODE CLAIR (Défaut) ---
-  background: white;
-  color: #1f2937;
-
-  // --- MODE SOMBRE ---
-  :host-context(.dark) & {
-    background: #1e293b; /* Slate 800 */
-    color: #f8fafc;       /* Texte blanc */
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-    border: 1px solid #334155;
-  }
 }
 
 h2 {
   font-weight: 800;
   margin-bottom: 2rem;
   text-align: center;
-
-  // Clair
   color: #111827;
-  // Sombre
-  :host-context(.dark) & { color: #818cf8; } /* Indigo clair */
+  @include dark-mode { color: $primary-dark-mode; }
 }
 
 .mb-3 { margin-bottom: 1.5rem; }
 .p-3 { padding: 1rem; }
 
-// Zone "Étapes intermédiaires"
 .bg-light {
   border-radius: 8px;
+  background-color: $bg-app;
+  border: 1px solid $border-light;
 
-  // Clair
-  background-color: #f9fafb;
-  border: 1px solid #f3f4f6;
-
-  // Sombre
-  :host-context(.dark) & {
-    background-color: #0f172a; /* Slate 900 (plus foncé que la carte) */
-    border-color: #334155;
+  @include dark-mode {
+    background-color: $bg-dark-app;
+    border-color: $border-dark;
   }
 }
 
@@ -63,104 +40,52 @@ h2 {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 600;
-
-  // Clair
   color: #374151;
-  // Sombre
-  :host-context(.dark) & { color: #cbd5e1; }
+  @include dark-mode { color: $text-dark; }
 }
 
 .form-control {
-  display: block;
-  width: 100%;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  line-height: 1.5;
-  border-radius: 0.5rem;
-  box-sizing: border-box;
-
-  // Clair
-  color: #1f2937;
-  background-color: #fff;
-  border: 1px solid #d1d5db;
-
-  &:focus {
-    border-color: $primary;
-    outline: 0;
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.25);
-  }
-
-
-  :host-context(.dark) & {
-    background-color: #334155;
-    border-color: #475569;
-    color: #ffffff !important;
-
-    &::placeholder {
-      color: #94a3b8;
-    }
-
-    &:focus {
-      border-color: #818cf8;
-      box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.25);
-    }
-  }
+  @include input-style; // Gère tout le style input + focus + dark mode
 }
 
 .d-flex { display: flex; align-items: center; }
 .me-2 { margin-right: 0.5rem; }
 
 .btn {
-  display: inline-block;
-  font-weight: 600;
-  text-align: center;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  border: 1px solid transparent;
-  cursor: pointer;
   width: 100%;
+  // Les styles de base sont gérés par les classes spécifiques ci-dessous
 }
 
-
 .btn-primary {
-  background-color: $success;
-  border-color: $success;
-  color: white;
-
+  @include btn-primary;
+  background-color: $success; // Surcharge en vert comme demandé
   &:hover { background-color: darken($success, 5%); }
-  &:disabled { background-color: #9ca3af; border-color: #9ca3af; cursor: not-allowed; }
 }
 
 .btn-outline-danger {
+  @include btn-color(white, $danger); // Utilise le fond blanc et texte rouge
+  border-color: $danger;
   width: auto;
   padding: 0.5rem 1rem;
 
-  background: white;
-  color: #ef4444;
-  border-color: #ef4444;
+  &:hover { background: lighten($danger, 42%); } // fee2e2
 
-  &:hover { background: #fee2e2; }
-
-  :host-context(.dark) & {
+  @include dark-mode {
     background: transparent;
-    color: #f87171;
-    border-color: #f87171;
-    &:hover { background: rgba(239, 68, 68, 0.1); }
+    color: lighten($danger, 10%);
+    border-color: lighten($danger, 10%);
+    &:hover { background: rgba($danger, 0.1); }
   }
 }
 
 .btn-secondary {
+  @include btn-color($text-muted);
   font-size: 0.875rem;
   padding: 0.5rem;
   width: auto;
-
-  background: #6b7280;
-  color: white;
-
-  &:hover { background-color: darken(#6b7280, 10%); }
 }
 
 .text-danger {
-  color: #dc2626;
-  :host-context(.dark) & { color: #fca5a5; }
+  color: $danger;
+  @include dark-mode { color: lighten($danger, 15%); }
 }

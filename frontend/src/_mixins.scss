@@ -1,0 +1,105 @@
+@use 'sass:color';
+@use 'variables' as *;
+
+@mixin dark-mode {
+  :host-context(.dark) & {
+    @content;
+  }
+}
+
+@mixin card-style {
+  background-color: $bg-light;
+  border: 1px solid $border-light;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  color: $text-main;
+
+  @include dark-mode {
+    background-color: $bg-dark;
+    border-color: $border-dark;
+    color: $text-dark;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  }
+}
+
+@mixin input-style {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s;
+  box-sizing: border-box;
+  background-color: #fff;
+  border: 1px solid #d1d5db;
+  color: $text-main;
+
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    box-shadow: 0 0 0 3px color.change($primary, $alpha: 0.2);
+  }
+
+  @include dark-mode {
+    background-color: $border-dark;
+    border-color: #475569;
+    color: #ffffff !important;
+
+    &::placeholder {
+      color: $text-muted-dark;
+    }
+
+    &:focus {
+      border-color: $primary-dark-mode;
+    }
+  }
+}
+
+@mixin btn-primary {
+  background-color: $primary;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+
+  &:hover {
+    background-color: color.adjust($primary, $lightness: -5%);
+  }
+
+  &:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+  }
+}
+
+@mixin link-primary {
+  color: $primary;
+  font-weight: 700;
+  text-decoration: none;
+
+  @include dark-mode { color: $primary-dark-mode; }
+  &:hover { text-decoration: underline; }
+}
+
+@mixin btn-color($bg-color, $text-color: white) {
+  background-color: $bg-color;
+  color: $text-color;
+  border: 1px solid transparent;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: inline-block;
+  text-decoration: none;
+  text-align: center;
+
+  &:hover {
+    background-color: color.adjust($bg-color, $lightness: -5%);
+  }
+}

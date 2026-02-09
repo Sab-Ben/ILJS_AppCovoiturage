@@ -1,4 +1,6 @@
-$primary: #4f46e5;
+@use 'mixins' as *;
+@use 'variables' as *;
+@use 'sass:color';
 
 :host {
   display: flex;
@@ -9,22 +11,10 @@ $primary: #4f46e5;
 }
 
 .login-container {
+  @include card-style;
   width: 100%;
   max-width: 450px;
   padding: 2.5rem;
-  border-radius: 16px;
-
-  background-color: #ffffff;
-  color: #1f2937;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-
-  :host-context(.dark) & {
-    background-color: #1e293b;
-    border-color: #334155;
-    color: #f8fafc;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-  }
 
   h2 {
     text-align: center;
@@ -32,7 +22,7 @@ $primary: #4f46e5;
     font-size: 2rem;
     font-weight: 800;
     margin-bottom: 2rem;
-    :host-context(.dark) & { color: #818cf8; }
+    @include dark-mode { color: $primary-dark-mode; }
   }
 
   form {
@@ -51,73 +41,33 @@ $primary: #4f46e5;
       }
 
       input {
-        width: 100%;
-        padding: 0.75rem 1rem;
-        border-radius: 8px;
-        font-size: 1rem;
-        box-sizing: border-box;
-        transition: all 0.2s;
-
-        background-color: #fff;
-        border: 1px solid #d1d5db;
-        color: #1f2937;
-
-        &:focus {
-          outline: none;
-          border-color: $primary;
-          box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
-        }
-
-        :host-context(.dark) & {
-          background-color: #334155;
-          border-color: #475569;
-          color: #ffffff !important;
-
-          &::placeholder {
-            color: #94a3b8;
-          }
-        }
+        @include input-style;
       }
     }
 
     button[type="submit"] {
-      margin-top: 1rem;
+      @include btn-primary;
       width: 100%;
+      margin-top: 1rem;
       padding: 0.9rem;
-      background-color: $primary;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background-color 0.2s;
-
-      &:hover { background-color: darken($primary, 5%); }
     }
   }
 
   .error {
-    color: #ef4444;
-    background-color: #fee2e2;
+    color: $danger;
+    background-color: lighten($danger, 42%);
     padding: 0.75rem;
     border-radius: 6px;
     text-align: center;
-    border: 1px solid #fca5a5;
+    border: 1px solid lighten($danger, 30%);
   }
 
   p {
     margin-top: 1.5rem;
     text-align: center;
-    color: #6b7280;
-    :host-context(.dark) & { color: #94a3b8; }
+    color: $text-muted;
+    @include dark-mode { color: $text-muted-dark; }
 
-    a {
-      color: $primary;
-      font-weight: 700;
-      text-decoration: none;
-      :host-context(.dark) & { color: #818cf8; }
-      &:hover { text-decoration: underline; }
-    }
+    a { @include link-primary; }
   }
 }
