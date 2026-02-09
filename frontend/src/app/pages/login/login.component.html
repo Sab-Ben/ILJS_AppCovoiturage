@@ -1,6 +1,14 @@
 <div class="login-container">
     <h2 i18n="@@loginHeader">Connexion</h2>
 
+    <div *ngIf="errorMessage" class="alert error">
+        <span>{{ errorMessage }}</span>
+    </div>
+
+    <div *ngIf="successMessage" class="alert success">
+        <span>{{ successMessage }}</span>
+    </div>
+
     <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
         <div class="form-group">
             <label i18n="@@emailLabel">Email</label>
@@ -33,8 +41,6 @@
                 <small>Le mot de passe est requis.</small>
             </div>
         </div>
-
-        <p class="error global-error" *ngIf="errorMessage">{{ errorMessage }}</p>
 
         <button type="submit" [disabled]="loginForm.invalid" i18n="@@loginBtn">Se connecter</button>
     </form>

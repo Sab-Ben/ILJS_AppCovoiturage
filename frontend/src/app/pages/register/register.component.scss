@@ -53,25 +53,6 @@
     }
   }
 
-  .alert {
-    padding: 10px;
-    border-radius: 6px;
-    font-weight: bold;
-    margin-bottom: 10px;
-
-    &.error {
-      color: $danger;
-      background-color: lighten($danger, 42%);
-      border: 1px solid $danger;
-    }
-
-    &.success {
-      color: darken($success, 10%);
-      background-color: lighten($success, 48%);
-      border: 1px solid darken($success, 10%);
-    }
-  }
-
   p {
     margin-top: 1.5rem;
     text-align: center;
@@ -83,7 +64,7 @@
 }
 
 .error-msg {
-  color: #dc3545; /* Rouge standard */
+  color: #dc3545;
   font-size: 0.875em;
   margin-top: 0.25rem;
 
@@ -94,6 +75,6 @@
 
 input.invalid {
   border-color: #dc3545;
-  background-image: url("data:image/svg+xml,..."); /* Optionnel: icône d'erreur */
+  background-image: url("data:image/svg+xml,...");
   padding-right: calc(1.5em + 0.75rem);
 }

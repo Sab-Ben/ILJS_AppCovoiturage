@@ -13,6 +13,7 @@ import { Router, RouterModule } from '@angular/router';
 })
 export class LoginComponent {
   credentials = { email: '', password: '' };
+  successMessage = '';
   errorMessage = '';
 
   constructor(private authService: AuthService, private router: Router) {}
@@ -20,10 +21,14 @@ export class LoginComponent {
   onSubmit() {
     this.authService.login(this.credentials).subscribe({
       next: () => {
-        this.router.navigate(['/profile']);
+        this.successMessage = 'Connexion réussie ! Redirection en cours...';
+
+        setTimeout(() => {
+          this.router.navigate(['/profile']);
+        }, 1500);
       },
       error: (err) => {
-        this.errorMessage = 'Identifiants invalides';
+        this.errorMessage = 'Identifiants invalides ou erreur de connexion.';
       }
     });
   }

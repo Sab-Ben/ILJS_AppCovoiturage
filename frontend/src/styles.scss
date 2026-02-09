@@ -1,5 +1,6 @@
 @import 'leaflet/dist/leaflet.css';
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import "variables";
 
 @tailwind base;
 @tailwind components;
@@ -23,8 +24,39 @@ input, select, textarea {
   color: #1f2937 !important;
 }
 
+.alert {
+  padding: 10px;
+  border-radius: 6px;
+  font-weight: bold;
+  margin-bottom: 10px;
+
+  &.error {
+    color: $danger;
+    background-color: lighten($danger, 42%);
+    border: 1px solid $danger;
+  }
+
+  &.success {
+    color: darken($success, 10%);
+    background-color: lighten($success, 48%);
+    border: 1px solid darken($success, 10%);
+  }
+}
+
 /* Scrollbar jolie */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: #f1f1f1; }
-::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c7c7c7;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

@@ -44,6 +44,8 @@ export class CreateTrajetComponent implements OnInit {
   errorMsg: string = '';
   minDate: string = '';
   calculatingRoute = false;
+  successMessage = '';
+  errorMessage = '';
 
   constructor(
       private fb: FormBuilder,
@@ -136,7 +138,13 @@ export class CreateTrajetComponent implements OnInit {
         };
 
         this.trajetService.createTrajet(nouveauTrajet).subscribe({
-          next: () => this.router.navigate(['/my-rides']),
+          next: () => {
+            this.successMessage = 'Trajet créé avec succès ! Redirection en cours...';
+
+            setTimeout(() => {
+              this.router.navigate(['/my-rides']);
+            }, 1500)
+          },
           error: (err) => {
             console.error(err);
             this.errorMsg = 'Erreur lors de la sauvegarde du trajet.';

@@ -1,6 +1,14 @@
 <div class="container mt-4">
     <h2>Proposer un trajet</h2>
 
+    <div *ngIf="errorMessage" class="alert error">
+        <span>{{ errorMessage }}</span>
+    </div>
+
+    <div *ngIf="successMessage" class="alert success">
+        <span>{{ successMessage }}</span>
+    </div>
+
     <form [formGroup]="trajetForm" (ngSubmit)="onSubmit()">
 
         <div *ngIf="trajetForm.hasError('sameCity') && (trajetForm.get('villeDepart')?.touched || trajetForm.get('villeArrivee')?.touched)"
