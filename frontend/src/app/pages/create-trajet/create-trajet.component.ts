@@ -5,27 +5,23 @@ import { Router } from '@angular/router';
 import { TrajetService } from '../../services/trajet.service';
 import { RoutingService } from '../../services/routing.service';
 import { GeocodingService } from '../../services/geocoding.service';
-import { forkJoin, switchMap, map } from "rxjs";
+import { forkJoin, switchMap, map, Subject, debounceTime, distinctUntilChanged } from "rxjs";
 
-// --- Validateur Date ---
+// Validateur Date
 function futureDateValidator(control: AbstractControl): ValidationErrors | null {
   if (!control.value) return null;
   const inputDate = new Date(control.value);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   inputDate.setHours(0, 0, 0, 0);
-  if (inputDate <= today) {
-    return { 'pastDate': true };
-  }
+  if (inputDate <= today) return { 'pastDate': true };
   return null;
 }
 
-// --- NOUVEAU : Validateur Villes Identiques ---
+// Validateur Villes Identiques
 function differentCitiesValidator(group: AbstractControl): ValidationErrors | null {
   const depart = group.get('villeDepart')?.value;
   const arrivee = group.get('villeArrivee')?.value;
-
-  // On compare les villes en minuscules et sans espaces inutiles
   if (depart && arrivee && depart.trim().toLowerCase() === arrivee.trim().toLowerCase()) {
     return { sameCity: true };
   }
@@ -45,7 +41,11 @@ export class CreateTrajetComponent implements OnInit {
   minDate: string = '';
   calculatingRoute = false;
   successMessage = '';
-  errorMessage = '';
+
+  private searchTerms = new Subject<{ field: string, query: string, index?: number }>();
+  suggestionsDepart: any[] = [];
+  suggestionsArrivee: any[] = [];
+  suggestionsEtapes: { [key: number]: any[] } = {};
 
   constructor(
       private fb: FormBuilder,
@@ -61,13 +61,27 @@ export class CreateTrajetComponent implements OnInit {
       dateDepart: ['', [Validators.required, futureDateValidator]],
       heureDepart: ['', Validators.required],
       placesDisponibles: [1, [Validators.required, Validators.min(1), Validators.max(4)]]
-    }, { validators: differentCitiesValidator }); // <-- Ajout du validateur global ici
+    }, { validators: differentCitiesValidator });
   }
 
   ngOnInit(): void {
     const demain = new Date();
     demain.setDate(demain.getDate() + 1);
     this.minDate = demain.toISOString().split('T')[0];
+
+    this.searchTerms.pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((term) => this.geocodingService.searchAddresses(term.query).pipe(
+            map(results => ({ results, term }))
+        ))
+    ).subscribe({
+      next: ({ results, term }) => {
+        if (term.field === 'depart') this.suggestionsDepart = results;
+        else if (term.field === 'arrivee') this.suggestionsArrivee = results;
+        else if (term.field === 'etape' && term.index !== undefined) this.suggestionsEtapes[term.index] = results;
+      }
+    });
   }
 
   get etapesControls() {
@@ -80,40 +94,75 @@ export class CreateTrajetComponent implements OnInit {
 
   removeEtape(index: number) {
     this.etapesControls.removeAt(index);
+    delete this.suggestionsEtapes[index];
   }
 
+  onSearchInput(field: string, query: string, index?: number): void {
+    this.searchTerms.next({ field, query, index });
+  }
+
+  selectAddress(field: string, address: any, index?: number): void {
+    const val = address.label || address.display_name;
+
+    if (field === 'depart') {
+      this.trajetForm.patchValue({ villeDepart: val });
+      this.suggestionsDepart = [];
+    } else if (field === 'arrivee') {
+      this.trajetForm.patchValue({ villeArrivee: val });
+      this.suggestionsArrivee = [];
+    } else if (field === 'etape' && index !== undefined) {
+      this.etapesControls.at(index).setValue(val);
+      this.suggestionsEtapes[index] = [];
+    }
+  }
+
+  clearSuggestions() {
+    setTimeout(() => {
+      this.suggestionsDepart = [];
+      this.suggestionsArrivee = [];
+      this.suggestionsEtapes = {};
+    }, 200);
+  }
+
+  // --- Soumission ---
   onSubmit() {
     if (this.trajetForm.invalid) return;
 
     this.calculatingRoute = true;
-    this.errorMsg = ''; // Reset erreur
+    this.errorMsg = '';
     const formVal = this.trajetForm.value;
 
     const etapesNettoyees = formVal.etapes
         ? formVal.etapes.filter((e: string) => e && e.trim() !== '')
         : [];
 
-    const villes = [formVal.villeDepart, ...etapesNettoyees, formVal.villeArrivee];
+    const requests = [
+      { label: 'Ville de départ', address: formVal.villeDepart },
+      ...etapesNettoyees.map((e: string, index: number) => ({ label: `Étape ${index + 1}`, address: e })),
+      { label: 'Ville d\'arrivée', address: formVal.villeArrivee }
+    ];
 
-    const geocodingRequests = villes.map(v => this.geocodingService.getCoordinates(v));
+    const geocodingObservables = requests.map(req =>
+        this.geocodingService.getCoordinates(req.address).pipe(
+            map(coords => ({ ...req, coords }))
+        )
+    );
 
-    forkJoin(geocodingRequests).pipe(
-        switchMap(coords => {
-          const validCoords = coords.filter(c => c !== null) as number[][];
+    forkJoin(geocodingObservables).pipe(
+        switchMap(results => {
+          const invalidResults = results.filter(r => r.coords === null);
 
-          if (validCoords.length < 2) {
-            throw new Error('Impossible de trouver les coordonnées des villes.');
+          if (invalidResults.length > 0) {
+            const labels = invalidResults.map(r => r.label).join(', ');
+            throw new Error(`Adresse(s) introuvable(s) en France : ${labels}. Veuillez vérifier l'orthographe ou sélectionner une suggestion.`);
           }
 
+          const validCoords = results.map(r => r.coords) as number[][];
           const startCoords = validCoords[0];
           const endCoords = validCoords[validCoords.length - 1];
 
           return this.routingService.getRouteData(validCoords).pipe(
-              map(routeData => ({
-                routeData,
-                startCoords,
-                endCoords
-              }))
+              map(routeData => ({ routeData, startCoords, endCoords }))
           );
         })
     ).subscribe({
@@ -127,10 +176,8 @@ export class CreateTrajetComponent implements OnInit {
           etapes: etapesNettoyees,
           dateHeureDepart: dateHeure,
           placesDisponibles: formVal.placesDisponibles,
-
           distanceKm: routeData.distanceKm,
           dureeEstimee: routeData.duree,
-
           latitudeDepart: startCoords[0],
           longitudeDepart: startCoords[1],
           latitudeArrivee: endCoords[0],
@@ -139,11 +186,8 @@ export class CreateTrajetComponent implements OnInit {
 
         this.trajetService.createTrajet(nouveauTrajet).subscribe({
           next: () => {
-            this.successMessage = 'Trajet créé avec succès ! Redirection en cours...';
-
-            setTimeout(() => {
-              this.router.navigate(['/my-rides']);
-            }, 1500)
+            this.successMessage = 'Trajet créé avec succès ! Redirection...';
+            setTimeout(() => this.router.navigate(['/my-rides']), 1500);
           },
           error: (err) => {
             console.error(err);
@@ -154,7 +198,7 @@ export class CreateTrajetComponent implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.errorMsg = 'Impossible de calculer l\'itinéraire (vérifiez les noms des villes).';
+        this.errorMsg = err.message || 'Impossible de calculer l\'itinéraire.';
         this.calculatingRoute = false;
       }
     });
