@@ -5,9 +5,9 @@ import { Router } from '@angular/router';
 import { TrajetService } from '../../services/trajet.service';
 import { RoutingService } from '../../services/routing.service';
 import { GeocodingService } from '../../services/geocoding.service';
-import { forkJoin, switchMap, map } from "rxjs"; //
+import { forkJoin, switchMap, map } from "rxjs";
 
-// --- Définition du validateur ---
+// --- Validateur Date ---
 function futureDateValidator(control: AbstractControl): ValidationErrors | null {
   if (!control.value) return null;
   const inputDate = new Date(control.value);
@@ -19,7 +19,18 @@ function futureDateValidator(control: AbstractControl): ValidationErrors | null 
   }
   return null;
 }
-// -------------------------------
+
+// --- NOUVEAU : Validateur Villes Identiques ---
+function differentCitiesValidator(group: AbstractControl): ValidationErrors | null {
+  const depart = group.get('villeDepart')?.value;
+  const arrivee = group.get('villeArrivee')?.value;
+
+  // On compare les villes en minuscules et sans espaces inutiles
+  if (depart && arrivee && depart.trim().toLowerCase() === arrivee.trim().toLowerCase()) {
+    return { sameCity: true };
+  }
+  return null;
+}
 
 @Component({
   selector: 'app-create-trajet',
@@ -48,7 +59,7 @@ export class CreateTrajetComponent implements OnInit {
       dateDepart: ['', [Validators.required, futureDateValidator]],
       heureDepart: ['', Validators.required],
       placesDisponibles: [1, [Validators.required, Validators.min(1), Validators.max(4)]]
-    });
+    }, { validators: differentCitiesValidator }); // <-- Ajout du validateur global ici
   }
 
   ngOnInit(): void {
@@ -73,6 +84,7 @@ export class CreateTrajetComponent implements OnInit {
     if (this.trajetForm.invalid) return;
 
     this.calculatingRoute = true;
+    this.errorMsg = ''; // Reset erreur
     const formVal = this.trajetForm.value;
 
     const etapesNettoyees = formVal.etapes

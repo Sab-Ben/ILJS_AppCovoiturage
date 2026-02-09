@@ -8,7 +8,7 @@
 }
 
 .container {
-  @include card-style;
+  @include card-style; // Suppose que cela gère background, radius, shadow
   max-width: 600px;
   margin: 2rem auto;
   padding: 2.5rem;
@@ -22,17 +22,20 @@ h2 {
   @include dark-mode { color: $primary-dark-mode; }
 }
 
+/* Espacements */
 .mb-3 { margin-bottom: 1.5rem; }
 .p-3 { padding: 1rem; }
+.me-2 { margin-right: 0.5rem; }
 
+/* Zone Etapes */
 .bg-light {
   border-radius: 8px;
-  background-color: $bg-app;
-  border: 1px solid $border-light;
+  background-color: #f9fafb; // Fallback si variable manquante
+  border: 1px solid #e5e7eb;
 
   @include dark-mode {
-    background-color: $bg-dark-app;
-    border-color: $border-dark;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
   }
 }
 
@@ -41,51 +44,134 @@ h2 {
   margin-bottom: 0.5rem;
   font-weight: 600;
   color: #374151;
-  @include dark-mode { color: $text-dark; }
+  @include dark-mode { color: #e5e7eb; }
 }
 
+/* INPUTS */
 .form-control {
-  @include input-style; // Gère tout le style input + focus + dark mode
+  @include input-style; // Mixin existant
+  width: 100%;
+  box-sizing: border-box;
+
+  // Style spécifique en cas d'erreur
+  &.is-invalid {
+    border-color: $danger !important;
+    background-image: none; // Enlève icône bootstrap par défaut si présente
+
+    &:focus {
+      box-shadow: 0 0 0 3px rgba($danger, 0.2);
+    }
+  }
 }
 
-.d-flex { display: flex; align-items: center; }
-.me-2 { margin-right: 0.5rem; }
-
-.btn {
+/* Messages d'erreur sous les inputs */
+.invalid-feedback {
+  display: block; // Important car *ngIf gère la visibilité
   width: 100%;
-  // Les styles de base sont gérés par les classes spécifiques ci-dessous
+  margin-top: 0.25rem;
+  font-size: 0.875em;
+  color: $danger;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Grille Simple pour Date/Heure (Row/Col) */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -0.75rem;
+  margin-left: -0.75rem;
+}
+
+.col-md-6 {
+  flex: 0 0 auto;
+  width: 50%;
+  padding-right: 0.75rem;
+  padding-left: 0.75rem;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    width: 100%; // Stack sur mobile
+  }
+}
+
+.d-flex {
+  display: flex;
+  align-items: center;
+}
+
+/* Boutons */
+.btn {
+  display: inline-block;
+  font-weight: 500;
+  line-height: 1.5;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid transparent;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease-in-out;
 }
 
 .btn-primary {
   @include btn-primary;
-  background-color: $success; // Surcharge en vert comme demandé
-  &:hover { background-color: darken($success, 5%); }
+  background-color: $primary;
+  color: white;
+  width: 100%;
+
+  &:hover { opacity: 0.9; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
 }
 
 .btn-outline-danger {
-  @include btn-color(white, $danger); // Utilise le fond blanc et texte rouge
+  color: $danger;
   border-color: $danger;
-  width: auto;
-  padding: 0.5rem 1rem;
+  background: transparent;
+  padding: 0.375rem 0.75rem;
 
-  &:hover { background: lighten($danger, 42%); } // fee2e2
-
-  @include dark-mode {
-    background: transparent;
-    color: lighten($danger, 10%);
-    border-color: lighten($danger, 10%);
-    &:hover { background: rgba($danger, 0.1); }
+  &:hover {
+    color: #fff;
+    background-color: $danger;
   }
 }
 
 .btn-secondary {
-  @include btn-color($text-muted);
+  color: #6c757d;
+  background-color: transparent;
+  border: 1px dashed #6c757d;
   font-size: 0.875rem;
-  padding: 0.5rem;
   width: auto;
+
+  &:hover {
+    background-color: #6c757d;
+    color: white;
+  }
 }
 
-.text-danger {
-  color: $danger;
-  @include dark-mode { color: lighten($danger, 15%); }
+/* Alertes */
+.alert {
+  position: relative;
+  padding: 1rem 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
+}
+
+.alert-danger {
+  color: #842029;
+  background-color: #f8d7da;
+  border-color: #f5c2c7;
+}
+
+.alert-warning {
+  color: #664d03;
+  background-color: #fff3cd;
+  border-color: #ffecb5;
 }

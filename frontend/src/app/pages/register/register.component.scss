@@ -81,3 +81,19 @@
     a { @include link-primary; }
   }
 }
+
+.error-msg {
+  color: #dc3545; /* Rouge standard */
+  font-size: 0.875em;
+  margin-top: 0.25rem;
+
+  small {
+    display: block;
+  }
+}
+
+input.invalid {
+  border-color: #dc3545;
+  background-image: url("data:image/svg+xml,..."); /* Optionnel: icône d'erreur */
+  padding-right: calc(1.5em + 0.75rem);
+}

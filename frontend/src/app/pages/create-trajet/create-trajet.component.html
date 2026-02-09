@@ -3,9 +3,22 @@
 
     <form [formGroup]="trajetForm" (ngSubmit)="onSubmit()">
 
+        <div *ngIf="trajetForm.hasError('sameCity') && (trajetForm.get('villeDepart')?.touched || trajetForm.get('villeArrivee')?.touched)"
+             class="alert alert-warning">
+            La ville de départ et la ville d'arrivée ne peuvent pas être identiques.
+        </div>
+
         <div class="mb-3">
             <label class="form-label">Ville de départ</label>
-            <input type="text" class="form-control" formControlName="villeDepart" placeholder="Ex: Paris">
+            <input type="text"
+                   class="form-control"
+                   [class.is-invalid]="trajetForm.get('villeDepart')?.invalid && trajetForm.get('villeDepart')?.touched"
+                   formControlName="villeDepart"
+                   placeholder="Ex: Paris">
+
+            <div class="invalid-feedback" *ngIf="trajetForm.get('villeDepart')?.invalid && trajetForm.get('villeDepart')?.touched">
+                La ville de départ est requise.
+            </div>
         </div>
 
         <div class="mb-3 p-3 bg-light rounded">
@@ -13,12 +26,10 @@
 
             <div formArrayName="etapes">
                 <div *ngFor="let etape of etapesControls.controls; let i = index" class="d-flex mb-2">
-
                     <input type="text"
                            class="form-control me-2"
                            [formControlName]="i"
                            placeholder="Ville étape">
-
                     <button type="button" class="btn btn-outline-danger" (click)="removeEtape(i)">✕</button>
                 </div>
             </div>
@@ -27,9 +38,18 @@
                 + Ajouter une étape
             </button>
         </div>
+
         <div class="mb-3">
             <label class="form-label">Ville d'arrivée</label>
-            <input type="text" class="form-control" formControlName="villeArrivee" placeholder="Ex: Lyon">
+            <input type="text"
+                   class="form-control"
+                   [class.is-invalid]="trajetForm.get('villeArrivee')?.invalid && trajetForm.get('villeArrivee')?.touched"
+                   formControlName="villeArrivee"
+                   placeholder="Ex: Lyon">
+
+            <div class="invalid-feedback" *ngIf="trajetForm.get('villeArrivee')?.invalid && trajetForm.get('villeArrivee')?.touched">
+                La ville d'arrivée est requise.
+            </div>
         </div>
 
         <div class="row">
@@ -37,18 +57,26 @@
                 <label class="form-label">Date</label>
                 <input type="date"
                        class="form-control"
+                       [class.is-invalid]="trajetForm.get('dateDepart')?.invalid && trajetForm.get('dateDepart')?.touched"
                        formControlName="dateDepart"
                        [min]="minDate">
 
-                <div *ngIf="trajetForm.get('dateDepart')?.hasError('pastDate') && trajetForm.get('dateDepart')?.touched"
-                     class="text-danger small">
-                    La date doit être ultérieure à aujourd'hui.
+                <div class="invalid-feedback" *ngIf="trajetForm.get('dateDepart')?.invalid && trajetForm.get('dateDepart')?.touched">
+                    <span *ngIf="trajetForm.get('dateDepart')?.hasError('required')">La date est requise.</span>
+                    <span *ngIf="trajetForm.get('dateDepart')?.hasError('pastDate')">La date doit être ultérieure à aujourd'hui.</span>
                 </div>
             </div>
 
             <div class="col-md-6 mb-3">
                 <label class="form-label">Heure</label>
-                <input type="time" class="form-control" formControlName="heureDepart">
+                <input type="time"
+                       class="form-control"
+                       [class.is-invalid]="trajetForm.get('heureDepart')?.invalid && trajetForm.get('heureDepart')?.touched"
+                       formControlName="heureDepart">
+
+                <div class="invalid-feedback" *ngIf="trajetForm.get('heureDepart')?.invalid && trajetForm.get('heureDepart')?.touched">
+                    L'heure est requise.
+                </div>
             </div>
         </div>
 
@@ -56,25 +84,22 @@
             <label class="form-label">Places disponibles</label>
             <input type="number"
                    class="form-control"
+                   [class.is-invalid]="trajetForm.get('placesDisponibles')?.invalid && trajetForm.get('placesDisponibles')?.touched"
                    formControlName="placesDisponibles"
                    min="1"
                    max="4">
 
-            <div *ngIf="trajetForm.get('placesDisponibles')?.touched && trajetForm.get('placesDisponibles')?.invalid" class="text-danger small">
-                <div *ngIf="trajetForm.get('placesDisponibles')?.hasError('required')">
-                    Le nombre de places est requis.
-                </div>
-                <div *ngIf="trajetForm.get('placesDisponibles')?.hasError('min')">
-                    Minimum 1 place.
-                </div>
-                <div *ngIf="trajetForm.get('placesDisponibles')?.hasError('max')">
-                    Maximum 4 places autorisées.
-                </div>
+            <div class="invalid-feedback" *ngIf="trajetForm.get('placesDisponibles')?.touched && trajetForm.get('placesDisponibles')?.invalid">
+                <span *ngIf="trajetForm.get('placesDisponibles')?.hasError('required')">Le nombre de places est requis.</span>
+                <span *ngIf="trajetForm.get('placesDisponibles')?.hasError('min')">Minimum 1 place.</span>
+                <span *ngIf="trajetForm.get('placesDisponibles')?.hasError('max')">Maximum 4 places autorisées.</span>
             </div>
         </div>
 
         <div *ngIf="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
 
-        <button type="submit" class="btn btn-primary" [disabled]="trajetForm.invalid">Publier</button>
+        <button type="submit" class="btn btn-primary" [disabled]="trajetForm.invalid || calculatingRoute">
+            {{ calculatingRoute ? 'Calcul en cours...' : 'Publier' }}
+        </button>
     </form>
 </div>

@@ -1,20 +1,42 @@
 <div class="login-container">
     <h2 i18n="@@loginHeader">Connexion</h2>
 
-    <form (ngSubmit)="onSubmit()">
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
         <div class="form-group">
             <label i18n="@@emailLabel">Email</label>
-            <input type="email" [(ngModel)]="credentials.email" name="email" required placeholder="exemple@email.com">
+            <input type="email"
+                   [(ngModel)]="credentials.email"
+                   name="email"
+                   required
+                   email
+                   #email="ngModel"
+                   [class.invalid]="email.invalid && (email.dirty || email.touched)"
+                   placeholder="exemple@email.com">
+
+            <div *ngIf="email.invalid && (email.dirty || email.touched)" class="error-msg">
+                <small *ngIf="email.errors?.['required']">L'email est requis.</small>
+                <small *ngIf="email.errors?.['email']">Format d'email invalide.</small>
+            </div>
         </div>
 
         <div class="form-group">
             <label i18n="@@passwordLabel">Mot de passe</label>
-            <input type="password" [(ngModel)]="credentials.password" name="password" required placeholder="Votre mot de passe">
+            <input type="password"
+                   [(ngModel)]="credentials.password"
+                   name="password"
+                   required
+                   #password="ngModel"
+                   [class.invalid]="password.invalid && (password.dirty || password.touched)"
+                   placeholder="Votre mot de passe">
+
+            <div *ngIf="password.invalid && (password.dirty || password.touched)" class="error-msg">
+                <small>Le mot de passe est requis.</small>
+            </div>
         </div>
 
-        <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+        <p class="error global-error" *ngIf="errorMessage">{{ errorMessage }}</p>
 
-        <button type="submit" i18n="@@loginBtn">Se connecter</button>
+        <button type="submit" [disabled]="loginForm.invalid" i18n="@@loginBtn">Se connecter</button>
     </form>
 
     <p>
