@@ -1,75 +1,77 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { LoginComponent } from './login.component';
-import { AuthService } from '../../services/auth.service';
-import { Router, provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
-import { vi } from 'vitest';
-import { FormsModule } from '@angular/forms';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {LoginComponent} from './login.component';
+import {provideRouter, Router} from '@angular/router';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {FormsModule} from '@angular/forms';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {provideMockActions} from '@ngrx/effects/testing';
+import {Subject} from 'rxjs';
+import * as AuthActions from '../../store/authentification/authentification.actions';
 
 describe('LoginComponent', () => {
-  let component: LoginComponent;
-  let fixture: ComponentFixture<LoginComponent>;
-  let authServiceMock: any;
-  let router: Router;
+    let component: LoginComponent;
+    let fixture: ComponentFixture<LoginComponent>;
+    let store: MockStore;
+    let actions$: Subject<any>;
+    let router: Router;
 
-  beforeEach(async () => {
-    authServiceMock = {
-      login: vi.fn().mockReturnValue(of({ token: 'fake-token' }))
-    };
+    beforeEach(async () => {
+        actions$ = new Subject<any>();
 
-    await TestBed.configureTestingModule({
-      imports: [LoginComponent, FormsModule],
-      providers: [
-        { provide: AuthService, useValue: authServiceMock },
-        provideRouter([])
-      ]
-    }).compileComponents();
+        await TestBed.configureTestingModule({
+            imports: [LoginComponent, FormsModule],
+            providers: [
+                provideRouter([]),
+                provideMockStore(),
+                provideMockActions(() => actions$)
+            ]
+        }).compileComponents();
 
-    fixture = TestBed.createComponent(LoginComponent);
-    component = fixture.componentInstance;
+        fixture = TestBed.createComponent(LoginComponent);
+        component = fixture.componentInstance;
+        store = TestBed.inject(MockStore);
+        router = TestBed.inject(Router);
 
-    router = TestBed.inject(Router);
-    vi.spyOn(router, 'navigate');
+        vi.spyOn(store, 'dispatch');
+        vi.spyOn(router, 'navigate');
 
-    fixture.detectChanges();
-  });
+        fixture.detectChanges();
+    });
 
-  // Nettoyage après chaque test pour ne pas impacter les suivants
-  afterEach(() => {
-    vi.useRealTimers();
-  });
+    afterEach(() => {
+        vi.useRealTimers();
+    });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 
-  it('doit appeler le service login et rediriger vers /profile en cas de succès', () => {
-    // 1. On active les "Fake Timers" de Vitest
-    vi.useFakeTimers();
+    it('doit dispatcher login et rediriger vers /profile lors du succès', () => {
+        vi.useFakeTimers();
 
-    authServiceMock.login.mockReturnValue(of({ token: 'fake-token' }));
+        component.credentials.email = 'test@test.com';
+        component.credentials.password = 'Test1234!';
 
-    component.credentials.email = 'test@test.com';
-    component.credentials.password = 'Test1234!';
+        component.onSubmit();
 
-    component.onSubmit();
+        expect(store.dispatch).toHaveBeenCalledWith(
+            AuthActions.login({authRequest: {email: 'test@test.com', password: 'Test1234!'}})
+        );
 
-    // 2. On avance le temps de 1500ms (au lieu de tick(1500))
-    vi.advanceTimersByTime(1500);
+        actions$.next(AuthActions.loginSuccess({token: 'fake-token'}));
 
-    // 3. Vérifications
-    expect(authServiceMock.login).toHaveBeenCalledWith({ email: 'test@test.com', password: 'Test1234!' });
-    expect(router.navigate).toHaveBeenCalledWith(['/profile']);
-    expect(component.errorMessage).toBe('');
-  });
+        expect(component.successMessage).toContain('Connexion réussie');
 
-  it('doit afficher un message d\'erreur si le login échoue', () => {
-    authServiceMock.login.mockReturnValue(throwError(() => new Error('Auth failed')));
+        vi.advanceTimersByTime(1500);
+        expect(router.navigate).toHaveBeenCalledWith(['/profile']);
+    });
 
-    component.onSubmit();
+    it('doit afficher un message d\'erreur si le login échoue', () => {
+        component.onSubmit();
 
-    expect(authServiceMock.login).toHaveBeenCalled();
-    expect(router.navigate).not.toHaveBeenCalled();
-    expect(component.errorMessage).toBe('Identifiants invalides ou erreur de connexion.');
-  });
+        actions$.next(AuthActions.loginFailure({error: 'Unauthorized'}));
+
+        expect(router.navigate).not.toHaveBeenCalled();
+        expect(component.errorMessage).toBe('Identifiants invalides ou erreur de connexion.');
+    });
 });
