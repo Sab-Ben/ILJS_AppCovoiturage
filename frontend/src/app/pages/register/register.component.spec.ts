@@ -1,76 +1,84 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { RegisterComponent } from './register.component';
-import { AuthService } from '../../services/auth.service';
-import { Router, provideRouter } from '@angular/router'; // 👈 Import provideRouter
-import { of, throwError } from 'rxjs';
-import { vi } from 'vitest';
-import { FormsModule } from '@angular/forms';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {RegisterComponent} from './register.component';
+import {provideRouter, Router} from '@angular/router';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {FormsModule} from '@angular/forms';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {provideMockActions} from '@ngrx/effects/testing';
+import {Subject} from 'rxjs';
+import * as AuthActions from '../../store/authentification/authentification.actions';
 
 describe('RegisterComponent', () => {
-  let component: RegisterComponent;
-  let fixture: ComponentFixture<RegisterComponent>;
-  let authServiceMock: any;
-  let router: Router; // On utilisera le vrai type Router
+    let component: RegisterComponent;
+    let fixture: ComponentFixture<RegisterComponent>;
+    let store: MockStore;
+    let actions$: Subject<any>;
+    let router: Router;
 
-  beforeEach(async () => {
-    // Mock du AuthService
-    authServiceMock = {
-      register: vi.fn().mockReturnValue(of({}))
-    };
+    beforeEach(async () => {
+        actions$ = new Subject<any>();
 
-    await TestBed.configureTestingModule({
-      imports: [RegisterComponent, FormsModule],
-      providers: [
-        { provide: AuthService, useValue: authServiceMock },
-        // 👇 SOLUTION MAGIQUE : On fournit un vrai routeur vide
-        provideRouter([])
-      ]
-    }).compileComponents();
+        await TestBed.configureTestingModule({
+            imports: [RegisterComponent, FormsModule],
+            providers: [
+                provideRouter([]),
+                provideMockStore(),
+                provideMockActions(() => actions$)
+            ]
+        }).compileComponents();
 
-    fixture = TestBed.createComponent(RegisterComponent);
-    component = fixture.componentInstance;
+        fixture = TestBed.createComponent(RegisterComponent);
+        component = fixture.componentInstance;
+        store = TestBed.inject(MockStore);
+        router = TestBed.inject(Router);
 
-    router = TestBed.inject(Router);
-    vi.spyOn(router, 'navigate');
+        vi.spyOn(store, 'dispatch');
+        vi.spyOn(router, 'navigate');
 
-    fixture.detectChanges();
-  });
+        fixture.detectChanges();
+    });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    afterEach(() => {
+        vi.useRealTimers();
+    });
 
-  it('doit réussir l\'inscription, afficher le succès et rediriger après 2s', () => {
-    vi.useFakeTimers();
-    authServiceMock.register.mockReturnValue(of({}));
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 
-    component.onSubmit();
+    it('doit dispatcher register, afficher le succès et rediriger après 2s', () => {
+        vi.useFakeTimers();
 
-    expect(component.successMessage).toContain('Inscription réussie');
-    expect(router.navigate).not.toHaveBeenCalled(); // On vérifie l'espion
+        component.onSubmit();
 
-    vi.advanceTimersByTime(2000);
+        expect(store.dispatch).toHaveBeenCalledWith(AuthActions.register({registerRequest: component.user}));
 
-    expect(router.navigate).toHaveBeenCalledWith(['/login']);
-    vi.useRealTimers();
-  });
+        actions$.next(AuthActions.registerSuccess());
 
-  it('doit afficher une erreur spécifique si email déjà utilisé (409)', () => {
-    const errorResponse = { status: 409, error: 'Cet email est déjà utilisé.' };
-    authServiceMock.register.mockReturnValue(throwError(() => errorResponse));
+        expect(component.successMessage).toContain('Inscription réussie');
+        expect(router.navigate).not.toHaveBeenCalled();
 
-    component.onSubmit();
+        vi.advanceTimersByTime(2000);
 
-    expect(component.errorMessage).toBe('Cet email est déjà utilisé.');
-    expect(component.successMessage).toBe('');
-  });
+        expect(router.navigate).toHaveBeenCalledWith(['/login']);
+    });
 
-  it('doit afficher une erreur générique pour les autres erreurs', () => {
-    const errorResponse = { status: 500 };
-    authServiceMock.register.mockReturnValue(throwError(() => errorResponse));
+    it('doit afficher une erreur spécifique si email déjà utilisé (409)', () => {
+        component.onSubmit();
 
-    component.onSubmit();
+        const err = {status: 409};
+        actions$.next(AuthActions.registerFailure({error: err}));
 
-    expect(component.errorMessage).toContain('Une erreur est survenue');
-  });
+        expect(component.errorMessage).toBe('Cet email est déjà utilisé.');
+        expect(component.successMessage).toBe('');
+    });
+
+    it('doit afficher une erreur générique pour les autres erreurs', () => {
+        component.onSubmit();
+
+        const err = {status: 500};
+        actions$.next(AuthActions.registerFailure({error: err}));
+
+        expect(component.errorMessage).toContain('Une erreur est survenue');
+    });
 });
