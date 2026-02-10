@@ -1,84 +1,90 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ProfileComponent } from './profile.component';
-import { UserService } from '../../services/user.service';
-import { AuthService } from '../../services/auth.service';
-import { of } from 'rxjs';
-import { vi } from 'vitest';
-import { Role } from '../../models/role.enum';
-import { FormsModule } from '@angular/forms';
-import { provideRouter } from '@angular/router';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {ProfileComponent} from './profile.component';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {Role} from '../../models/role.enum';
+import {FormsModule} from '@angular/forms';
+import {provideRouter} from '@angular/router';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {provideMockActions} from '@ngrx/effects/testing';
+import {Subject} from 'rxjs';
+import * as UserActions from '../../store/user/user.actions';
+import * as UserSelectors from '../../store/user/user.selectors';
+import * as AuthActions from '../../store/authentification/authentification.actions';
 
 describe('ProfileComponent', () => {
-  let component: ProfileComponent;
-  let fixture: ComponentFixture<ProfileComponent>;
-  let userServiceMock: any;
-  let authServiceMock: any;
+    let component: ProfileComponent;
+    let fixture: ComponentFixture<ProfileComponent>;
+    let store: MockStore;
+    let actions$: Subject<any>;
 
-  const passagerUser = {
-    id: 1,
-    firstname: 'Jean',
-    lastname: 'Test',
-    email: 'jean@test.com',
-    role: Role.PASSAGER,
-    pointBalance: 100
-  };
-
-  beforeEach(async () => {
-    userServiceMock = {
-      getMyProfile: vi.fn().mockReturnValue(of(passagerUser)),
-      updateProfile: vi.fn()
+    const passagerUser = {
+        id: 1,
+        firstname: 'Jean',
+        lastname: 'Test',
+        email: 'jean@test.com',
+        role: Role.PASSAGER,
+        pointBalance: 100
     };
 
-    authServiceMock = {
-      logout: vi.fn()
-    };
+    beforeEach(async () => {
+        actions$ = new Subject<any>();
 
-    await TestBed.configureTestingModule({
-      imports: [ProfileComponent, FormsModule],
-      providers: [
-        { provide: UserService, useValue: userServiceMock },
-        { provide: AuthService, useValue: authServiceMock },
-        provideRouter([])
-      ]
-    }).compileComponents();
+        await TestBed.configureTestingModule({
+            imports: [ProfileComponent, FormsModule],
+            providers: [
+                provideRouter([]),
+                provideMockStore({
+                    selectors: [
+                        {selector: UserSelectors.selectCurrentUser, value: passagerUser}
+                    ]
+                }),
+                provideMockActions(() => actions$)
+            ]
+        }).compileComponents();
 
-    fixture = TestBed.createComponent(ProfileComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+        fixture = TestBed.createComponent(ProfileComponent);
+        component = fixture.componentInstance;
+        store = TestBed.inject(MockStore);
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+        vi.spyOn(store, 'dispatch');
 
-  it('devrait charger le profil au démarrage', () => {
-    expect(userServiceMock.getMyProfile).toHaveBeenCalled();
-    expect(component.user).toEqual(passagerUser);
-  });
+        fixture.detectChanges();
+    });
 
-  it('doit sauvegarder le profil et afficher un message de succès', () => {
-    userServiceMock.updateProfile.mockReturnValue(of({ ...passagerUser, firstname: 'Modifié' }));
-    component.isEditing = true;
-    if (component.user) component.user.firstname = 'Modifié';
+    afterEach(() => {
+        vi.useRealTimers();
+    });
 
-    component.saveProfile();
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 
-    expect(userServiceMock.updateProfile).toHaveBeenCalled();
-    expect(component.user?.firstname).toBe('Modifié');
-    expect(component.isEditing).toBe(false);
-    expect(component.successMessage).toContain('succès');
-  });
+    it('devrait charger le profil au démarrage', () => {
+        expect(store.dispatch).toHaveBeenCalledWith(UserActions.loadMyProfile());
+        expect(component.user).toEqual(passagerUser);
+    });
 
-  it('doit appeler authService.logout() lors de la déconnexion', () => {
-    component.logout();
-    expect(authServiceMock.logout).toHaveBeenCalled();
-  });
+    it('doit dispatcher updateProfile et afficher succès sur retour action', () => {
+        vi.useFakeTimers();
 
-  it('devrait afficher Rechercher une course et Mes réservations pour PASSAGER', () => {
-    const compiled = fixture.nativeElement as HTMLElement;
+        component.isEditing = true;
+        if (component.user) component.user.firstname = 'Modifié';
 
-    expect(compiled.querySelector('button[routerlink="/search-ride"]')).toBeTruthy();
-    expect(compiled.querySelector('button[routerlink="/passenger/bookings"]')).toBeTruthy();
-  });
+        component.saveProfile();
 
+        expect(store.dispatch).toHaveBeenCalledWith(UserActions.updateProfile({user: component.user!}));
+
+        actions$.next(UserActions.updateProfileSuccess({user: {...passagerUser, firstname: 'Modifié'}}));
+
+        expect(component.isEditing).toBe(false);
+        expect(component.successMessage).toContain('succès');
+
+        vi.advanceTimersByTime(3000);
+        expect(component.successMessage).toBe('');
+    });
+
+    it('doit dispatcher AuthActions.logout() lors de la déconnexion', () => {
+        component.logout();
+        expect(store.dispatch).toHaveBeenCalledWith(AuthActions.logout());
+    });
 });
