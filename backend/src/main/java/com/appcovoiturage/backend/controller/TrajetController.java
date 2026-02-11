@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/v1/trajets")
@@ -30,5 +31,14 @@ public class TrajetController {
     public ResponseEntity<Void> deleteTrajet(@PathVariable Long id, Principal principal) {
         trajetService.deleteTrajet(id, principal.getName());
         return ResponseEntity.noContent().build(); // Renvoie 204 No Content (succès sans corps)
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<java.util.List<Trajet>> search(
+            @RequestParam String from,
+            @RequestParam String to,
+            @RequestParam LocalDate date
+    ) {
+        return ResponseEntity.ok(trajetService.searchTrajets(from, to, date));
     }
 }

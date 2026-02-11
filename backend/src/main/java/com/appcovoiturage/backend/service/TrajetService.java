@@ -8,8 +8,11 @@ import com.appcovoiturage.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -62,5 +65,12 @@ public class TrajetService {
         }
 
         trajetRepository.delete(trajet);
+    }
+
+    public List<Trajet> searchTrajets(String from, String to, LocalDate date) {
+        LocalDateTime start = date.atStartOfDay();
+        LocalDateTime end = date.atTime(LocalTime.MAX);
+
+        return trajetRepository.searchUpcoming(from, to, start, end, LocalDateTime.now());
     }
 }
