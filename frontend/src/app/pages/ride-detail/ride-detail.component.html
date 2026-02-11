@@ -1,0 +1,28 @@
+<div class="page">
+  <a routerLink="/ride-results">← Retour</a>
+
+  <h2>Voir le détail d’une course</h2>
+
+  <div *ngIf="loading" class="info">Chargement…</div>
+  <div *ngIf="errorMsg && !loading" class="error">{{ errorMsg }}</div>
+
+  <ng-container *ngIf="ride && !loading">
+    <div class="card">
+      <h3>{{ ride.from }} → {{ ride.to }}</h3>
+
+      <div class="grid">
+        <div><strong>Date :</strong> {{ ride.date }}</div>
+        <div *ngIf="ride.departureTime"><strong>Heure :</strong> {{ ride.departureTime }}</div>
+        <div *ngIf="ride.availableSeats != null"><strong>Places dispo :</strong> {{ ride.availableSeats }}</div>
+        <div><strong>Places sélectionnées :</strong> {{ selectedSeats }}</div>
+        <div *ngIf="ride.price != null"><strong>Prix :</strong> {{ ride.price }} €</div>
+        <div *ngIf="ride.driverName"><strong>Conducteur :</strong> {{ ride.driverName }}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Itinéraire</h3>
+      <div id="ride-map" class="map"></div>
+    </div>
+  </ng-container>
+</div>
