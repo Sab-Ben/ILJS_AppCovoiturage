@@ -1,23 +1,27 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms'; // ✅ AJOUT
 import { Subject, switchMap, takeUntil } from 'rxjs';
 import { RideService } from '../../services/ride.service';
 import { MapService } from '../../services/map.service';
 import { Ride } from '../../models/ride.model';
 import { ReservationService } from '../../services/reservation.service';
 
-
 @Component({
   selector: 'app-ride-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule], // ✅ AJOUT
   templateUrl: './ride-detail.component.html',
   styleUrls: ['./ride-detail.component.scss'],
 })
 export class RideDetailComponent implements OnInit, OnDestroy {
   ride: Ride | null = null;
   selectedSeats = 1;
+
+  // ✅ AJOUTS
+  desiredRoute = '';
+  successMsg: string | null = null;
 
   loading = false;
   errorMsg: string | null = null;
@@ -57,14 +61,11 @@ export class RideDetailComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.errorMsg = null;
 
-          // init map + draw route
-          // ✅ on centre provisoirement sur le point de départ si dispo, sinon Paris
           const center =
             ride.fromLat != null && ride.fromLng != null
               ? ([ride.fromLat, ride.fromLng] as [number, number])
               : ([48.8566, 2.3522] as [number, number]);
 
-          // IMPORTANT: initMap doit être appelé après que le div #map existe
           setTimeout(async () => {
             try {
               this.mapService.initMap('ride-map', center, 12);
@@ -73,9 +74,13 @@ export class RideDetailComponent implements OnInit, OnDestroy {
                 ride.fromLat != null && ride.fromLng != null &&
                 ride.toLat != null && ride.toLng != null
               ) {
-                await this.mapService.drawRoute(ride.fromLat, ride.fromLng, ride.toLat, ride.toLng);
+                await this.mapService.drawRoute(
+                  ride.fromLat,
+                  ride.fromLng,
+                  ride.toLat,
+                  ride.toLng
+                );
               } else {
-                // Fallback si pas de coords
                 this.errorMsg = 'Coordonnées manquantes pour afficher l’itinéraire.';
               }
             } catch (e: any) {
@@ -87,6 +92,54 @@ export class RideDetailComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.ride = null;
           this.errorMsg = err?.message ?? 'Erreur chargement course';
+        },
+      });
+  }
+
+  // ✅ MÉTHODE DE RÉSERVATION
+  reserve(): void {
+    if (!this.ride) return;
+
+    this.errorMsg = null;
+    this.successMsg = null;
+
+    if (!this.desiredRoute.trim()) {
+      this.errorMsg = 'Veuillez indiquer le trajet souhaité.';
+      return;
+    }
+
+    // @ts-ignore
+    if (this.selectedSeats > this.ride.availableSeats) {
+      this.errorMsg = 'Pas assez de places disponibles.';
+      return;
+    }
+
+    this.loading = true;
+
+    const payload = {
+      rideId: this.ride.id,
+      seats: this.selectedSeats,
+      desiredRoute: this.desiredRoute.trim(),
+    };
+
+    this.reservationService.createReservation(payload)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.loading = false;
+          this.successMsg = 'Réservation confirmée ✅';
+
+          // décrément visuel immédiat
+          if (this.ride) {
+            // @ts-ignore
+            this.ride.availableSeats -= this.selectedSeats;
+          }
+        },
+        error: (err) => {
+          this.loading = false;
+          this.errorMsg =
+            err?.error?.message ??
+            'Impossible de réserver (solde insuffisant ou erreur serveur)';
         },
       });
   }
