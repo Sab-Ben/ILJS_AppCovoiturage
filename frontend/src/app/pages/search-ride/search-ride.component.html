@@ -1,0 +1,43 @@
+<div class="container">
+  <h2>Rechercher une course</h2>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="card">
+
+    <!-- Départ -->
+    <div class="field">
+      <label for="from">Lieu de départ</label>
+      <input id="from" type="text" formControlName="from" placeholder="Ex: Rabat" />
+      <small class="error" *ngIf="fromCtrl.touched && fromCtrl.invalid">
+        Le lieu de départ est obligatoire (min 2 caractères).
+      </small>
+    </div>
+
+    <!-- Arrivée -->
+    <div class="field">
+      <label for="to">Lieu d’arrivée</label>
+      <input id="to" type="text" formControlName="to" placeholder="Ex: Casablanca" />
+      <small class="error" *ngIf="toCtrl.touched && toCtrl.invalid">
+        Le lieu d’arrivée est obligatoire (min 2 caractères).
+      </small>
+      <small class="error" *ngIf="toCtrl.touched && toCtrl.errors?.['sameAsFrom']">
+        Le lieu d’arrivée doit être différent du départ.
+      </small>
+    </div>
+
+    <!-- Date -->
+    <div class="field">
+      <label for="date">Date</label>
+      <input id="date" type="date" formControlName="date" />
+      <small class="error" *ngIf="dateCtrl.touched && dateCtrl.invalid">
+        La date est obligatoire.
+      </small>
+    </div>
+
+    <!-- Boutons -->
+    <div class="actions">
+      <button type="submit" [disabled]="form.invalid">Rechercher</button>
+      <button type="button" (click)="reset()">Réinitialiser</button>
+    </div>
+
+  </form>
+</div>

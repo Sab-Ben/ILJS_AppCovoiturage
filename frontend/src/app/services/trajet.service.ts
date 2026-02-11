@@ -23,4 +23,12 @@ export class TrajetService {
     deleteTrajet(id: number): Observable<void> {
         return this.http.delete<void>(`${this.apiUrl}/${id}`);
     }
+
+    searchTrajets(from: string, to: string, date: string) {
+      return this.http.get<Trajet[]>(
+        `${this.apiUrl}/search`,
+        { params: { from, to, date } }
+      );
+    }
+
 }

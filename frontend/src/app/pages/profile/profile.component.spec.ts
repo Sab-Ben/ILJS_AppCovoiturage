@@ -73,4 +73,12 @@ describe('ProfileComponent', () => {
     component.logout();
     expect(authServiceMock.logout).toHaveBeenCalled();
   });
+
+  it('devrait afficher Rechercher une course et Mes réservations pour PASSAGER', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.querySelector('button[routerlink="/search-ride"]')).toBeTruthy();
+    expect(compiled.querySelector('button[routerlink="/passenger/bookings"]')).toBeTruthy();
+  });
+
 });

@@ -27,7 +27,7 @@ export class AuthService {
         return this.http.post<any>(`${this.apiUrl}/login`, authRequest).pipe(
             tap(response => {
                 if (isPlatformBrowser(this.platformId)) {
-                    sessionStorage.setItem('token', response.token);
+                  localStorage.setItem('token', response.token);
                 }
             })
         );
@@ -35,21 +35,22 @@ export class AuthService {
 
     logout() {
         if (isPlatformBrowser(this.platformId)) {
-            sessionStorage.removeItem('token');
+          localStorage.removeItem('token');
         }
         this.router.navigate(['/login']);
     }
 
     isAuthenticated(): boolean {
         if (isPlatformBrowser(this.platformId)) {
-            return !!sessionStorage.getItem('token');
+          return !!localStorage.getItem('token');
+
         }
         return false;
     }
 
     getToken(): string | null {
         if (isPlatformBrowser(this.platformId)) {
-            return sessionStorage.getItem('token');
+          return localStorage.getItem('token');
         }
         return null;
     }
