@@ -5,6 +5,8 @@ import { Subject, switchMap, takeUntil } from 'rxjs';
 import { RideService } from '../../services/ride.service';
 import { MapService } from '../../services/map.service';
 import { Ride } from '../../models/ride.model';
+import { ReservationService } from '../../services/reservation.service';
+
 
 @Component({
   selector: 'app-ride-detail',
@@ -25,7 +27,8 @@ export class RideDetailComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private rideService: RideService,
-    private mapService: MapService
+    private mapService: MapService,
+    private reservationService: ReservationService
   ) {}
 
   ngOnInit(): void {

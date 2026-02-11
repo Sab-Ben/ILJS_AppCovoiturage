@@ -12,26 +12,39 @@ import { Router, RouterModule } from '@angular/router';
   styleUrl: './register.component.scss'
 })
 export class RegisterComponent {
+
   user = { firstname: '', lastname: '', email: '', password: '' };
-  successMessage = '';
-  errorMessage = '';
+
+  successMessage: string | null = null;
+  errorMessage: string | null = null;
+  loading = false;
+
   constructor(private authService: AuthService, private router: Router) {}
 
   onSubmit() {
-    this.errorMessage ="";
+    this.loading = true;
+    this.successMessage = null;
+    this.errorMessage = null;
+
     this.authService.register(this.user).subscribe({
       next: () => {
-        this.successMessage = 'Inscription réussie ! Vous allez être redirigé vers la connexion...';
+        this.loading = false;
+        this.successMessage =
+          'Inscription réussie ! Vous allez être redirigé vers la connexion...';
+
         setTimeout(() => {
           this.router.navigate(['/login']);
         }, 2000);
       },
       error: (err) => {
+        this.loading = false;
         console.error('Erreur inscription:', err);
+
         if (err.status === 409) {
           this.errorMessage = 'Cet email est déjà utilisé.';
         } else {
-          this.errorMessage = "Une erreur est survenue lors de l'inscription.";
+          this.errorMessage =
+            "Une erreur est survenue lors de l'inscription.";
         }
       }
     });
