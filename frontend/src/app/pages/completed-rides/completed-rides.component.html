@@ -1,0 +1,31 @@
+<div class="page">
+  <a routerLink="/profile" class="back">← Retour</a>
+
+  <h2>Consulter les courses effectuées</h2>
+
+  <div *ngIf="loading" class="info">Chargement…</div>
+  <div *ngIf="errorMsg && !loading" class="error">{{ errorMsg }}</div>
+
+  <div *ngIf="!loading && !errorMsg">
+    <div *ngIf="rides.length === 0" class="empty">
+      Aucune course effectuée pour le moment.
+    </div>
+
+    <div *ngFor="let r of rides" class="card">
+      <div class="top">
+        <div class="id">#{{ r.id }}</div>
+        <div class="points">+{{ r.pointsGagnes }} pts</div>
+      </div>
+
+      <div class="row">
+        <strong>Date :</strong> {{ r.date }}
+      </div>
+      <div class="row">
+        <strong>Heure :</strong> {{ r.heure }}
+      </div>
+      <div class="row">
+        <strong>Itinéraire :</strong> {{ r.itineraire }}
+      </div>
+    </div>
+  </div>
+</div>

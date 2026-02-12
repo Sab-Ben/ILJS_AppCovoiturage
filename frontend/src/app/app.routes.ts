@@ -8,6 +8,8 @@ import {MyRidesComponent} from "./pages/my-rides/my-rides.component";
 import { SearchRideComponent } from './pages/search-ride/search-ride.component';
 import { RideResultsComponent } from './pages/ride-results/ride-results.component';
 import { RideDetailComponent } from './pages/ride-detail/ride-detail.component';
+import { CompletedRidesComponent } from './pages/completed-rides/completed-rides.component';
+
 
 export const routes: Routes = [
     { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -19,5 +21,6 @@ export const routes: Routes = [
     { path: 'search-ride', component: SearchRideComponent, canActivate: [authGuard] },
     { path: 'ride-results', component: RideResultsComponent },
     { path: 'ride/:id', component: RideDetailComponent },
+    { path: 'completed-rides', component: CompletedRidesComponent, canActivate: [authGuard] },
     { path: '**', redirectTo: 'login' }
 ];
