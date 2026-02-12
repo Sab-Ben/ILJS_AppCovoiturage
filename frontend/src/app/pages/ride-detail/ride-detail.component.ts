@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms'; // ✅ AJOUT
+import { FormsModule } from '@angular/forms';
 import { Subject, switchMap, takeUntil } from 'rxjs';
 import { RideService } from '../../services/ride.service';
 import { MapService } from '../../services/map.service';
@@ -11,7 +11,7 @@ import { ReservationService } from '../../services/reservation.service';
 @Component({
   selector: 'app-ride-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule], // ✅ AJOUT
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './ride-detail.component.html',
   styleUrls: ['./ride-detail.component.scss'],
 })
@@ -19,9 +19,12 @@ export class RideDetailComponent implements OnInit, OnDestroy {
   ride: Ride | null = null;
   selectedSeats = 1;
 
-  // ✅ AJOUTS
   desiredRoute = '';
   successMsg: string | null = null;
+
+  // ✅ pour annuler ensuite
+  lastReservationId: number | null = null;
+  lastReservedSeats = 0;
 
   loading = false;
   errorMsg: string | null = null;
@@ -36,7 +39,6 @@ export class RideDetailComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // places sélectionnées
     this.route.queryParamMap
       .pipe(takeUntil(this.destroy$))
       .subscribe((qp) => {
@@ -44,7 +46,6 @@ export class RideDetailComponent implements OnInit, OnDestroy {
         this.selectedSeats = Number.isFinite(seats) && seats > 0 ? seats : 1;
       });
 
-    // charger la ride par id
     this.loading = true;
     this.route.paramMap
       .pipe(
@@ -96,7 +97,6 @@ export class RideDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  // ✅ MÉTHODE DE RÉSERVATION
   reserve(): void {
     if (!this.ride) return;
 
@@ -125,9 +125,13 @@ export class RideDetailComponent implements OnInit, OnDestroy {
     this.reservationService.createReservation(payload)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => {
+        next: (res) => {
           this.loading = false;
           this.successMsg = 'Réservation confirmée ✅';
+
+          // ✅ stocke l'id réservation pour annuler
+          this.lastReservationId = res.id;
+          this.lastReservedSeats = this.selectedSeats;
 
           // décrément visuel immédiat
           if (this.ride) {
@@ -139,8 +143,41 @@ export class RideDetailComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.errorMsg =
             err?.error?.message ??
-            'Impossible de réserver (solde insuffisant ou erreur serveur)';
+            'Impossible de réserver (erreur serveur)';
         },
+      });
+  }
+
+  // ✅ ANNULATION
+  cancel(): void {
+    if (!this.lastReservationId || !this.ride) return;
+
+    if (!confirm('Annuler cette réservation ? (possible uniquement jusqu’à 2h avant)')) return;
+
+    this.loading = true;
+    this.errorMsg = null;
+    this.successMsg = null;
+
+    this.reservationService.cancelReservation(this.lastReservationId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.loading = false;
+          this.successMsg = 'Réservation annulée ✅';
+
+          // ✅ ré-incrémente visuel
+          if (this.ride) {
+            // @ts-ignore
+            this.ride.availableSeats += this.lastReservedSeats;
+          }
+
+          this.lastReservationId = null;
+          this.lastReservedSeats = 0;
+        },
+        error: (err) => {
+          this.loading = false;
+          this.errorMsg = err?.error?.message ?? 'Impossible d’annuler (moins de 2h avant le départ)';
+        }
       });
   }
 

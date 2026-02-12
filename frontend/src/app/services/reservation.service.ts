@@ -12,7 +12,11 @@ export class ReservationService {
 
   constructor(private http: HttpClient) {}
 
-  createReservation(payload: { rideId: number | string; seats: number; desiredRoute: string }): Observable<any> {
-    return this.http.post(this.apiUrl, payload);
+  createReservation(payload: { rideId: number | string; seats: number; desiredRoute: string }): Observable<{ id: number }> {
+    return this.http.post<{ id: number }>(this.apiUrl, payload);
+  }
+
+  cancelReservation(reservationId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${reservationId}`);
   }
 }

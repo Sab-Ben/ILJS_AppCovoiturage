@@ -55,6 +55,16 @@
         {{ loading ? 'Réservation...' : 'Confirmer la réservation' }}
       </button>
 
+      <!-- ✅ Annuler (uniquement si on a une réservation récente) -->
+      <button
+        *ngIf="lastReservationId"
+        (click)="cancel()"
+        [disabled]="loading"
+        style="margin-top: 10px;"
+      >
+        {{ loading ? 'Annulation...' : 'Annuler la réservation' }}
+      </button>
+
       <div *ngIf="successMsg" class="success">
         {{ successMsg }}
       </div>
