@@ -128,7 +128,7 @@ export class MapComponent implements AfterViewInit, OnChanges {
 
     forkJoin(observables).pipe(
         switchMap(resultats => {
-          const pointsTrouves = resultats.filter(p => p.latLng !== null) as { type: string, nom: string, latLng: [number, number] }[];
+          const pointsTrouves = resultats.filter(p => p.latLng !== null) as unknown as { type: string, nom: string, latLng: [number, number] }[];
 
           this.placerMarqueurs(pointsTrouves);
 
