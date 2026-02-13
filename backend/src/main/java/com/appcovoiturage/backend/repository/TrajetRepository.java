@@ -17,6 +17,16 @@ public interface TrajetRepository extends JpaRepository<Trajet, Long> {
             "and t.dateHeureDepart >= :now " +
             "order by t.dateHeureDepart asc")
 
+
+    List<Trajet> findByConducteurIdAndDateHeureDepartBeforeOrderByDateHeureDepartDesc(Long conducteurId, LocalDateTime now);
+
+    @Query("select t from Trajet t " +
+            "where lower(t.villeDepart) like lower(concat('%', :from, '%')) " +
+            "and lower(t.villeArrivee) like lower(concat('%', :to, '%')) " +
+            "and t.dateHeureDepart between :start and :end " +
+            "and t.dateHeureDepart >= :now " +
+            "order by t.dateHeureDepart asc")
+
     List<Trajet> searchUpcoming(
             @Param("from") String from,
             @Param("to") String to,

@@ -8,6 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.time.LocalDate;
+import com.appcovoiturage.backend.dto.CompletedTrajetDto;
+
+
 
 @RestController
 @RequestMapping("/api/v1/trajets")
@@ -41,4 +44,10 @@ public class TrajetController {
     ) {
         return ResponseEntity.ok(trajetService.searchTrajets(from, to, date));
     }
+
+    @GetMapping("/completed")
+    public ResponseEntity<java.util.List<CompletedTrajetDto>> getCompleted(Principal principal) {
+        return ResponseEntity.ok(trajetService.getCompletedTrajets(principal.getName()));
+    }
+
 }
