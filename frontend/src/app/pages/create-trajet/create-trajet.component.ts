@@ -98,7 +98,7 @@ export class CreateTrajetComponent implements OnInit, OnDestroy {
         this.minDate = demain.toISOString().split('T')[0];
 
         this.searchTerms.pipe(
-            debounceTime(300),
+            debounceTime(1000),
             distinctUntilChanged(),
             switchMap((term) => this.geocodingService.searchAddresses(term.query).pipe(
                 map(results => ({results, term}))
