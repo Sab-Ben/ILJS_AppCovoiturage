@@ -1,54 +1,37 @@
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-search-ride',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './search-ride.component.html',
   styleUrls: ['./search-ride.component.scss'],
 })
 export class SearchRideComponent {
-  private fb = inject(FormBuilder);
-  private router = inject(Router);
+  // champs bindés au formulaire
+  from: string = '';
+  to: string = '';
+  date: string = '';
 
-  // Formulaire : lieu départ, lieu arrivée, date
-  form = this.fb.group({
-    from: ['', [Validators.required, Validators.minLength(2)]],
-    to: ['', [Validators.required, Validators.minLength(2)]],
-    date: ['', [Validators.required]], // format YYYY-MM-DD depuis input type="date"
-  });
+  constructor(private router: Router) {}
 
-  // Helpers pour HTML
-  get fromCtrl() { return this.form.controls.from; }
-  get toCtrl() { return this.form.controls.to; }
-  get dateCtrl() { return this.form.controls.date; }
+  onSearch(): void {
+    // construit des query params propres (sans vide)
+    const queryParams: any = {};
+    if (this.from.trim()) queryParams.from = this.from.trim();
+    if (this.to.trim()) queryParams.to = this.to.trim();
+    if (this.date) queryParams.date = this.date;
 
-  submit(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    const from = (this.form.value.from ?? '').trim();
-    const to = (this.form.value.to ?? '').trim();
-    const date = this.form.value.date ?? '';
-
-    // Optionnel : empêcher from == to
-    if (from.toLowerCase() === to.toLowerCase()) {
-      this.toCtrl.setErrors({ sameAsFrom: true });
-      return;
-    }
-
-    // Navigation vers la page des résultats
-    this.router.navigate(['/ride-results'], {
-      queryParams: { from, to, date }
-    });
+    // adapte la route si besoin (ex: /ride-results)
+    this.router.navigate(['/ride-results'], { queryParams });
   }
 
-  reset(): void {
-    this.form.reset();
+  onReset(): void {
+    this.from = '';
+    this.to = '';
+    this.date = '';
   }
 }

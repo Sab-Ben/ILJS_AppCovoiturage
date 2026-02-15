@@ -50,4 +50,10 @@ public class TrajetController {
         return ResponseEntity.ok(trajetService.getCompletedTrajets(principal.getName()));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Trajet> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(trajetService.getTrajetById(id));
+    }
+
+
 }

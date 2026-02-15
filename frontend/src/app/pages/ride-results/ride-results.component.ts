@@ -1,10 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterModule } from '@angular/router';
-import { Subject, switchMap, takeUntil } from 'rxjs';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
+
 import { RideService } from '../../services/ride.service';
+import { ReservationService } from '../../services/reservation.service';
 import { Ride } from '../../models/ride.model';
-import { of } from 'rxjs';
 
 @Component({
   selector: 'app-ride-results',
@@ -14,78 +15,143 @@ import { of } from 'rxjs';
   styleUrls: ['./ride-results.component.scss'],
 })
 export class RideResultsComponent implements OnInit, OnDestroy {
-  rides: Ride[] = [];
-  loading = false;
-  errorMsg: string | null = null;
-
-  // pour afficher les critères dans le template
   from = '';
   to = '';
   date = '';
-  seats: number = 1; // ✅ AJOUTE CETTE LIGNE
+  seats = 1;
+
+  rides: Ride[] = [];
+  loading = false;
+  errorMsg: string | null = null;
 
   private destroy$ = new Subject<void>();
 
   constructor(
     private route: ActivatedRoute,
-    private rideService: RideService
+    private router: Router,
+    private rideService: RideService,
+    private reservationService: ReservationService
   ) {}
 
   ngOnInit(): void {
-    // À chaque changement de query params, on relance la recherche
     this.route.queryParamMap
-      .pipe(
-        takeUntil(this.destroy$),
-        switchMap((params) => {
-          this.from = (params.get('from') ?? '').trim();
-          this.to = (params.get('to') ?? '').trim();
-          this.date = (params.get('date') ?? '').trim();
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((qp) => {
+        this.from = qp.get('from') ?? '';
+        this.to = qp.get('to') ?? '';
+        this.date = qp.get('date') ?? '';
+        this.seats = Number(qp.get('seats') ?? '1') || 1;
 
-          // sécurité: si critères manquants, on n'appelle pas l'API
-          if (!this.from || !this.to || !this.date) {
-            this.rides = [];
-            this.errorMsg = 'Paramètres manquants (from, to, date).';
-            return of([] as Ride[]);
-          }
+        this.fetchRides();
+      });
+  }
 
+  fetchRides(): void {
+    if (!this.from || !this.to || !this.date) {
+      this.rides = [];
+      this.errorMsg = 'Veuillez renseigner Départ, Arrivée et Date.';
+      return;
+    }
 
-          this.loading = true;
-          this.errorMsg = null;
+    this.loading = true;
+    this.errorMsg = null;
 
-          return this.rideService.searchRides(this.from, this.to, this.date);
-        })
-      )
-      // switchMap attend un Observable : si on retourne [] au-dessus ça casse.
-      // Donc on gère proprement en remplaçant le return [] par un observable.
+    this.rideService
+      .searchRides(this.from, this.to, this.date)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (rides: any) => {
-          // Si le code au-dessus a mis un message d'erreur sans appel API,
-          // rides peut être undefined -> on sécurise.
-          this.rides = Array.isArray(rides) ? rides : [];
+        next: (rides) => {
+          this.rides = rides ?? [];
           this.loading = false;
+          if (this.rides.length === 0) this.errorMsg = 'Aucun trajet trouvé.';
         },
         error: (err) => {
+          console.error(err);
+          this.errorMsg = 'Erreur lors de la recherche.';
           this.loading = false;
-          this.rides = [];
-          this.errorMsg =
-            err?.error?.message ??
-            err?.message ??
-            'Erreur lors de la récupération des trajets.';
         },
       });
+  }
+
+  // ===== Helpers template (pour éviter "as any" dans le HTML) =====
+  getDepartureTime(ride: Ride): string {
+    return (ride as any).departureTime ?? '';
+  }
+
+  getAvailableSeats(ride: Ride): number {
+    const v = (ride as any).availableSeats ?? (ride as any).seatsAvailable ?? 0;
+    return Number(v) || 0;
+  }
+
+  getDriverName(ride: Ride): string {
+    return (
+      (ride as any).driverName ??
+      (ride as any).driver?.firstname ??
+      (ride as any).driver?.name ??
+      '—'
+    );
+  }
+
+  // ===== Réservation =====
+  book(ride: Ride): void {
+    if (!ride?.id) {
+      alert("Impossible de réserver : id du trajet manquant.");
+      return;
+    }
+
+    const available = this.getAvailableSeats(ride);
+    const seatsToBook = this.seats || 1;
+
+    if (available <= 0) {
+      alert('Plus de place disponible pour ce trajet.');
+      return;
+    }
+    if (seatsToBook > available) {
+      alert(`Il ne reste que ${available} place(s) disponible(s).`);
+      return;
+    }
+
+    const desiredRoute = `${ride.from} -> ${ride.to}`;
+
+    this.reservationService
+      .createReservation({
+        rideId: Number(ride.id),
+        seats: seatsToBook,
+        desiredRoute,
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          alert('Réservation effectuée ✅');
+          this.router.navigate(['/my-reservations']);
+        },
+
+        error: (err) => {
+          console.error(err);
+          const msg =
+            err?.error?.message || err?.error || 'Erreur lors de la réservation.';
+          alert(msg);
+        },
+      });
+  }
+
+  goBackToSearch(): void {
+    this.router.navigate(['/search-ride'], {
+      queryParams: {
+        from: this.from,
+        to: this.to,
+        date: this.date,
+        seats: this.seats,
+      },
+    });
+  }
+
+  trackByRideId(index: number, ride: Ride): number | string {
+    return ride.id ?? index;
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  trackByRideId(_: number, ride: Ride): string | number {
-    return ride.id ?? `${ride.from}-${ride.to}-${ride.date}-${ride.departureTime ?? ''}`;
-  }
-
-  // future action (réserver / demander) : ici tu pourras vérifier le token
-  book(ride: Ride): void {
-    console.log('TODO: réserver / demander', ride);
   }
 }

@@ -121,4 +121,10 @@ public class TrajetService {
         return sb.toString();
     }
 
+    public Trajet getTrajetById(Long id) {
+        return trajetRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Trajet non trouvé"));
+    }
+
+
 }

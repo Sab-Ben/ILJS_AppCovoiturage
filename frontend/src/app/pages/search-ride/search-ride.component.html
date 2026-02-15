@@ -1,43 +1,49 @@
 <div class="container">
   <h2>Rechercher une course</h2>
 
-  <form [formGroup]="form" (ngSubmit)="submit()" class="card">
-
-    <!-- Départ -->
-    <div class="field">
-      <label for="from">Lieu de départ</label>
-      <input id="from" type="text" formControlName="from" placeholder="Ex: Rabat" />
-      <small class="error" *ngIf="fromCtrl.touched && fromCtrl.invalid">
-        Le lieu de départ est obligatoire (min 2 caractères).
-      </small>
+  <form (ngSubmit)="onSearch()">
+    <div class="mb-3">
+      <label class="form-label" for="from">Départ</label>
+      <input
+        id="from"
+        class="form-control"
+        type="text"
+        name="from"
+        [(ngModel)]="from"
+        placeholder="Ville ou adresse de départ"
+      />
     </div>
 
-    <!-- Arrivée -->
-    <div class="field">
-      <label for="to">Lieu d’arrivée</label>
-      <input id="to" type="text" formControlName="to" placeholder="Ex: Casablanca" />
-      <small class="error" *ngIf="toCtrl.touched && toCtrl.invalid">
-        Le lieu d’arrivée est obligatoire (min 2 caractères).
-      </small>
-      <small class="error" *ngIf="toCtrl.touched && toCtrl.errors?.['sameAsFrom']">
-        Le lieu d’arrivée doit être différent du départ.
-      </small>
+    <div class="mb-3">
+      <label class="form-label" for="to">Arrivée</label>
+      <input
+        id="to"
+        class="form-control"
+        type="text"
+        name="to"
+        [(ngModel)]="to"
+        placeholder="Ville ou adresse d'arrivée"
+      />
     </div>
 
-    <!-- Date -->
-    <div class="field">
-      <label for="date">Date</label>
-      <input id="date" type="date" formControlName="date" />
-      <small class="error" *ngIf="dateCtrl.touched && dateCtrl.invalid">
-        La date est obligatoire.
-      </small>
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label class="form-label" for="date">Date</label>
+        <input
+          id="date"
+          class="form-control"
+          type="date"
+          name="date"
+          [(ngModel)]="date"
+        />
+      </div>
     </div>
 
-    <!-- Boutons -->
-    <div class="actions">
-      <button type="submit" [disabled]="form.invalid">Rechercher</button>
-      <button type="button" (click)="reset()">Réinitialiser</button>
+    <div class="d-flex">
+      <button class="btn btn-primary me-2" type="submit">Rechercher</button>
+      <button class="btn btn-secondary" type="button" (click)="onReset()">
+        Réinitialiser
+      </button>
     </div>
-
   </form>
 </div>

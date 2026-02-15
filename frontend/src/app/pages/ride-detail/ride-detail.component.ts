@@ -117,10 +117,26 @@ export class RideDetailComponent implements OnInit, OnDestroy {
     this.loading = true;
 
     const payload = {
-      rideId: this.ride.id,
+      rideId: Number(this.ride?.id),
       seats: this.selectedSeats,
-      desiredRoute: this.desiredRoute.trim(),
+      desiredRoute: `${this.ride?.from} -> ${this.ride?.to}`
     };
+
+    if (!payload.rideId || Number.isNaN(payload.rideId)) {
+      this.errorMsg = "Impossible de réserver : id du trajet invalide.";
+      return;
+    }
+
+    this.reservationService.createReservation(payload).subscribe({
+      next: () => {
+        // succès
+      },
+      error: (err) => {
+        console.error(err);
+        this.errorMsg = "Erreur lors de la réservation.";
+      }
+    });
+
 
     this.reservationService.createReservation(payload)
       .pipe(takeUntil(this.destroy$))

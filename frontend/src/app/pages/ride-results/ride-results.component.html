@@ -1,73 +1,54 @@
-<div class="page">
+<div class="container">
   <h2>Résultats de recherche</h2>
 
-  <div class="criteria">
-    <span><strong>Départ:</strong> {{ from }}</span>
-    <span><strong>Arrivée:</strong> {{ to }}</span>
-    <span><strong>Date:</strong> {{ date }}</span>
-    <span><strong>Places sélectionnées:</strong> {{ seats }}</span>
+  <div class="criteria bg-light p-3 mb-3">
+    <div><strong>Départ:</strong> {{ from }}</div>
+    <div><strong>Arrivée:</strong> {{ to }}</div>
+    <div><strong>Date:</strong> {{ date }}</div>
   </div>
 
-  <div *ngIf="loading" class="info">Chargement…</div>
+  <div *ngIf="loading" class="info mb-3">Chargement…</div>
 
-  <div *ngIf="errorMsg && !loading" class="error">
+  <div *ngIf="errorMsg && !loading" class="warning p-3 mb-3">
     {{ errorMsg }}
   </div>
 
-  <div *ngIf="!loading && !errorMsg && rides.length === 0" class="info">
-    Aucun trajet trouvé.
-  </div>
+  <div class="results" *ngIf="!loading && rides.length">
+    <div class="ride-card mb-3" *ngFor="let ride of rides; trackBy: trackByRideId">
+      <div class="ride-main">
+        <div class="title">{{ ride.from }} → {{ ride.to }}</div>
 
-  <ul *ngIf="!loading && !errorMsg && rides.length > 0" class="list">
-    <li *ngFor="let ride of rides; trackBy: trackByRideId" class="card">
-
-      <div class="row">
-        <div>
-          <div class="title">{{ ride.from }} → {{ ride.to }}</div>
-          <div class="meta">
-            {{ ride.date }}
-            <span *ngIf="ride.departureTime"> • {{ ride.departureTime }}</span>
-          </div>
+        <div class="meta">
+          <span>{{ ride.date }}</span>
+          <span *ngIf="getDepartureTime(ride)">• {{ getDepartureTime(ride) }}</span>
         </div>
 
-        <!-- Boutons actions -->
-        <div style="display:flex; gap:8px;">
-
-          <!-- 🔹 Voir détail -->
-          <a
-            class="btn"
-            [routerLink]="['/ride', ride.id]"
-            [queryParams]="{ seats: seats }"
-          >
-            Voir détail
-          </a>
-
-          <!-- 🔹 Réserver (si tu veux garder) -->
-          <button type="button" (click)="book(ride)">
-            Réserver
-          </button>
-
+        <div class="sub">
+          <strong>Places disponibles:</strong> {{ getAvailableSeats(ride) }}
+          &nbsp;&nbsp;
+          <strong>Conducteur:</strong> {{ getDriverName(ride) }}
         </div>
       </div>
 
-      <div class="details">
-        <span *ngIf="ride.price != null">
-          <strong>Prix:</strong> {{ ride.price }} €
-        </span>
+      <div class="ride-actions">
+        <a class="btn btn-secondary me-2" [routerLink]="['/ride-detail', ride.id]">
+          Voir détail
+        </a>
 
-        <span *ngIf="ride.availableSeats != null">
-          <strong>Places disponibles:</strong> {{ ride.availableSeats }}
-        </span>
+        <button
+          class="btn btn-primary"
+          type="button"
+          (click)="book(ride)"
+          [disabled]="getAvailableSeats(ride) === 0"
+        >
+          Réserver
+        </button>
 
-        <span *ngIf="ride.driverName">
-          <strong>Conducteur:</strong> {{ ride.driverName }}
-        </span>
       </div>
-
-    </li>
-  </ul>
-
-  <div class="actions">
-    <a routerLink="/search-ride">↩️ Modifier la recherche</a>
+    </div>
   </div>
+
+  <a class="back-link cursor-pointer" (click)="goBackToSearch()">
+    ⬅ Modifier la recherche
+  </a>
 </div>

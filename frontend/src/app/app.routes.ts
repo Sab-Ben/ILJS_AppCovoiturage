@@ -22,5 +22,12 @@ export const routes: Routes = [
     { path: 'ride-results', component: RideResultsComponent },
     { path: 'ride/:id', component: RideDetailComponent },
     { path: 'completed-rides', component: CompletedRidesComponent, canActivate: [authGuard] },
-    { path: '**', redirectTo: 'login' }
+  {
+    path: 'my-reservations',
+    loadComponent: () =>
+      import('./pages/my-reservations/my-reservations.component')
+        .then(m => m.MyReservationsComponent),
+  },
+
+  { path: '**', redirectTo: 'login' }
 ];
