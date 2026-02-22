@@ -20,6 +20,7 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final TrajetRepository trajetRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     public ReservationResponseDto createReservation(Long trajetId, String emailPassager) {
         User passager = userRepository.findByEmail(emailPassager)
@@ -51,6 +52,10 @@ public class ReservationService {
                 .build();
 
         Reservation saved = reservationRepository.save(reservation);
+
+        // ✅ Notification + email au conducteur
+        notificationService.notifyReservationCreated(trajet.getConducteur(), trajet, passager);
+
         return toDto(saved);
     }
 

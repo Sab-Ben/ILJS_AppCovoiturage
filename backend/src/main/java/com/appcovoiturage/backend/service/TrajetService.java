@@ -1,8 +1,10 @@
 package com.appcovoiturage.backend.service;
 
 import com.appcovoiturage.backend.dto.TrajetDto;
+import com.appcovoiturage.backend.entity.Reservation;
 import com.appcovoiturage.backend.entity.Trajet;
 import com.appcovoiturage.backend.entity.User;
+import com.appcovoiturage.backend.repository.ReservationRepository;
 import com.appcovoiturage.backend.repository.TrajetRepository;
 import com.appcovoiturage.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +20,8 @@ public class TrajetService {
 
     private final TrajetRepository trajetRepository;
     private final UserRepository userRepository;
+    private final ReservationRepository reservationRepository;
+    private final NotificationService notificationService;
 
     public Trajet createTrajet(TrajetDto dto, String email) {
         User conducteur = userRepository.findByEmail(email)
@@ -40,9 +45,10 @@ public class TrajetService {
         return trajetRepository.save(trajet);
     }
 
-    public java.util.List<Trajet> getTrajetsByConducteur(String email) {
+    public List<Trajet> getTrajetsByConducteur(String email) {
         User conducteur = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
         return trajetRepository.findByConducteurId(conducteur.getId());
     }
 
@@ -59,6 +65,18 @@ public class TrajetService {
 
         if (heuresAvantDepart < 24) {
             throw new RuntimeException("Impossible de supprimer le trajet moins de 24 heures avant le départ.");
+        }
+
+        // ✅ Récupérer les passagers réservés avant suppression
+        List<User> passagers = reservationRepository.findByTrajetId(id)
+                .stream()
+                .map(Reservation::getPassager)
+                .distinct()
+                .toList();
+
+        // ✅ Notifier (in-app + email) les passagers si besoin
+        if (!passagers.isEmpty()) {
+            notificationService.notifyTrajetDeleted(passagers, trajet);
         }
 
         trajetRepository.delete(trajet);
