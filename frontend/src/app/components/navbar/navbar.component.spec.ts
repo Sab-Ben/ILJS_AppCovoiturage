@@ -8,6 +8,7 @@ import { of } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { User } from '../../models/user.model';
 import { Role } from '../../models/role.enum';
+import { WsService } from '../../services/ws.service';
 
 describe('NavbarComponent', () => {
   let component: NavbarComponent;
@@ -29,7 +30,8 @@ describe('NavbarComponent', () => {
   };
 
   const routerMock = {
-    navigate: vi.fn()
+    navigate: vi.fn(),
+    events: of()
   };
 
   beforeEach(async () => {

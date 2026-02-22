@@ -9,7 +9,7 @@ import { SearchRideComponent } from './pages/search-ride/search-ride.component';
 import { RideResultsComponent } from './pages/ride-results/ride-results.component';
 import { RideDetailComponent } from './pages/ride-detail/ride-detail.component';
 import { CompletedRidesComponent } from './pages/completed-rides/completed-rides.component';
-
+import { MessagingComponent } from './pages/messaging/messaging.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -28,6 +28,6 @@ export const routes: Routes = [
       import('./pages/my-reservations/my-reservations.component')
         .then(m => m.MyReservationsComponent),
   },
-
+  { path: 'messaging', component: MessagingComponent, canActivate: [authGuard] },
   { path: '**', redirectTo: 'login' }
 ];

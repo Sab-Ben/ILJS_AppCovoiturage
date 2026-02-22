@@ -7,6 +7,27 @@
             </div>
 
             <nav class="nav-links">
+              <div class="flex items-center gap-4">
+                <a routerLink="/" class="font-bold">ILJS Covoiturage</a>
+
+                <ng-container *ngIf="isAuthenticated()">
+                  <a routerLink="/my-rides" routerLinkActive="font-bold">Mes Trajets</a>
+                  <a routerLink="/messaging" routerLinkActive="font-bold">Messagerie</a>
+                  <a routerLink="/profile" routerLinkActive="font-bold">Profil</a>
+                </ng-container>
+              </div>
+              <div class="flex items-center gap-3">
+                <ng-container *ngIf="isAuthenticated()">
+                  <app-notification-bell></app-notification-bell>
+                  <span *ngIf="user" class="text-sm">{{ user.firstname }} {{ user.lastname }}</span>
+                  <button type="button" class="border rounded px-3 py-1" (click)="logout()">Déconnexion</button>
+                </ng-container>
+
+                <ng-container *ngIf="!isAuthenticated()">
+                  <a routerLink="/login" routerLinkActive="font-bold">Connexion</a>
+                  <a routerLink="/register" routerLinkActive="font-bold">Inscription</a>
+                </ng-container>
+              </div>
               <!--<a *ngIf="user?.role === 'PASSAGER'"
                  routerLink="/search"
                  routerLinkActive="active">

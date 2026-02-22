@@ -1,5 +1,4 @@
 package com.appcovoiturage.backend.entity;
-
 import jakarta.persistence.*;
 import lombok.*;
 
