@@ -126,7 +126,7 @@ export class RideResultsComponent implements OnInit, OnDestroy {
           this.router.navigate(['/my-reservations']);
         },
 
-        error: (err) => {
+        error: (err:any) => {
           console.error(err);
           const msg =
             err?.error?.message || err?.error || 'Erreur lors de la réservation.';

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.time.LocalDate;
 import com.appcovoiturage.backend.dto.CompletedTrajetDto;
+import org.springframework.format.annotation.DateTimeFormat;
 
 
 
@@ -40,7 +41,7 @@ public class TrajetController {
     public ResponseEntity<java.util.List<Trajet>> search(
             @RequestParam String from,
             @RequestParam String to,
-            @RequestParam LocalDate date
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
         return ResponseEntity.ok(trajetService.searchTrajets(from, to, date));
     }

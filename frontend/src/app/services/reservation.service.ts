@@ -35,8 +35,8 @@ export class ReservationService {
 
   constructor(private http: HttpClient) {}
 
-  createReservation(payload: CreateReservationRequest): Observable<void> {
-    return this.http.post<void>(this.apiUrl, payload);
+  createReservation(payload: CreateReservationRequest): Observable<ReservationDto> {
+    return this.http.post<ReservationDto>(this.apiUrl, payload);
   }
 
   // ✅ AJOUT : récupérer "mes réservations" (réservées / effectuées / annulées)

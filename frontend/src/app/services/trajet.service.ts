@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Trajet } from '../models/trajet.model';
 import { CompletedRide } from '../models/completed-ride.model';
+
 
 
 @Injectable({
@@ -26,11 +27,14 @@ export class TrajetService {
         return this.http.delete<void>(`${this.apiUrl}/${id}`);
     }
 
+
     searchTrajets(from: string, to: string, date: string) {
-      return this.http.get<Trajet[]>(
-        `${this.apiUrl}/search`,
-        { params: { from, to, date } }
-      );
+      const params = new HttpParams()
+        .set('from', (from ?? '').trim())
+        .set('to', (to ?? '').trim())
+        .set('date', date); // "2026-02-16"
+
+      return this.http.get<Trajet[]>(`${environment.apiUrl}/trajets/search`, { params });
     }
 
     getCompletedTrajets(): Observable<CompletedRide[]> {
