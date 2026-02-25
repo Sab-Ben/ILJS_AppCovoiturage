@@ -1,8 +1,13 @@
 <div class="container">
   <h2>Rechercher une course</h2>
 
+  <div *ngIf="errorMsg" class="alert alert-danger" role="alert">
+    {{ errorMsg }}
+  </div>
+
   <form (ngSubmit)="onSearch()">
-    <div class="mb-3">
+    <!-- Départ -->
+    <div class="mb-3 position-relative">
       <label class="form-label" for="from">Départ</label>
       <input
         id="from"
@@ -11,10 +16,27 @@
         name="from"
         [(ngModel)]="from"
         placeholder="Ville ou adresse de départ"
+        (blur)="clearSuggestions()"
+        autocomplete="off"
       />
+
+      <ul
+        *ngIf="suggestionsDepart.length > 0"
+        class="list-group position-absolute w-100"
+        style="z-index: 1000;"
+      >
+        <li
+          *ngFor="let address of suggestionsDepart"
+          class="list-group-item list-group-item-action cursor-pointer"
+          (mousedown)="selectAddress('depart', address)"
+        >
+          <strong>{{ address.label }}</strong>
+        </li>
+      </ul>
     </div>
 
-    <div class="mb-3">
+    <!-- Arrivée -->
+    <div class="mb-3 position-relative">
       <label class="form-label" for="to">Arrivée</label>
       <input
         id="to"
@@ -23,9 +45,26 @@
         name="to"
         [(ngModel)]="to"
         placeholder="Ville ou adresse d'arrivée"
+        (blur)="clearSuggestions()"
+        autocomplete="off"
       />
+
+      <ul
+        *ngIf="suggestionsArrivee.length > 0"
+        class="list-group position-absolute w-100"
+        style="z-index: 1000;"
+      >
+        <li
+          *ngFor="let address of suggestionsArrivee"
+          class="list-group-item list-group-item-action cursor-pointer"
+          (mousedown)="selectAddress('arrivee', address)"
+        >
+          <strong>{{ address.label }}</strong>
+        </li>
+      </ul>
     </div>
 
+    <!-- Date -->
     <div class="row mb-3">
       <div class="col-md-6">
         <label class="form-label" for="date">Date</label>
