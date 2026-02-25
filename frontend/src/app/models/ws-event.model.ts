@@ -1,4 +1,6 @@
-export interface WsEvent<T> {
-  type: string;
-  payload: T;
+export interface WsEventModel {
+  type: 'MESSAGE' | 'NOTIFICATION' | string;
+  payload: any;
 }
+
+export type WsEvent = WsEventModel;

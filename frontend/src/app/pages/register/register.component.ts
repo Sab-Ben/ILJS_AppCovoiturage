@@ -20,6 +20,8 @@ export class RegisterComponent implements OnDestroy {
     errorMessage = '';
     private subscription: Subscription = new Subscription();
 
+    loading = false;
+
     constructor(
         private store: Store,
         private actions$: Actions,

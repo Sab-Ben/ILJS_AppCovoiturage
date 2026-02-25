@@ -9,12 +9,12 @@ export const selectNotifications = createSelector(
   (state) => state.notifications
 );
 
-export const selectUnreadNotificationCount = createSelector(
+export const selectUnreadCount = createSelector(
   selectNotificationState,
   (state) => state.unreadCount
 );
 
-export const selectNotificationsLoading = createSelector(
+export const selectNotificationLoading = createSelector(
   selectNotificationState,
   (state) => state.loading
 );

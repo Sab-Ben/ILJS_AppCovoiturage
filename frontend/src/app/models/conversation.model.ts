@@ -1,11 +1,10 @@
-export interface Conversation {
+export interface ConversationModel {
   id: number;
-  trajetId: number;
-  conducteurId: number;
-  conducteurEmail: string;
-  passagerId: number;
-  passagerEmail: string;
-  villeDepart: string;
-  villeArrivee: string;
+  trajetId: number | null;
+  otherUserId: number;
+  otherUserName: string;
   createdAt: string;
+  unreadCount: number;
 }
+
+export type Conversation = ConversationModel;

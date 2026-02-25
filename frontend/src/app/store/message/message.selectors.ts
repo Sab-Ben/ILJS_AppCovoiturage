@@ -3,6 +3,11 @@ import { MessageState } from './message.reducer';
 
 export const selectMessageState = createFeatureSelector<MessageState>('message');
 
+export const selectConversations = createSelector(
+  selectMessageState,
+  (state) => state.conversations
+);
+
 export const selectActiveConversationId = createSelector(
   selectMessageState,
   (state) => state.activeConversationId
@@ -13,10 +18,16 @@ export const selectMessageLoading = createSelector(
   (state) => state.loading
 );
 
-export const selectMessagesForActiveConversation = createSelector(
+export const selectMessagesByConversation = createSelector(
   selectMessageState,
-  (state) => {
-    if (!state.activeConversationId) return [];
-    return state.messagesByConversation[state.activeConversationId] ?? [];
+  (state) => state.messagesByConversation
+);
+
+export const selectMessagesForActiveConversation = createSelector(
+  selectMessagesByConversation,
+  selectActiveConversationId,
+  (map, activeId) => {
+    if (!activeId) return [];
+    return map[activeId] ?? [];
   }
 );

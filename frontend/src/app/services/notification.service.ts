@@ -1,28 +1,27 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
-import { AppNotification } from '../models/notification.model';
+import { NotificationModel, UnreadCountResponse } from '../models/notification.model';
+
+const BASE_URL = 'http://localhost:8080/api/v1';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
-  private apiUrl = `${environment.apiUrl}/notifications`;
-
   constructor(private http: HttpClient) {}
 
-  getMyNotifications(): Observable<AppNotification[]> {
-    return this.http.get<AppNotification[]>(`${this.apiUrl}/me`);
+  getMyNotifications(): Observable<NotificationModel[]> {
+    return this.http.get<NotificationModel[]>(`${BASE_URL}/notifications/me`);
   }
 
-  getUnreadCount(): Observable<{ count: number }> {
-    return this.http.get<{ count: number }>(`${this.apiUrl}/me/unread-count`);
-  }
-
-  markAsRead(id: number): Observable<AppNotification> {
-    return this.http.patch<AppNotification>(`${this.apiUrl}/${id}/read`, {});
+  markAsRead(id: number): Observable<NotificationModel> {
+    return this.http.patch<NotificationModel>(`${BASE_URL}/notifications/${id}/read`, {});
   }
 
   markAllAsRead(): Observable<void> {
-    return this.http.patch<void>(`${this.apiUrl}/me/read-all`, {});
+    return this.http.patch<void>(`${BASE_URL}/notifications/me/read-all`, {});
+  }
+
+  getUnreadCount(): Observable<UnreadCountResponse> {
+    return this.http.get<UnreadCountResponse>(`${BASE_URL}/notifications/me/unread-count`);
   }
 }

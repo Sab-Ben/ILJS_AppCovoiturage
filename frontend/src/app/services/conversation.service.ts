@@ -1,20 +1,23 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
-import { Conversation } from '../models/conversation.model';
+import { ConversationModel } from '../models/conversation.model';
+
+const BASE_URL = 'http://localhost:8080/api/v1';
 
 @Injectable({ providedIn: 'root' })
 export class ConversationService {
-  private apiUrl = `${environment.apiUrl}`;
-
   constructor(private http: HttpClient) {}
 
-  openConversation(trajetId: number): Observable<Conversation> {
-    return this.http.post<Conversation>(`${this.apiUrl}/trajets/${trajetId}/conversations`, {});
+  getMyConversations(): Observable<ConversationModel[]> {
+    return this.http.get<ConversationModel[]>(`${BASE_URL}/conversations/me`);
   }
 
-  getMyConversations(): Observable<Conversation[]> {
-    return this.http.get<Conversation[]>(`${this.apiUrl}/conversations/me`);
+  createOrGetConversation(trajetId: number, otherUserId: number): Observable<number> {
+    const params = new HttpParams()
+      .set('trajetId', trajetId)
+      .set('otherUserId', otherUserId);
+
+    return this.http.post<number>(`${BASE_URL}/conversations`, null, { params });
   }
 }

@@ -1,13 +1,12 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, mergeMap, of } from 'rxjs';
-import * as NotificationActions from './notification.actions';
 import { NotificationService } from '../../services/notification.service';
+import * as NotificationActions from './notification.actions';
+import { catchError, map, mergeMap, of } from 'rxjs';
 
 @Injectable()
 export class NotificationEffects {
-  private actions$ = inject(Actions);
-  private notificationService = inject(NotificationService);
+  constructor(private actions$: Actions, private notificationService: NotificationService) {}
 
   loadNotifications$ = createEffect(() =>
     this.actions$.pipe(

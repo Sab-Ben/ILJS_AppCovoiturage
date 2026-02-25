@@ -1,13 +1,13 @@
 import { createAction, props } from '@ngrx/store';
-import { AppNotification } from '../../models/notification.model';
+import { NotificationModel } from '../../models/notification.model';
 
-export const loadNotifications = createAction('[Notification] Load Notifications');
+export const loadNotifications = createAction('[Notification] Load');
 export const loadNotificationsSuccess = createAction(
-  '[Notification] Load Notifications Success',
-  props<{ notifications: AppNotification[] }>()
+  '[Notification] Load Success',
+  props<{ notifications: NotificationModel[] }>()
 );
 export const loadNotificationsFailure = createAction(
-  '[Notification] Load Notifications Failure',
+  '[Notification] Load Failure',
   props<{ error: any }>()
 );
 
@@ -27,7 +27,7 @@ export const markNotificationAsRead = createAction(
 );
 export const markNotificationAsReadSuccess = createAction(
   '[Notification] Mark As Read Success',
-  props<{ notification: AppNotification }>()
+  props<{ notification: NotificationModel }>()
 );
 export const markNotificationAsReadFailure = createAction(
   '[Notification] Mark As Read Failure',
@@ -41,7 +41,10 @@ export const markAllNotificationsAsReadFailure = createAction(
   props<{ error: any }>()
 );
 
+/**
+ * Realtime (WebSocket) : une notif arrive côté client
+ */
 export const notificationReceivedRealtime = createAction(
   '[Notification] Realtime Received',
-  props<{ notification: AppNotification }>()
+  props<{ notification: NotificationModel }>()
 );

@@ -1,151 +1,110 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { StompSubscription } from '@stomp/stompjs';
-import { Subscription } from 'rxjs';
-
-import { Conversation } from '../../models/conversation.model';
-import { Message } from '../../models/message.model';
-import { WsEvent } from '../../models/ws-event.model';
-
-import { ConversationService } from '../../services/conversation.service';
-import { WsService } from '../../services/ws.service';
-import { UserService } from '../../services/user.service';
-
 import * as MessageActions from '../../store/message/message.actions';
-import * as MessageSelectors from '../../store/message/message.selectors';
-import * as NotificationActions from '../../store/notification/notification.actions';
+import { ConversationModel } from '../../models/conversation.model';
+import { MessageModel } from '../../models/message.model';
+import { WsService } from '../../services/ws.service';
+import { Observable, Subscription } from 'rxjs';
+
+import {
+  selectActiveConversationId,
+  selectMessagesForActiveConversation,
+  selectMessageLoading,
+} from '../../store/message/message.selectors';
+
+import { selectConversations } from '../../store/message/message.selectors';
 
 @Component({
   selector: 'app-messaging',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './messaging.component.html'
+  templateUrl: './messaging.component.html',
+  styleUrls: ['./messaging.component.scss'],
 })
 export class MessagingComponent implements OnInit, OnDestroy {
-  conversations: Conversation[] = [];
-  selectedConversation: Conversation | null = null;
-  messages: Message[] = [];
-  messageInput = '';
-  currentUserId: number | null = null;
+  conversations$!: Observable<ConversationModel[]>;
+  activeConversationId$!: Observable<number | null>;
+  messages$!: Observable<MessageModel[]>;
+  loading$!: Observable<boolean>;
+
+  selectedConversation: ConversationModel | null = null;
+
+  newMessage = '';
+
+  //type simple "unsubscribe"
+  private userWsSub?: { unsubscribe: () => void };
+  private conversationWsSub?: { unsubscribe: () => void };
 
   private sub = new Subscription();
-  private conversationWsSub: StompSubscription | null = null;
-  private notifWsSub: StompSubscription | null = null;
 
-  constructor(
-    private conversationService: ConversationService,
-    private wsService: WsService,
-    private userService: UserService,
-    private route: ActivatedRoute,
-    private store: Store
-  ) {}
+  constructor(private store: Store, private wsService: WsService) {}
 
   ngOnInit(): void {
-    this.wsService.connect();
+    this.conversations$ = this.store.select(selectConversations);
+    this.activeConversationId$ = this.store.select(selectActiveConversationId);
+    this.messages$ = this.store.select(selectMessagesForActiveConversation);
+    this.loading$ = this.store.select(selectMessageLoading);
 
+    // load initial data
+    this.store.dispatch(MessageActions.loadConversations());
+
+    // WS: subscribe user events (message + notif) - handler optionnel
+    this.userWsSub = this.wsService.subscribeToUserNotifications(() => {});
+
+    // quand l’activeConversationId change, on charge messages + subscribe topic (compat)
     this.sub.add(
-      this.userService.getMyProfile().subscribe({
-        next: (user) => {
-          this.currentUserId = user.id;
-          this.subscribeToNotifications(user.id);
-        }
+      this.activeConversationId$.subscribe((id) => {
+        if (!id) return;
+        this.store.dispatch(MessageActions.loadMessages({ conversationId: id }));
+        this.store.dispatch(MessageActions.markConversationAsRead({ conversationId: id }));
+
+        this.conversationWsSub?.unsubscribe();
+        this.conversationWsSub = this.wsService.subscribeToConversation(id, () => {});
       })
     );
 
-    this.loadConversations();
-
+    // quand la liste des conversations change, on met à jour selectedConversation si besoin
     this.sub.add(
-      this.store.select(MessageSelectors.selectMessagesForActiveConversation).subscribe((msgs) => {
-        this.messages = msgs;
-      })
-    );
-
-    this.sub.add(
-      this.route.queryParamMap.subscribe((params) => {
-        const conversationId = Number(params.get('conversationId'));
-        if (conversationId) {
-          // Si les conversations sont déjà chargées, on sélectionne
-          const found = this.conversations.find(c => c.id === conversationId);
-          if (found) this.selectConversation(found);
-        }
+      this.conversations$.subscribe((list) => {
+        if (!this.selectedConversation) return;
+        const updated = list.find((c) => c.id === this.selectedConversation?.id);
+        if (updated) this.selectedConversation = updated;
       })
     );
   }
 
-  loadConversations(): void {
-    this.conversationService.getMyConversations().subscribe({
-      next: (conversations) => {
-        this.conversations = conversations;
-
-        const queryId = Number(this.route.snapshot.queryParamMap.get('conversationId'));
-        if (queryId) {
-          const found = conversations.find(c => c.id === queryId);
-          if (found) {
-            this.selectConversation(found);
-            return;
-          }
-        }
-
-        if (!this.selectedConversation && conversations.length > 0) {
-          this.selectConversation(conversations[0]);
-        }
-      },
-      error: (err) => console.error('Erreur chargement conversations', err)
-    });
+  selectConversation(c: ConversationModel) {
+    this.selectedConversation = c;
+    // compat: ton code peut utiliser setActiveConversation
+    this.store.dispatch(MessageActions.setActiveConversation({ conversationId: c.id }));
+    // et aussi le nouveau nom (ça ne gêne pas)
+    this.store.dispatch(MessageActions.selectConversation({ conversationId: c.id }));
   }
 
-  selectConversation(conversation: Conversation): void {
-    this.selectedConversation = conversation;
-
-    this.store.dispatch(MessageActions.setActiveConversation({ conversationId: conversation.id }));
-    this.store.dispatch(MessageActions.loadMessages({ conversationId: conversation.id }));
-
-    // Re-subscribe au topic de la conversation
-    this.conversationWsSub?.unsubscribe();
-    this.conversationWsSub = this.wsService.subscribeToConversation(
-      conversation.id,
-      (event: WsEvent<Message>) => {
-        if (event.type === 'MESSAGE_CREATED') {
-          this.store.dispatch(MessageActions.messageReceivedRealtime({ message: event.payload }));
-        }
-      }
-    );
-  }
-
-  sendMessage(): void {
-    if (!this.selectedConversation) return;
-    const content = this.messageInput.trim();
-    if (!content) return;
+  send() {
+    const content = this.newMessage.trim();
+    if (!content || !this.selectedConversation) return;
 
     this.store.dispatch(
-      MessageActions.sendMessage({
-        conversationId: this.selectedConversation.id,
-        content
-      })
+      MessageActions.sendMessage({ conversationId: this.selectedConversation.id, content })
     );
 
-    this.messageInput = '';
+    this.newMessage = '';
   }
 
-  private subscribeToNotifications(userId: number): void {
-    this.notifWsSub?.unsubscribe();
-    // this.notifWsSub = this.wsService.subscribeToUserNotifications(userId, (event) => {
-    //   if (event.type === 'NOTIFICATION_CREATED') {
-    //     this.store.dispatch(NotificationActions.notificationReceivedRealtime({ notification: event.payload }));
-    //   }
-    // });
+  trackByConversationId(_: number, c: ConversationModel) {
+    return c.id;
   }
 
-  isMine(message: Message): boolean {
-    return !!this.currentUserId && message.senderId === this.currentUserId;
+  trackByMessageId(_: number, m: MessageModel) {
+    return m.id;
   }
 
   ngOnDestroy(): void {
     this.sub.unsubscribe();
+    this.userWsSub?.unsubscribe();
     this.conversationWsSub?.unsubscribe();
-    this.notifWsSub?.unsubscribe();
   }
 }

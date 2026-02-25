@@ -1,6 +1,38 @@
 import { createAction, props } from '@ngrx/store';
-import { Message } from '../../models/message.model';
+import { ConversationModel } from '../../models/conversation.model';
+import { MessageModel } from '../../models/message.model';
 
+/**
+ * Conversations
+ */
+export const loadConversations = createAction('[Message] Load Conversations');
+
+export const loadConversationsSuccess = createAction(
+  '[Message] Load Conversations Success',
+  props<{ conversations: ConversationModel[] }>()
+);
+
+export const loadConversationsFailure = createAction(
+  '[Message] Load Conversations Failure',
+  props<{ error: any }>()
+);
+
+/**
+ * Sélection conversation (nouveau nom)
+ */
+export const selectConversation = createAction(
+  '[Message] Select Conversation',
+  props<{ conversationId: number }>()
+);
+
+export const setActiveConversation = createAction(
+  '[Message] Set Active Conversation',
+  props<{ conversationId: number }>()
+);
+
+/**
+ * Messages
+ */
 export const loadMessages = createAction(
   '[Message] Load Messages',
   props<{ conversationId: number }>()
@@ -8,7 +40,7 @@ export const loadMessages = createAction(
 
 export const loadMessagesSuccess = createAction(
   '[Message] Load Messages Success',
-  props<{ conversationId: number; messages: Message[] }>()
+  props<{ conversationId: number; messages: MessageModel[] }>()
 );
 
 export const loadMessagesFailure = createAction(
@@ -23,7 +55,7 @@ export const sendMessage = createAction(
 
 export const sendMessageSuccess = createAction(
   '[Message] Send Message Success',
-  props<{ message: Message }>()
+  props<{ message: MessageModel }>()
 );
 
 export const sendMessageFailure = createAction(
@@ -31,14 +63,27 @@ export const sendMessageFailure = createAction(
   props<{ error: any }>()
 );
 
-export const messageReceivedRealtime = createAction(
-  '[Message] Realtime Message Received',
-  props<{ message: Message }>()
+export const markConversationAsRead = createAction(
+  '[Message] Mark Conversation As Read',
+  props<{ conversationId: number }>()
 );
 
-export const setActiveConversation = createAction(
-  '[Message] Set Active Conversation',
-  props<{ conversationId: number | null }>()
+export const markConversationAsReadSuccess = createAction(
+  '[Message] Mark Conversation As Read Success',
+  props<{ conversationId: number }>()
+);
+
+export const markConversationAsReadFailure = createAction(
+  '[Message] Mark Conversation As Read Failure',
+  props<{ error: any }>()
+);
+
+/**
+ * Realtime (WebSocket)
+ */
+export const messageReceivedRealtime = createAction(
+  '[Message] Realtime Received',
+  props<{ message: MessageModel }>()
 );
 
 export const clearMessages = createAction('[Message] Clear');

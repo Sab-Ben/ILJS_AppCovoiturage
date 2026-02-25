@@ -1,12 +1,11 @@
-export interface Message {
+export interface MessageModel {
   id: number;
   conversationId: number;
   senderId: number;
-  senderEmail: string;
+  senderName: string;
   content: string;
-  sentAt: string;
+  createdAt: string;
+  isRead: boolean;
 }
 
-export interface SendMessageRequest {
-  content: string;
-}
+export type Message = MessageModel;
