@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject, switchMap, takeUntil } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { Actions, ofType } from '@ngrx/effects';
 
 import { RideService } from '../../services/ride.service';
 import { MapService } from '../../services/map.service';
 import { Ride } from '../../models/ride.model';
-import { ReservationService } from '../../services/reservation.service';
+import * as ReservationActions from '../../store/reservation/reservation.actions';
 
 @Component({
   selector: 'app-ride-detail',
@@ -20,12 +22,9 @@ export class RideDetailComponent implements OnInit, OnDestroy {
   ride: Ride | null = null;
   selectedSeats = 1;
 
-  // champ saisi par l'utilisateur (obligatoire)
   desiredRoute = '';
 
   successMsg: string | null = null;
-
-  // pour annuler ensuite
   lastReservationId: number | null = null;
   lastReservedSeats = 0;
 
@@ -35,74 +34,121 @@ export class RideDetailComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private rideService: RideService,
-    private mapService: MapService,
-    private reservationService: ReservationService
+      private route: ActivatedRoute,
+      private router: Router,
+      private rideService: RideService,
+      private mapService: MapService,
+      private store: Store,
+      private actions$: Actions
   ) {}
 
   ngOnInit(): void {
-    // seats depuis query params
     this.route.queryParamMap
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((qp) => {
-        const seats = Number(qp.get('seats') ?? '1');
-        this.selectedSeats = Number.isFinite(seats) && seats > 0 ? seats : 1;
-      });
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((qp) => {
+          const seats = Number(qp.get('seats') ?? '1');
+          this.selectedSeats = Number.isFinite(seats) && seats > 0 ? seats : 1;
+        });
 
-    // ride id depuis params
     this.loading = true;
     this.route.paramMap
-      .pipe(
-        takeUntil(this.destroy$),
-        switchMap((params) => {
-          const id = params.get('id');
-          if (!id) throw new Error('ID course manquant');
-          return this.rideService.getRideById(id);
-        })
-      )
-      .subscribe({
-        next: async (ride) => {
-          this.ride = ride;
-          this.loading = false;
-          this.errorMsg = null;
+        .pipe(
+            takeUntil(this.destroy$),
+            switchMap((params) => {
+              const id = params.get('id');
+              if (!id) throw new Error('ID course manquant');
+              return this.rideService.getRideById(id);
+            })
+        )
+        .subscribe({
+          next: async (ride) => {
+            this.ride = ride;
+            this.loading = false;
+            this.errorMsg = null;
 
-          const center =
-            (ride as any).fromLat != null && (ride as any).fromLng != null
-              ? ([(ride as any).fromLat, (ride as any).fromLng] as [number, number])
-              : ([48.8566, 2.3522] as [number, number]); // fallback Paris
+            const center =
+                (ride as any).fromLat != null && (ride as any).fromLng != null
+                    ? ([(ride as any).fromLat, (ride as any).fromLng] as [number, number])
+                    : ([48.8566, 2.3522] as [number, number]);
 
-          setTimeout(async () => {
-            try {
-              this.mapService.initMap('ride-map', center, 12);
+            setTimeout(async () => {
+              try {
+                this.mapService.initMap('ride-map', center, 12);
 
-              if (
-                (ride as any).fromLat != null &&
-                (ride as any).fromLng != null &&
-                (ride as any).toLat != null &&
-                (ride as any).toLng != null
-              ) {
-                await this.mapService.drawRoute(
-                  (ride as any).fromLat,
-                  (ride as any).fromLng,
-                  (ride as any).toLat,
-                  (ride as any).toLng
-                );
-              } else {
-                this.errorMsg = 'Coordonnées manquantes pour afficher l’itinéraire.';
+                if (
+                    (ride as any).fromLat != null &&
+                    (ride as any).fromLng != null &&
+                    (ride as any).toLat != null &&
+                    (ride as any).toLng != null
+                ) {
+                  await this.mapService.drawRoute(
+                      (ride as any).fromLat,
+                      (ride as any).fromLng,
+                      (ride as any).toLat,
+                      (ride as any).toLng
+                  );
+                } else {
+                  this.errorMsg = 'Coordonnées manquantes pour afficher l’itinéraire.';
+                }
+              } catch (e: any) {
+                this.errorMsg = e?.message ?? 'Erreur affichage carte/itinéraire';
               }
-            } catch (e: any) {
-              this.errorMsg = e?.message ?? 'Erreur affichage carte/itinéraire';
-            }
-          }, 0);
-        },
-        error: (err: any) => {
+            }, 0);
+          },
+          error: (err: any) => {
+            this.loading = false;
+            this.ride = null;
+            this.errorMsg = err?.message ?? 'Erreur chargement course';
+          },
+        });
+
+    this.actions$
+        .pipe(ofType(ReservationActions.createReservationSuccess), takeUntil(this.destroy$))
+        .subscribe((res: any) => {
           this.loading = false;
-          this.ride = null;
-          this.errorMsg = err?.message ?? 'Erreur chargement course';
-        },
-      });
+          this.successMsg = 'Réservation confirmée ✅';
+
+          this.lastReservationId = res.reservation?.id;
+          this.lastReservedSeats = this.selectedSeats;
+
+          if (this.ride && (this.ride as any).availableSeats != null) {
+            (this.ride as any).availableSeats =
+                Number((this.ride as any).availableSeats) - this.selectedSeats;
+          }
+
+          this.router.navigate(['/my-reservations']);
+        });
+
+    this.actions$
+        .pipe(ofType(ReservationActions.createReservationFailure), takeUntil(this.destroy$))
+        .subscribe((action: any) => {
+          this.loading = false;
+          console.error(action.error);
+          this.errorMsg = action.error?.error?.message ?? 'Impossible de réserver (erreur serveur)';
+        });
+
+    this.actions$
+        .pipe(ofType(ReservationActions.cancelReservationSuccess), takeUntil(this.destroy$))
+        .subscribe(() => {
+          this.loading = false;
+          this.successMsg = 'Réservation annulée ✅';
+
+          if (this.ride && (this.ride as any).availableSeats != null) {
+            (this.ride as any).availableSeats =
+                Number((this.ride as any).availableSeats) + this.lastReservedSeats;
+          }
+
+          this.lastReservationId = null;
+          this.lastReservedSeats = 0;
+        });
+
+    this.actions$
+        .pipe(ofType(ReservationActions.cancelReservationFailure), takeUntil(this.destroy$))
+        .subscribe((action: any) => {
+          this.loading = false;
+          console.error(action.error);
+          this.errorMsg = action.error?.error?.message ?? 'Impossible d’annuler (moins de 2h avant le départ)';
+        });
   }
 
   reserve(): void {
@@ -125,7 +171,6 @@ export class RideDetailComponent implements OnInit, OnDestroy {
     const payload = {
       rideId: Number((this.ride as any).id),
       seats: this.selectedSeats,
-      // ✅ on envoie ce que l'utilisateur a saisi
       desiredRoute: this.desiredRoute.trim(),
     };
 
@@ -135,36 +180,7 @@ export class RideDetailComponent implements OnInit, OnDestroy {
     }
 
     this.loading = true;
-
-    // ✅ UN SEUL appel HTTP (important)
-    this.reservationService
-      .createReservation(payload)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (res) => {
-          this.loading = false;
-          this.successMsg = 'Réservation confirmée ✅';
-
-          // stocke l'id réservation pour annuler (si besoin)
-          this.lastReservationId = res.id;
-          this.lastReservedSeats = this.selectedSeats;
-
-          // décrément visuel immédiat
-          if (this.ride && (this.ride as any).availableSeats != null) {
-            (this.ride as any).availableSeats =
-              Number((this.ride as any).availableSeats) - this.selectedSeats;
-          }
-
-          // ✅ redirection vers "mes réservations"
-          this.router.navigate(['/my-reservations']);
-        },
-        error: (err: any) => {
-          this.loading = false;
-          console.error(err);
-          this.errorMsg =
-            err?.error?.message ?? 'Impossible de réserver (erreur serveur)';
-        },
-      });
+    this.store.dispatch(ReservationActions.createReservation({ payload }));
   }
 
   cancel(): void {
@@ -176,30 +192,7 @@ export class RideDetailComponent implements OnInit, OnDestroy {
     this.errorMsg = null;
     this.successMsg = null;
 
-    this.reservationService
-      .cancelReservation(this.lastReservationId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.loading = false;
-          this.successMsg = 'Réservation annulée ✅';
-
-          // ré-incrémente visuel
-          if (this.ride && (this.ride as any).availableSeats != null) {
-            (this.ride as any).availableSeats =
-              Number((this.ride as any).availableSeats) + this.lastReservedSeats;
-          }
-
-          this.lastReservationId = null;
-          this.lastReservedSeats = 0;
-        },
-        error: (err: any) => {
-          this.loading = false;
-          console.error(err);
-          this.errorMsg =
-            err?.error?.message ?? 'Impossible d’annuler (moins de 2h avant le départ)';
-        },
-      });
+    this.store.dispatch(ReservationActions.cancelReservation({ id: this.lastReservationId }));
   }
 
   ngOnDestroy(): void {

@@ -18,12 +18,10 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Le trajet réservé
     @ManyToOne(optional = false)
     @JoinColumn(name = "trajet_id")
     private Trajet trajet;
 
-    // Le passager
     @ManyToOne(optional = false)
     @JoinColumn(name = "passager_id")
     private User passager;

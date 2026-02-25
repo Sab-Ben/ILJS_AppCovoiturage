@@ -1,88 +1,90 @@
-<div class="container">
-  <h2>Rechercher une course</h2>
+<div class="container mt-4">
+    <h2>Rechercher une course</h2>
 
-  <div *ngIf="errorMsg" class="alert alert-danger" role="alert">
-    {{ errorMsg }}
-  </div>
-
-  <form (ngSubmit)="onSearch()">
-    <!-- Départ -->
-    <div class="mb-3 position-relative">
-      <label class="form-label" for="from">Départ</label>
-      <input
-        id="from"
-        class="form-control"
-        type="text"
-        name="from"
-        [(ngModel)]="from"
-        placeholder="Ville ou adresse de départ"
-        (blur)="clearSuggestions()"
-        autocomplete="off"
-      />
-
-      <ul
-        *ngIf="suggestionsDepart.length > 0"
-        class="list-group position-absolute w-100"
-        style="z-index: 1000;"
-      >
-        <li
-          *ngFor="let address of suggestionsDepart"
-          class="list-group-item list-group-item-action cursor-pointer"
-          (mousedown)="selectAddress('depart', address)"
-        >
-          <strong>{{ address.label }}</strong>
-        </li>
-      </ul>
+    <div *ngIf="errorMsg" class="alert alert-danger" role="alert">
+        {{ errorMsg }}
     </div>
 
-    <!-- Arrivée -->
-    <div class="mb-3 position-relative">
-      <label class="form-label" for="to">Arrivée</label>
-      <input
-        id="to"
-        class="form-control"
-        type="text"
-        name="to"
-        [(ngModel)]="to"
-        placeholder="Ville ou adresse d'arrivée"
-        (blur)="clearSuggestions()"
-        autocomplete="off"
-      />
+    <form (ngSubmit)="onSearch()">
+        <div class="mb-3 position-relative">
+            <label class="form-label" for="from">Adresse de départ (France)</label>
+            <input
+                    id="from"
+                    class="form-control"
+                    type="text"
+                    name="from"
+                    [(ngModel)]="from"
+                    (input)="onSearchInput('depart', $any($event.target).value)"
+                    (blur)="clearSuggestions()"
+                    placeholder="Ex: 10 Rue de la Paix, 75002 Paris"
+                    autocomplete="off"
+            />
 
-      <ul
-        *ngIf="suggestionsArrivee.length > 0"
-        class="list-group position-absolute w-100"
-        style="z-index: 1000;"
-      >
-        <li
-          *ngFor="let address of suggestionsArrivee"
-          class="list-group-item list-group-item-action cursor-pointer"
-          (mousedown)="selectAddress('arrivee', address)"
-        >
-          <strong>{{ address.label }}</strong>
-        </li>
-      </ul>
-    </div>
+            <ul
+                    *ngIf="suggestionsDepart.length > 0"
+                    class="list-group position-absolute w-100"
+                    style="z-index: 1000;"
+            >
+                <li
+                        *ngFor="let address of suggestionsDepart"
+                        class="list-group-item list-group-item-action cursor-pointer"
+                        (mousedown)="selectAddress('depart', address)"
+                >
+                    <strong>{{ address.label }}</strong>
+                </li>
+            </ul>
+        </div>
 
-    <!-- Date -->
-    <div class="row mb-3">
-      <div class="col-md-6">
-        <label class="form-label" for="date">Date</label>
-        <input
-          id="date"
-          class="form-control"
-          type="date"
-          name="date"
-          [(ngModel)]="date"
-        />
-      </div>
-    </div>
+        <div class="mb-3 position-relative">
+            <label class="form-label" for="to">Adresse d'arrivée</label>
+            <input
+                    id="to"
+                    class="form-control"
+                    type="text"
+                    name="to"
+                    [(ngModel)]="to"
+                    (input)="onSearchInput('arrivee', $any($event.target).value)"
+                    (blur)="clearSuggestions()"
+                    placeholder="Ex: Gare Part-Dieu, Lyon"
+                    autocomplete="off"
+            />
 
-    <div class="d-flex">
-      <button class="btn btn-primary me-2" type="submit">Rechercher</button>
-      <button class="btn btn-secondary" type="button" (click)="onReset()">
-        Réinitialiser
-      </button>
-    </div>
-  </form>
+            <ul
+                    *ngIf="suggestionsArrivee.length > 0"
+                    class="list-group position-absolute w-100"
+                    style="z-index: 1000;"
+            >
+                <li
+                        *ngFor="let address of suggestionsArrivee"
+                        class="list-group-item list-group-item-action cursor-pointer"
+                        (mousedown)="selectAddress('arrivee', address)"
+                >
+                    <strong>{{ address.label }}</strong>
+                </li>
+            </ul>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label" for="date">Date</label>
+                <input
+                        id="date"
+                        class="form-control"
+                        type="date"
+                        name="date"
+                        [(ngModel)]="date"
+                />
+            </div>
+        </div>
+
+        <div class="d-flex">
+            <button class="btn btn-primary me-2" type="submit" [disabled]="searching">
+                <span *ngIf="searching" class="spinner-border spinner-border-sm me-2"></span>
+                {{ searching ? 'Recherche...' : 'Rechercher' }}
+            </button>
+            <button class="btn btn-secondary" type="button" (click)="onReset()">
+                Réinitialiser
+            </button>
+        </div>
+    </form>
 </div>

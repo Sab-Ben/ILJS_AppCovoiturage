@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -48,9 +50,52 @@ public class ReservationService {
 
         reservation = reservationRepository.save(reservation);
 
+        // On renvoie juste l'id et les infos de base pour valider la création
         return ReservationResponse.builder()
                 .id(reservation.getId())
+                .seats(reservation.getSeats())
+                .desiredRoute(reservation.getDesiredRoute())
+                .createdAt(reservation.getCreatedAt())
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReservationResponse> getMyReservations(User user, String status) {
+        List<Reservation> reservations = reservationRepository.findByPassager(user);
+        LocalDateTime now = LocalDateTime.now();
+
+        return reservations.stream()
+                .filter(res -> {
+                    boolean isPast = res.getTrajet().getDateHeureDepart().isBefore(now);
+                    if ("COMPLETED".equalsIgnoreCase(status)) return isPast;
+                    if ("RESERVED".equalsIgnoreCase(status)) return !isPast;
+                    return true;
+                })
+                .map(res -> {
+                    Trajet trajet = res.getTrajet();
+                    boolean isPast = trajet.getDateHeureDepart().isBefore(now);
+
+                    // Conversion des infos du trajet pour le Front
+                    ReservationResponse.RideSummary rideSummary = ReservationResponse.RideSummary.builder()
+                            .id(trajet.getId())
+                            .from(trajet.getVilleDepart())
+                            .to(trajet.getVilleArrivee())
+                            .date(trajet.getDateHeureDepart().toLocalDate().toString())
+                            .departureTime(trajet.getDateHeureDepart().toLocalTime().toString())
+                            .availableSeats(trajet.getPlacesDisponibles())
+                            .driverName(trajet.getConducteur().getFirstname() + " " + trajet.getConducteur().getLastname())
+                            .build();
+
+                    return ReservationResponse.builder()
+                            .id(res.getId())
+                            .seats(res.getSeats())
+                            .desiredRoute(res.getDesiredRoute())
+                            .status(isPast ? "COMPLETED" : "RESERVED")
+                            .createdAt(res.getCreatedAt())
+                            .ride(rideSummary)
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -64,16 +109,16 @@ public class ReservationService {
 
         Trajet trajet = reservation.getTrajet();
 
-        // ✅ règle des 2h avant départ
         LocalDateTime depart = trajet.getDateHeureDepart();
         if (LocalDateTime.now().isAfter(depart.minusHours(2))) {
             throw new IllegalArgumentException("Impossible d'annuler moins de 2h avant le départ");
         }
 
-        // ✅ libère la/les place(s)
+        // On rend les places au trajet
         trajet.setPlacesDisponibles(trajet.getPlacesDisponibles() + reservation.getSeats());
         trajetRepository.save(trajet);
 
+        // On supprime la réservation
         reservationRepository.delete(reservation);
     }
 }

@@ -1,5 +1,5 @@
 <div class="page">
-  <a routerLink="/ride-results">← Retour</a>
+  <a routerLink="/my-reservations">← Retour</a>
 
   <h2>Voir le détail d’une course</h2>
 
@@ -34,45 +34,6 @@
     <div class="card">
       <h3>Itinéraire</h3>
       <div id="ride-map" class="map"></div>
-    </div>
-
-    <div class="card reservation">
-      <h3>Réserver cette course</h3>
-
-      <div class="form-group">
-        <label>Trajet souhaité / point de RDV</label>
-        <input
-          type="text"
-          [(ngModel)]="desiredRoute"
-          placeholder="Ex : Gare → Aéroport"
-        />
-      </div>
-
-      <button
-        (click)="reserve()"
-        [disabled]="loading || ride.availableSeats === 0"
-      >
-        {{ loading ? 'Réservation...' : 'Confirmer la réservation' }}
-      </button>
-
-      <!-- ✅ Annuler (uniquement si on a une réservation récente) -->
-      <button
-        *ngIf="lastReservationId"
-        (click)="cancel()"
-        [disabled]="loading"
-        style="margin-top: 10px;"
-      >
-        {{ loading ? 'Annulation...' : 'Annuler la réservation' }}
-      </button>
-
-      <div *ngIf="successMsg" class="success">
-        {{ successMsg }}
-      </div>
-
-      <div *ngIf="errorMsg && !loading" class="error">
-        {{ errorMsg }}
-      </div>
-
     </div>
 
   </ng-container>

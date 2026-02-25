@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReservationRequest {
-    private Long rideId;         // côté front ça s'appelle rideId
+    private Long rideId;
     private Integer seats;
     private String desiredRoute;
 }

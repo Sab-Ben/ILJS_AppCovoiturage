@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/reservations")
 @CrossOrigin(origins = "*")
@@ -23,10 +25,17 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.createReservation(req, user));
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<List<ReservationResponse>> getMyReservations(
+            @RequestParam(defaultValue = "RESERVED") String status,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(reservationService.getMyReservations(user, status));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> cancel(@PathVariable Long id,
                                        @AuthenticationPrincipal User user) {
         reservationService.cancelReservation(id, user);
-        return ResponseEntity.noContent().build(); // 204
+        return ResponseEntity.noContent().build();
     }
 }

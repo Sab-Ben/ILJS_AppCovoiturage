@@ -1,29 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
-import { ReservationService } from '../../services/reservation.service';
+import { Subscription } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { Actions, ofType } from '@ngrx/effects';
 
-
-export type ReservationStatus = 'RESERVED' | 'COMPLETED' | 'CANCELLED';
-
-export interface ReservationDto {
-  id: number;
-  seats: number;
-  status: ReservationStatus;
-  createdAt?: string;
-
-  ride: {
-    id: number;
-    from: string;
-    to: string;
-    date: string;
-    departureTime?: string;
-    availableSeats?: number;
-    price?: number;
-    driverName?: string;
-  };
-}
+import { Reservation } from '../../models/reservation.model';
+import * as ReservationActions from '../../store/reservation/reservation.actions';
+import * as ReservationSelectors from '../../store/reservation/reservation.selectors';
 
 @Component({
   selector: 'app-my-reservations',
@@ -38,77 +22,87 @@ export class MyReservationsComponent implements OnInit, OnDestroy {
   loading = false;
   errorMsg: string | null = null;
 
-  reserved: ReservationDto[] = [];
-  completed: ReservationDto[] = [];
+  reserved: Reservation[] = [];
+  completed: Reservation[] = [];
 
-  private destroy$ = new Subject<void>();
+  private subscription: Subscription = new Subscription();
 
-  constructor(private reservationService: ReservationService) {}
+  constructor(
+      private store: Store,
+      private actions$: Actions
+  ) {}
 
   ngOnInit(): void {
     this.loadAll();
+
+    this.subscription.add(
+        this.store.select(ReservationSelectors.selectReservedReservations).subscribe(data => {
+          this.reserved = data;
+        })
+    );
+
+    this.subscription.add(
+        this.store.select(ReservationSelectors.selectCompletedReservations).subscribe(data => {
+          this.completed = data;
+        })
+    );
+
+    this.subscription.add(
+        this.store.select(ReservationSelectors.selectReservationLoading).subscribe(loading => {
+          this.loading = loading;
+        })
+    );
+
+    this.subscription.add(
+        this.store.select(ReservationSelectors.selectReservationError).subscribe(error => {
+          if (error) this.errorMsg = 'Erreur lors du chargement des réservations.';
+        })
+    );
+
+    this.subscription.add(
+        this.actions$.pipe(ofType(ReservationActions.cancelReservationSuccess)).subscribe(() => {
+          alert('Réservation annulée ✅');
+          // Optionnel : Recharger tout si tu ne gères pas le retrait auto dans le reducer
+          // this.loadAll();
+        })
+    );
+
+    this.subscription.add(
+        this.actions$.pipe(ofType(ReservationActions.cancelReservationFailure)).subscribe((action) => {
+          console.error(action.error);
+          alert(action.error?.error?.message || 'Erreur lors de l’annulation.');
+        })
+    );
   }
 
   loadAll(): void {
-    this.loading = true;
     this.errorMsg = null;
-
-    // 2 appels (réservées + effectuées)
-    this.reservationService
-      .getMyReservations('RESERVED')
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => (this.reserved = data ?? []),
-        error: () => (this.errorMsg = 'Erreur lors du chargement des réservations.'),
-      });
-
-    this.reservationService
-      .getMyReservations('COMPLETED')
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => {
-          this.completed = data ?? [];
-          this.loading = false;
-        },
-        error: () => {
-          this.errorMsg = 'Erreur lors du chargement des réservations.';
-          this.loading = false;
-        },
-      });
+    this.store.dispatch(ReservationActions.loadReservations({ status: 'RESERVED' }));
+    this.store.dispatch(ReservationActions.loadReservations({ status: 'COMPLETED' }));
   }
 
   switchTab(t: 'reserved' | 'completed'): void {
     this.tab = t;
   }
 
-  canCancel(r: ReservationDto): boolean {
+  canCancel(r: Reservation): boolean {
     return r.status === 'RESERVED';
   }
 
-  cancel(r: ReservationDto): void {
+  cancel(r: Reservation): void {
     if (!this.canCancel(r)) return;
 
     const ok = confirm('Annuler cette réservation ?');
     if (!ok) return;
 
-    this.reservationService.cancelReservation(r.id).subscribe({
-      next: () => {
-        alert('Réservation annulée ✅');
-        this.loadAll();
-      },
-      error: (err) => {
-        console.error(err);
-        alert(err?.error?.message || 'Erreur lors de l’annulation.');
-      },
-    });
+    this.store.dispatch(ReservationActions.cancelReservation({ id: r.id }));
   }
 
-  trackById(_: number, r: ReservationDto) {
+  trackById(_: number, r: Reservation) {
     return r.id;
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.subscription.unsubscribe();
   }
 }

@@ -12,25 +12,22 @@ export class TrajetEffects {
     loadTrajets$ = createEffect(() => this.actions$.pipe(
         ofType(TrajetActions.loadTrajets),
         mergeMap(() => this.trajetService.getMyTrajets().pipe(
-            // SUCCÈS : On sauvegarde les données fraîches dans le localStorage
             tap(trajets => {
                 try {
-                    localStorage.setItem('offline_trajets', JSON.stringify(trajets));
+                    sessionStorage.setItem('offline_trajets', JSON.stringify(trajets));
                 } catch (e) {
                     console.error('Impossible de sauvegarder les trajets en local', e);
                 }
             }),
             map(trajets => TrajetActions.loadTrajetsSuccess({ trajets })),
 
-            // ÉCHEC (Offline ou Erreur Serveur) : On tente de récupérer le cache
             catchError(error => {
                 console.warn('Mode hors ligne ou erreur API détectée : ', error);
 
-                const cachedTrajets = localStorage.getItem('offline_trajets');
+                const cachedTrajets = sessionStorage.getItem('offline_trajets');
 
                 if (cachedTrajets) {
                     try {
-                        // Si on a des données en cache, on fait comme si c'était un succès
                         const trajets = JSON.parse(cachedTrajets);
                         return of(TrajetActions.loadTrajetsSuccess({ trajets }));
                     } catch (e) {
@@ -38,7 +35,6 @@ export class TrajetEffects {
                     }
                 }
 
-                // Si aucun cache n'est disponible, on renvoie l'erreur normale
                 return of(TrajetActions.loadTrajetsFailure({ error }));
             })
         ))

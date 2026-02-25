@@ -50,7 +50,6 @@ export class MyRidesComponent implements OnInit, OnDestroy {
             })
         );
 
-        // 5. Gestion spécifique de l'erreur de suppression pour garder votre 'alert'
         this.subscription.add(
             this.actions$.pipe(ofType(TrajetActions.deleteTrajetFailure)).subscribe((action) => {
                 console.error('Erreur lors de la suppression', action.error);

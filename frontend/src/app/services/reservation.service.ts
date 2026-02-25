@@ -3,46 +3,25 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-export interface CreateReservationRequest {
-  rideId: number;
-  seats: number;
-  desiredRoute: string; // ✅ requis
-}
-
-export type ReservationStatus = 'RESERVED' | 'COMPLETED' | 'CANCELLED';
-
-export interface ReservationDto {
-  id: number;
-  seats: number;
-  status: ReservationStatus;
-  createdAt?: string;
-
-  ride: {
-    id: number;
-    from: string;
-    to: string;
-    date: string;
-    departureTime?: string;
-    availableSeats?: number;
-    price?: number;
-    driverName?: string;
-  };
-}
+import {
+  Reservation,
+  ReservationStatus,
+  CreateReservationRequest
+} from '../models/reservation.model';
 
 @Injectable({ providedIn: 'root' })
 export class ReservationService {
-  private readonly apiUrl = `${environment.apiUrl}/reservations`; // -> /api/v1/reservations
+  private readonly apiUrl = `${environment.apiUrl}/reservations`;
 
   constructor(private http: HttpClient) {}
 
-  createReservation(payload: CreateReservationRequest): Observable<ReservationDto> {
-    return this.http.post<ReservationDto>(this.apiUrl, payload);
+  createReservation(payload: CreateReservationRequest): Observable<Reservation> {
+    return this.http.post<Reservation>(this.apiUrl, payload);
   }
 
-  // ✅ AJOUT : récupérer "mes réservations" (réservées / effectuées / annulées)
-  getMyReservations(status: ReservationStatus): Observable<ReservationDto[]> {
+  getMyReservations(status: ReservationStatus): Observable<Reservation[]> {
     const params = new HttpParams().set('status', status);
-    return this.http.get<ReservationDto[]>(`${this.apiUrl}/me`, { params });
+    return this.http.get<Reservation[]>(`${this.apiUrl}/me`, { params });
   }
 
   cancelReservation(id: number): Observable<void> {
