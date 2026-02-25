@@ -48,24 +48,21 @@ public class MessageService {
         Message saved = messageRepository.save(message);
         MessageResponseDto response = toDto(saved);
 
-        // WebSocket message temps réel (conversation privée)
         simpMessagingTemplate.convertAndSend(
                 "/topic/conversations/" + conversationId,
-                WsEventDto.<MessageResponseDto>builder()
+                WsEventDto.builder()
                         .type("MESSAGE_CREATED")
                         .payload(response)
                         .build()
         );
 
-        // Notification destinataire
         User recipient = conversation.getConducteur().getId().equals(sender.getId())
                 ? conversation.getPassager()
                 : conversation.getConducteur();
 
-        String trajetLabel = conversation.getTrajet().getVilleDepart()
-                + " → "
-                + conversation.getTrajet().getVilleArrivee();
+        String trajetLabel = conversation.getTrajet().getVilleDepart() + " → " + conversation.getTrajet().getVilleArrivee();
 
+        // ✅ ICI on passe bien un User
         notificationService.notifyMessageReceived(recipient, conversation.getId(), trajetLabel);
 
         return response;

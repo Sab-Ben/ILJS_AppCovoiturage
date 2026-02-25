@@ -132,11 +132,11 @@ export class MessagingComponent implements OnInit, OnDestroy {
 
   private subscribeToNotifications(userId: number): void {
     this.notifWsSub?.unsubscribe();
-    this.notifWsSub = this.wsService.subscribeToUserNotifications(userId, (event) => {
-      if (event.type === 'NOTIFICATION_CREATED') {
-        this.store.dispatch(NotificationActions.notificationReceivedRealtime({ notification: event.payload }));
-      }
-    });
+    // this.notifWsSub = this.wsService.subscribeToUserNotifications(userId, (event) => {
+    //   if (event.type === 'NOTIFICATION_CREATED') {
+    //     this.store.dispatch(NotificationActions.notificationReceivedRealtime({ notification: event.payload }));
+    //   }
+    // });
   }
 
   isMine(message: Message): boolean {
