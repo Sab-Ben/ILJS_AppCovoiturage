@@ -1,4 +1,5 @@
 package com.appcovoiturage.backend.entity;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,26 +11,33 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "reservation")
+@Table(
+        name = "reservation",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"trajet_id", "passager_id"})
+        }
+)
 public class Reservation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Le trajet réservé
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "trajet_id")
+    // Trajet réservé
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "trajet_id", nullable = false)
     private Trajet trajet;
 
-    // Le passager
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "passager_id")
+    // Utilisateur passager
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "passager_id", nullable = false)
     private User passager;
 
+    // Nombre de places réservées
     @Column(nullable = false)
     private Integer seats;
 
+    // Itinéraire souhaité / info complémentaire
     @Column(nullable = false)
     private String desiredRoute;
 

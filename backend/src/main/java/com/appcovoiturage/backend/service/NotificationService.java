@@ -64,7 +64,9 @@ public class NotificationService {
                 recipient,
                 NotificationType.TRAJET_CREATED,
                 "Trajet créé",
-                "Votre trajet a été créé : " + trajet.getVilleDepart() + " -> " + trajet.getVilleArrivee()
+                "Votre trajet a été créé : " + trajet.getVilleDepart() + " -> " + trajet.getVilleArrivee(),
+                "TRAJET",
+                trajet.getId()
         );
     }
 
@@ -73,7 +75,9 @@ public class NotificationService {
                 recipient,
                 NotificationType.TRAJET_UPDATED,
                 "Trajet modifié",
-                "Votre trajet a été modifié : " + trajet.getVilleDepart() + " -> " + trajet.getVilleArrivee()
+                "Votre trajet a été modifié : " + trajet.getVilleDepart() + " -> " + trajet.getVilleArrivee(),
+                "TRAJET",
+                trajet.getId()
         );
     }
 
@@ -82,7 +86,9 @@ public class NotificationService {
                 recipient,
                 NotificationType.TRAJET_DELETED,
                 "Trajet supprimé",
-                "Votre trajet a été supprimé : " + trajetLabel
+                "Votre trajet a été supprimé : " + trajetLabel,
+                "TRAJET",
+                null
         );
     }
 
@@ -92,8 +98,9 @@ public class NotificationService {
                 NotificationType.RESERVATION_CREATED,
                 "Nouvelle réservation",
                 passager.getFirstname() + " " + passager.getLastname()
-                        + " a réservé votre trajet "
-                        + trajet.getVilleDepart() + " -> " + trajet.getVilleArrivee()
+                        + " a réservé votre trajet " + trajet.getVilleDepart() + " -> " + trajet.getVilleArrivee(),
+                "RESERVATION",
+                trajet.getId()
         );
     }
 
@@ -103,8 +110,9 @@ public class NotificationService {
                 NotificationType.RESERVATION_DELETED,
                 "Réservation annulée",
                 passager.getFirstname() + " " + passager.getLastname()
-                        + " a annulé sa réservation pour le trajet "
-                        + trajet.getVilleDepart() + " -> " + trajet.getVilleArrivee()
+                        + " a annulé sa réservation pour le trajet " + trajet.getVilleDepart() + " -> " + trajet.getVilleArrivee(),
+                "RESERVATION",
+                trajet.getId()
         );
     }
 
@@ -113,20 +121,30 @@ public class NotificationService {
                 recipient,
                 NotificationType.MESSAGE_RECEIVED,
                 "Nouveau message",
-                "Vous avez reçu un nouveau message (" + trajetLabel + ")."
+                "Vous avez reçu un nouveau message (" + trajetLabel + ").",
+                "CONVERSATION",
+                conversationId
         );
     }
 
     // ===== Helpers =====
 
-    private void create(User recipient, NotificationType type, String title, String message) {
+    private void create(User recipient,
+                        NotificationType type,
+                        String title,
+                        String content,
+                        String referenceType,
+                        Long referenceId) {
+
         Notification n = Notification.builder()
                 .recipient(recipient)
                 .type(type)
                 .title(title)
-                .message(message)
+                .content(content)
                 .isRead(false)
                 .createdAt(LocalDateTime.now())
+                .referenceType(referenceType)
+                .referenceId(referenceId)
                 .build();
 
         notificationRepository.save(n);
@@ -137,9 +155,11 @@ public class NotificationService {
                 .id(n.getId())
                 .type(n.getType())
                 .title(n.getTitle())
-                .message(n.getMessage())
-                .isRead(n.isRead())
+                .content(n.getContent())
+                .isRead(n.getIsRead())
                 .createdAt(n.getCreatedAt())
+                .referenceType(n.getReferenceType())
+                .referenceId(n.getReferenceId())
                 .build();
     }
 }
