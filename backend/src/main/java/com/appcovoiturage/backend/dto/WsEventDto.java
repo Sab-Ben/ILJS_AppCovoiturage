@@ -7,7 +7,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class WsEventDto<T> {
-    private String type;   // ex: MESSAGE_CREATED, NOTIFICATION_CREATED
-    private T payload;
+public class WsEventDto {
+    private String type;   // ex: "MESSAGE", "NOTIFICATION"
+    private Object payload;
 }

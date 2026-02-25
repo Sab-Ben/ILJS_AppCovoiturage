@@ -13,9 +13,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(
         name = "conversation",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"trajet_id", "passager_id"})
-        }
+        uniqueConstraints = @UniqueConstraint(columnNames = {"trajet_id", "user1_id", "user2_id"})
 )
 public class Conversation {
 
@@ -23,20 +21,18 @@ public class Conversation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Trajet concerné
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "trajet_id", nullable = false)
+    // Conversation liée à un trajet (selon le besoin)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trajet_id")
     private Trajet trajet;
 
-    // Conducteur du trajet
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "conducteur_id", nullable = false)
-    private User conducteur;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user1_id", nullable = false)
+    private User user1;
 
-    // Passager intéressé
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "passager_id", nullable = false)
-    private User passager;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user2_id", nullable = false)
+    private User user2;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

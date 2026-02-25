@@ -13,7 +13,8 @@ public class MessageResponseDto {
     private Long id;
     private Long conversationId;
     private Long senderId;
-    private String senderEmail;
+    private String senderName;
     private String content;
-    private LocalDateTime sentAt;
+    private LocalDateTime createdAt;
+    private Boolean isRead;
 }

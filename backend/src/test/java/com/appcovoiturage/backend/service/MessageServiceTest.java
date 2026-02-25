@@ -1,7 +1,10 @@
 package com.appcovoiturage.backend.service;
 
 import com.appcovoiturage.backend.dto.MessageRequestDto;
-import com.appcovoiturage.backend.entity.*;
+import com.appcovoiturage.backend.entity.Conversation;
+import com.appcovoiturage.backend.entity.Message;
+import com.appcovoiturage.backend.entity.Trajet;
+import com.appcovoiturage.backend.entity.User;
 import com.appcovoiturage.backend.exception.BadRequestException;
 import com.appcovoiturage.backend.repository.MessageRepository;
 import com.appcovoiturage.backend.repository.UserRepository;
@@ -34,8 +37,8 @@ class MessageServiceTest {
     @Test
     void shouldSendMessageAndDispatchWsAndNotification() {
         // Arrange
-        User conducteur = User.builder().id(1L).email("c@test.com").build();
-        User passager = User.builder().id(2L).email("p@test.com").build();
+        User conducteur = User.builder().id(1L).email("c@test.com").firstname("C").lastname("Driver").build();
+        User passager = User.builder().id(2L).email("p@test.com").firstname("P").lastname("Passenger").build();
 
         Trajet trajet = Trajet.builder()
                 .id(10L)
@@ -47,14 +50,17 @@ class MessageServiceTest {
         Conversation conversation = Conversation.builder()
                 .id(100L)
                 .trajet(trajet)
-                .conducteur(conducteur)
-                .passager(passager)
+                .user1(conducteur)
+                .user2(passager)
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        MessageRequestDto dto = MessageRequestDto.builder().content("Bonjour !").build();
+        MessageRequestDto dto = MessageRequestDto.builder()
+                .conversationId(100L)
+                .content("Bonjour !")
+                .build();
 
-        when(conversationService.getConversationIfParticipant(100L, "p@test.com")).thenReturn(conversation);
+        when(conversationService.getConversationOrThrow(100L, "p@test.com")).thenReturn(conversation);
         when(userRepository.findByEmail("p@test.com")).thenReturn(Optional.of(passager));
 
         when(messageRepository.save(any(Message.class))).thenAnswer(inv -> {
@@ -64,34 +70,44 @@ class MessageServiceTest {
         });
 
         // Act
-        var result = messageService.sendMessage(100L, dto, "p@test.com");
+        var result = messageService.sendMessage(dto, "p@test.com");
 
         // Assert
         assertNotNull(result);
         assertEquals(999L, result.getId());
         assertEquals("Bonjour !", result.getContent());
+        assertEquals(100L, result.getConversationId());
 
         verify(messageRepository).save(any(Message.class));
-        //verify(simpMessagingTemplate).convertAndSend(eq("/topic/conversations/100"), any());
-        verify(notificationService).notifyMessageReceived(eq(conducteur), eq(100L), eq("Paris → Lyon"));
+        verify(notificationService).notifyMessageReceived(eq(conducteur), eq(100L), eq("Paris -> Lyon"));
+        verify(simpMessagingTemplate).convertAndSendToUser(eq("c@test.com"), eq("/queue/events"), any());
     }
 
     @Test
     void shouldRejectBlankMessage() {
-        User u = User.builder().id(2L).email("p@test.com").build();
+        User conducteur = User.builder().id(1L).email("c@test.com").firstname("C").lastname("Driver").build();
+        User passager = User.builder().id(2L).email("p@test.com").firstname("P").lastname("Passenger").build();
+
         Conversation c = Conversation.builder()
                 .id(100L)
-                .conducteur(User.builder().id(1L).email("c@test.com").build())
-                .passager(u)
+                .user1(conducteur)
+                .user2(passager)
                 .trajet(Trajet.builder().id(10L).villeDepart("Paris").villeArrivee("Lyon").build())
+                .createdAt(LocalDateTime.now())
                 .build();
 
-        when(conversationService.getConversationIfParticipant(100L, "p@test.com")).thenReturn(c);
-        when(userRepository.findByEmail("p@test.com")).thenReturn(Optional.of(u));
+        when(conversationService.getConversationOrThrow(100L, "p@test.com")).thenReturn(c);
+        when(userRepository.findByEmail("p@test.com")).thenReturn(Optional.of(passager));
 
-        MessageRequestDto dto = MessageRequestDto.builder().content("   ").build();
+        MessageRequestDto dto = MessageRequestDto.builder()
+                .conversationId(100L)
+                .content("   ")
+                .build();
 
-        assertThrows(BadRequestException.class, () -> messageService.sendMessage(100L, dto, "p@test.com"));
+        assertThrows(BadRequestException.class, () -> messageService.sendMessage(dto, "p@test.com"));
+
         verify(messageRepository, never()).save(any());
+        verify(notificationService, never()).notifyMessageReceived(any(), any(), any());
+        verify(simpMessagingTemplate, never()).convertAndSendToUser(anyString(), anyString(), any());
     }
 }

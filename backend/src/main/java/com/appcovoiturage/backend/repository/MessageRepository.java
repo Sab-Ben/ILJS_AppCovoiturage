@@ -7,5 +7,7 @@ import java.util.List;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
 
-    List<Message> findByConversationIdOrderBySentAtAsc(Long conversationId);
+    List<Message> findByConversation_IdOrderByCreatedAtAsc(Long conversationId);
+
+    long countByConversation_IdAndIsReadFalseAndSender_IdNot(Long conversationId, Long notSenderId);
 }

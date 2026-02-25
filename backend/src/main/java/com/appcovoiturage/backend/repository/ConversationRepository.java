@@ -8,11 +8,11 @@ import java.util.Optional;
 
 public interface ConversationRepository extends JpaRepository<Conversation, Long> {
 
-    Optional<Conversation> findByTrajetIdAndPassagerId(Long trajetId, Long passagerId);
+    List<Conversation> findByUser1_IdOrUser2_IdOrderByCreatedAtDesc(Long user1Id, Long user2Id);
 
-    List<Conversation> findByPassagerIdOrderByCreatedAtDesc(Long passagerId);
+    Optional<Conversation> findByIdAndUser1_IdOrIdAndUser2_Id(Long id1, Long user1Id, Long id2, Long user2Id);
 
-    List<Conversation> findByConducteurIdOrderByCreatedAtDesc(Long conducteurId);
+    Optional<Conversation> findByTrajet_IdAndUser1_IdAndUser2_Id(Long trajetId, Long user1Id, Long user2Id);
 
-    List<Conversation> findByPassagerIdOrConducteurIdOrderByCreatedAtDesc(Long passagerId, Long conducteurId);
+    Optional<Conversation> findByTrajet_IdAndUser2_IdAndUser1_Id(Long trajetId, Long user2Id, Long user1Id);
 }

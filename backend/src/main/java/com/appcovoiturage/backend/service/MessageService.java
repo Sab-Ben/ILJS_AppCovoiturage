@@ -7,12 +7,12 @@ import com.appcovoiturage.backend.entity.Conversation;
 import com.appcovoiturage.backend.entity.Message;
 import com.appcovoiturage.backend.entity.User;
 import com.appcovoiturage.backend.exception.BadRequestException;
-import com.appcovoiturage.backend.exception.NotFoundException;
 import com.appcovoiturage.backend.repository.MessageRepository;
 import com.appcovoiturage.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,57 +24,79 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
     private final ConversationService conversationService;
-    private final SimpMessagingTemplate simpMessagingTemplate;
     private final NotificationService notificationService;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public MessageResponseDto sendMessage(Long conversationId, MessageRequestDto dto, String userEmail) {
-        Conversation conversation = conversationService.getConversationIfParticipant(conversationId, userEmail);
-
-        User sender = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new NotFoundException("Utilisateur non trouvé"));
-
-        String content = dto.getContent().trim();
-        if (content.isBlank()) {
-            throw new BadRequestException("Le message ne peut pas être vide");
-        }
-
-        Message message = Message.builder()
-                .conversation(conversation)
-                .sender(sender)
-                .content(content)
-                .sentAt(LocalDateTime.now())
-                .build();
-
-        Message saved = messageRepository.save(message);
-        MessageResponseDto response = toDto(saved);
-
-        simpMessagingTemplate.convertAndSend(
-                "/topic/conversations/" + conversationId,
-                WsEventDto.builder()
-                        .type("MESSAGE_CREATED")
-                        .payload(response)
-                        .build()
-        );
-
-        User recipient = conversation.getConducteur().getId().equals(sender.getId())
-                ? conversation.getPassager()
-                : conversation.getConducteur();
-
-        String trajetLabel = conversation.getTrajet().getVilleDepart() + " → " + conversation.getTrajet().getVilleArrivee();
-
-        // ✅ ICI on passe bien un User
-        notificationService.notifyMessageReceived(recipient, conversation.getId(), trajetLabel);
-
-        return response;
+    @Transactional(readOnly = true)
+    public List<MessageResponseDto> getMessages(Long conversationId, String email) {
+        Conversation c = conversationService.getConversationOrThrow(conversationId, email);
+        return messageRepository.findByConversation_IdOrderByCreatedAtAsc(c.getId())
+                .stream().map(this::toDto).toList();
     }
 
-    public List<MessageResponseDto> getMessages(Long conversationId, String userEmail) {
-        conversationService.getConversationIfParticipant(conversationId, userEmail);
+    @Transactional
+    public MessageResponseDto sendMessage(MessageRequestDto req, String email) {
+        if (req == null) {
+            throw new BadRequestException("Requête invalide");
+        }
+        if (req.getConversationId() == null) {
+            throw new BadRequestException("conversationId requis");
+        }
+        if (req.getContent() == null || req.getContent().trim().isEmpty()) {
+            throw new BadRequestException("Message vide");
+        }
 
-        return messageRepository.findByConversationIdOrderBySentAtAsc(conversationId)
-                .stream()
-                .map(this::toDto)
-                .toList();
+        User sender = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BadRequestException("Utilisateur non trouvé"));
+
+        Conversation c = conversationService.getConversationOrThrow(req.getConversationId(), email);
+
+        Message m = Message.builder()
+                .conversation(c)
+                .sender(sender)
+                .content(req.getContent().trim())
+                .createdAt(LocalDateTime.now())
+                .isRead(false)
+                .build();
+
+        m = messageRepository.save(m);
+
+        // destinataire = l’autre user
+        User recipient = c.getUser1().getId().equals(sender.getId()) ? c.getUser2() : c.getUser1();
+
+        String trajetLabel = (c.getTrajet() == null)
+                ? "conversation"
+                : (c.getTrajet().getVilleDepart() + " -> " + c.getTrajet().getVilleArrivee());
+
+        // notif DB
+        notificationService.notifyMessageReceived(recipient, c.getId(), trajetLabel);
+
+        // push websocket
+        WsEventDto event = WsEventDto.builder()
+                .type("MESSAGE")
+                .payload(toDto(m))
+                .build();
+
+        //on utilise l’email comme "username" STOMP
+        messagingTemplate.convertAndSendToUser(recipient.getEmail(), "/queue/events", event);
+
+        return toDto(m);
+    }
+
+    @Transactional
+    public void markConversationAsRead(Long conversationId, String email) {
+        User me = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BadRequestException("Utilisateur non trouvé"));
+
+        Conversation c = conversationService.getConversationOrThrow(conversationId, email);
+
+        List<Message> list = messageRepository.findByConversation_IdOrderByCreatedAtAsc(c.getId());
+        list.stream()
+                .filter(msg -> !msg.getSender().getId().equals(me.getId()))
+                .filter(msg -> Boolean.FALSE.equals(msg.getIsRead()))
+                .forEach(msg -> msg.setIsRead(true));
+
+        messageRepository.saveAll(list);
     }
 
     private MessageResponseDto toDto(Message m) {
@@ -82,9 +104,10 @@ public class MessageService {
                 .id(m.getId())
                 .conversationId(m.getConversation().getId())
                 .senderId(m.getSender().getId())
-                .senderEmail(m.getSender().getEmail())
+                .senderName(m.getSender().getFirstname() + " " + m.getSender().getLastname())
                 .content(m.getContent())
-                .sentAt(m.getSentAt())
+                .createdAt(m.getCreatedAt())
+                .isRead(m.getIsRead())
                 .build();
     }
 }

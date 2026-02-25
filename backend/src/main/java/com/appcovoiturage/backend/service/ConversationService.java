@@ -4,10 +4,8 @@ import com.appcovoiturage.backend.dto.ConversationResponseDto;
 import com.appcovoiturage.backend.entity.Conversation;
 import com.appcovoiturage.backend.entity.Trajet;
 import com.appcovoiturage.backend.entity.User;
-import com.appcovoiturage.backend.exception.BadRequestException;
-import com.appcovoiturage.backend.exception.ForbiddenException;
-import com.appcovoiturage.backend.exception.NotFoundException;
 import com.appcovoiturage.backend.repository.ConversationRepository;
+import com.appcovoiturage.backend.repository.MessageRepository;
 import com.appcovoiturage.backend.repository.TrajetRepository;
 import com.appcovoiturage.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,76 +19,64 @@ import java.util.List;
 public class ConversationService {
 
     private final ConversationRepository conversationRepository;
-    private final TrajetRepository trajetRepository;
     private final UserRepository userRepository;
+    private final TrajetRepository trajetRepository;
+    private final MessageRepository messageRepository;
 
-    public ConversationResponseDto openOrCreateConversation(Long trajetId, String userEmail) {
-        User passager = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new NotFoundException("Utilisateur non trouvé"));
+    public List<ConversationResponseDto> getMyConversations(String email) {
+        User me = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        List<Conversation> list = conversationRepository
+                .findByUser1_IdOrUser2_IdOrderByCreatedAtDesc(me.getId(), me.getId());
+
+        return list.stream().map(c -> toDto(c, me)).toList();
+    }
+
+    public Conversation getConversationOrThrow(Long conversationId, String email) {
+        User me = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        return conversationRepository
+                .findByIdAndUser1_IdOrIdAndUser2_Id(conversationId, me.getId(), conversationId, me.getId())
+                .orElseThrow(() -> new RuntimeException("Conversation introuvable ou accès refusé"));
+    }
+
+    public Conversation createOrGetConversation(Long trajetId, Long otherUserId, String email) {
+        User me = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        User other = userRepository.findById(otherUserId)
+                .orElseThrow(() -> new RuntimeException("Autre utilisateur introuvable"));
 
         Trajet trajet = trajetRepository.findById(trajetId)
-                .orElseThrow(() -> new NotFoundException("Trajet non trouvé"));
+                .orElseThrow(() -> new RuntimeException("Trajet introuvable"));
 
-        User conducteur = trajet.getConducteur();
-
-        if (conducteur.getId().equals(passager.getId())) {
-            throw new BadRequestException("Le conducteur ne peut pas se contacter lui-même");
-        }
-
-        Conversation conversation = conversationRepository
-                .findByTrajetIdAndPassagerId(trajetId, passager.getId())
+        // éviter doublon (user1/user2 dans les 2 sens)
+        return conversationRepository.findByTrajet_IdAndUser1_IdAndUser2_Id(trajetId, me.getId(), other.getId())
+                .or(() -> conversationRepository.findByTrajet_IdAndUser2_IdAndUser1_Id(trajetId, me.getId(), other.getId()))
                 .orElseGet(() -> conversationRepository.save(
                         Conversation.builder()
                                 .trajet(trajet)
-                                .conducteur(conducteur)
-                                .passager(passager)
+                                .user1(me)
+                                .user2(other)
                                 .createdAt(LocalDateTime.now())
                                 .build()
                 ));
-
-        return toDto(conversation);
     }
 
-    public List<ConversationResponseDto> getMyConversations(String userEmail) {
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new NotFoundException("Utilisateur non trouvé"));
+    private ConversationResponseDto toDto(Conversation c, User me) {
+        User other = c.getUser1().getId().equals(me.getId()) ? c.getUser2() : c.getUser1();
 
-        return conversationRepository
-                .findByPassagerIdOrConducteurIdOrderByCreatedAtDesc(user.getId(), user.getId())
-                .stream()
-                .map(this::toDto)
-                .toList();
-    }
+        long unread = messageRepository.countByConversation_IdAndIsReadFalseAndSender_IdNot(c.getId(), me.getId());
 
-    public Conversation getConversationIfParticipant(Long conversationId, String userEmail) {
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new NotFoundException("Utilisateur non trouvé"));
-
-        Conversation conversation = conversationRepository.findById(conversationId)
-                .orElseThrow(() -> new NotFoundException("Conversation non trouvée"));
-
-        boolean isParticipant =
-                conversation.getConducteur().getId().equals(user.getId()) ||
-                        conversation.getPassager().getId().equals(user.getId());
-
-        if (!isParticipant) {
-            throw new ForbiddenException("Accès refusé à cette conversation");
-        }
-
-        return conversation;
-    }
-
-    private ConversationResponseDto toDto(Conversation c) {
         return ConversationResponseDto.builder()
                 .id(c.getId())
-                .trajetId(c.getTrajet().getId())
-                .conducteurId(c.getConducteur().getId())
-                .conducteurEmail(c.getConducteur().getEmail())
-                .passagerId(c.getPassager().getId())
-                .passagerEmail(c.getPassager().getEmail())
-                .villeDepart(c.getTrajet().getVilleDepart())
-                .villeArrivee(c.getTrajet().getVilleArrivee())
+                .trajetId(c.getTrajet() == null ? null : c.getTrajet().getId())
+                .otherUserId(other.getId())
+                .otherUserName(other.getFirstname() + " " + other.getLastname())
                 .createdAt(c.getCreatedAt())
+                .unreadCount(unread)
                 .build();
     }
 }

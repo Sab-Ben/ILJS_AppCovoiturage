@@ -12,15 +12,8 @@ import java.time.LocalDateTime;
 public class ConversationResponseDto {
     private Long id;
     private Long trajetId;
-
-    private Long conducteurId;
-    private String conducteurEmail;
-
-    private Long passagerId;
-    private String passagerEmail;
-
-    private String villeDepart;
-    private String villeArrivee;
-
+    private Long otherUserId;
+    private String otherUserName;
     private LocalDateTime createdAt;
+    private long unreadCount;
 }

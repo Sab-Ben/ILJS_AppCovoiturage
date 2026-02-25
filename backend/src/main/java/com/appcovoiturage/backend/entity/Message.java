@@ -18,19 +18,20 @@ public class Message {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Message rattaché à une conversation privée
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "conversation_id", nullable = false)
     private Conversation conversation;
 
-    // Expéditeur (conducteur ou passager)
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id", nullable = false)
     private User sender;
 
-    @Column(nullable = false, length = 1000)
+    @Column(nullable = false, length = 2000)
     private String content;
 
     @Column(nullable = false)
-    private LocalDateTime sentAt;
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private Boolean isRead;
 }
