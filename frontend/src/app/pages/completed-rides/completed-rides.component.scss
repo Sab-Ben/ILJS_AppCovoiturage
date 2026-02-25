@@ -1,0 +1,33 @@
+.page {
+  max-width: 900px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+.back {
+  display: inline-block;
+  margin-bottom: 12px;
+  text-decoration: none;
+}
+
+.info { padding: 12px; }
+.error { padding: 12px; color: #b00020; }
+.empty { padding: 12px; opacity: .8; }
+
+.card {
+  border: 1px solid rgba(0,0,0,.12);
+  border-radius: 12px;
+  padding: 14px;
+  margin: 12px 0;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.id { font-weight: 700; }
+.points { font-weight: 700; }
+.row { margin: 6px 0; }

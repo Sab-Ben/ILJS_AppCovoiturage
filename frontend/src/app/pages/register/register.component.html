@@ -98,8 +98,12 @@
             </div>
         </div>
 
-        <button type="submit" [disabled]="!registerForm.form.valid" i18n="@@registerBtn">S'inscrire</button>
-
+      <button
+        type="submit"
+        [disabled]="!registerForm.form.valid || loading"
+        i18n="@@registerBtn">
+        {{ loading ? 'Inscription...' : "S'inscrire" }}
+      </button>
     </form>
 
     <p>

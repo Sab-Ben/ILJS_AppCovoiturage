@@ -1,0 +1,69 @@
+<div class="container">
+  <h2>Mes réservations</h2>
+
+  <div class="tabs mb-3">
+    <button class="btn" [class.active]="tab==='reserved'" (click)="switchTab('reserved')">
+      Courses réservées ({{ reserved.length }})
+    </button>
+    <button class="btn" [class.active]="tab==='completed'" (click)="switchTab('completed')">
+      Courses effectuées ({{ completed.length }})
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="info mb-3">Chargement…</div>
+  <div *ngIf="errorMsg && !loading" class="warning p-3 mb-3">{{ errorMsg }}</div>
+
+  <!-- Réservées -->
+  <div *ngIf="tab==='reserved' && !loading">
+    <div *ngIf="reserved.length === 0" class="bg-light p-3 mb-3">
+      Aucune réservation en cours.
+    </div>
+
+    <div class="ride-card mb-3" *ngFor="let r of reserved; trackBy: trackById">
+      <div class="ride-main">
+        <div class="title">{{ r.ride.from }} → {{ r.ride.to }}</div>
+        <div class="meta">
+          <span>{{ r.ride.date }}</span>
+          <span *ngIf="r.ride.departureTime">• {{ r.ride.departureTime }}</span>
+        </div>
+        <div class="sub">
+          <strong>Places:</strong> {{ r.seats }}
+          &nbsp;&nbsp; <strong>Conducteur:</strong> {{ r.ride.driverName || '—' }}
+        </div>
+      </div>
+
+      <div class="ride-actions">
+        <a class="btn btn-secondary me-2" [routerLink]="['/ride-detail', r.ride.id]">Voir détail</a>
+
+        <button class="btn btn-outline-danger" type="button" (click)="cancel(r)" [disabled]="!canCancel(r)">
+          Annuler
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Effectuées -->
+  <div *ngIf="tab==='completed' && !loading">
+    <div *ngIf="completed.length === 0" class="bg-light p-3 mb-3">
+      Aucune course effectuée.
+    </div>
+
+    <div class="ride-card mb-3" *ngFor="let r of completed; trackBy: trackById">
+      <div class="ride-main">
+        <div class="title">{{ r.ride.from }} → {{ r.ride.to }}</div>
+        <div class="meta">
+          <span>{{ r.ride.date }}</span>
+          <span *ngIf="r.ride.departureTime">• {{ r.ride.departureTime }}</span>
+        </div>
+        <div class="sub">
+          <strong>Places:</strong> {{ r.seats }}
+          &nbsp;&nbsp; <strong>Statut:</strong> Effectuée
+        </div>
+      </div>
+
+      <div class="ride-actions">
+        <a class="btn btn-secondary" [routerLink]="['/ride-detail', r.ride.id]">Voir détail</a>
+      </div>
+    </div>
+  </div>
+</div>

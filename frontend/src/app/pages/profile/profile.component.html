@@ -2,14 +2,31 @@
     <div class="header-row">
         <h1 i18n="@@mySpaceHeader">Mon Espace</h1>
 
-        <div class="top-actions" *ngIf="user.role === 'CONDUCTEUR'">
-            <button routerLink="/create-ride" class="btn-create">
-                <span class="icon">+</span> Créer un trajet
-            </button>
-            <button routerLink="/my-rides" class="btn-view">
-                Voir mes trajets
-            </button>
-        </div>
+      <!-- Actions CONDUCTEUR -->
+      <div class="top-actions" *ngIf="user.role === 'CONDUCTEUR'">
+        <button routerLink="/create-ride" class="btn-create">
+          <span class="icon">+</span> Créer un trajet
+        </button>
+
+
+        <button routerLink="/my-rides" class="btn-view">
+          Voir mes trajets
+        </button>
+      </div>
+
+      <!-- Actions PASSAGER -->
+      <div class="top-actions" *ngIf="user.role === 'PASSAGER'">
+        <button routerLink="/search-ride" class="btn-create">
+          🔎 Rechercher une course
+        </button>
+        <button routerLink="/passenger/bookings" class="btn-view">
+          Mes réservations
+        </button>
+        <button routerLink="/completed-rides" class="btn-view">
+          Voir mes courses effectuées
+        </button>
+      </div>
+
     </div>
 
     <div class="card points-card">

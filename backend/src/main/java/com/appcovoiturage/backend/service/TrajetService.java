@@ -8,8 +8,16 @@ import com.appcovoiturage.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+
+
+import com.appcovoiturage.backend.dto.CompletedTrajetDto;
+import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -63,4 +71,60 @@ public class TrajetService {
 
         trajetRepository.delete(trajet);
     }
+
+    public List<Trajet> searchTrajets(String from, String to, LocalDate date) {
+        LocalDateTime start = date.atStartOfDay();
+        LocalDateTime end = date.atTime(LocalTime.MAX);
+
+        return trajetRepository.searchUpcoming(from, to, start, end, LocalDateTime.now());
+    }
+
+
+    public List<CompletedTrajetDto> getCompletedTrajets(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        LocalDateTime now = LocalDateTime.now();
+
+        List<Trajet> completed = trajetRepository
+                .findByConducteurIdAndDateHeureDepartBeforeOrderByDateHeureDepartDesc(user.getId(), now);
+
+        return completed.stream().map(t -> {
+            String itineraire = buildItineraire(t);
+
+            // ✅ règle simple, stable et "exacte" : 1 point/km arrondi
+            int points = (int) Math.round(t.getDistanceKm() != null ? t.getDistanceKm() : 0.0);
+
+            return CompletedTrajetDto.builder()
+                    .id(t.getId())
+                    .date(t.getDateHeureDepart().toLocalDate().toString())
+                    .heure(t.getDateHeureDepart().toLocalTime().withSecond(0).withNano(0).toString())
+                    .itineraire(itineraire)
+                    .pointsGagnes(points)
+                    .build();
+        }).collect(Collectors.toList());
+    }
+
+    private String buildItineraire(Trajet t) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(t.getVilleDepart());
+
+        if (t.getEtapes() != null && !t.getEtapes().isEmpty()) {
+            for (String e : t.getEtapes()) {
+                if (e != null && !e.trim().isEmpty()) {
+                    sb.append(" → ").append(e.trim());
+                }
+            }
+        }
+
+        sb.append(" → ").append(t.getVilleArrivee());
+        return sb.toString();
+    }
+
+    public Trajet getTrajetById(Long id) {
+        return trajetRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Trajet non trouvé"));
+    }
+
+
 }
