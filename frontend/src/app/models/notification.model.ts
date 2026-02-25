@@ -1,4 +1,9 @@
-export type NotificationType = 'RESERVATION_CREATED' | 'TRAJET_DELETED' | 'MESSAGE_RECEIVED';
+export type NotificationType =
+  | 'RESERVATION_CREATED'
+  | 'TRAJET_CREATED'
+  | 'TRAJET_UPDATED'
+  | 'TRAJET_DELETED'
+  | 'MESSAGE_RECEIVED';
 
 export interface AppNotification {
   id: number;

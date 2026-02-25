@@ -30,6 +30,7 @@
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
+              "src/window-global-fix.ts",
               "zone.js",
               "@angular/localize/init"
             ],
@@ -100,6 +101,7 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "polyfills": [
+              "src/window-global-fix.ts",
               "zone.js",
               "zone.js/testing",
               "@angular/localize/init"

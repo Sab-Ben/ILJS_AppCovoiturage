@@ -25,8 +25,15 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     this.store.dispatch(NotificationActions.loadNotifications());
     this.store.dispatch(NotificationActions.loadUnreadCount());
 
-    this.sub.add(this.store.select(NotificationSelectors.selectNotifications).subscribe(v => this.notifications = v));
-    this.sub.add(this.store.select(NotificationSelectors.selectUnreadNotificationCount).subscribe(v => this.unreadCount = v));
+    this.sub.add(
+      this.store.select(NotificationSelectors.selectNotifications)
+        .subscribe(v => this.notifications = v)
+    );
+
+    this.sub.add(
+      this.store.select(NotificationSelectors.selectUnreadNotificationCount)
+        .subscribe(v => this.unreadCount = v)
+    );
   }
 
   toggle(): void {
@@ -37,8 +44,15 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     if (!notification.isRead) {
       this.store.dispatch(NotificationActions.markNotificationAsRead({ id: notification.id }));
     }
+
     if (notification.referenceType === 'CONVERSATION' && notification.referenceId) {
       this.router.navigate(['/messaging'], { queryParams: { conversationId: notification.referenceId } });
+      this.open = false;
+      return;
+    }
+
+    if (notification.referenceType === 'TRAJET' && notification.referenceId) {
+      this.router.navigate(['/mes-trajets']);
       this.open = false;
     }
   }

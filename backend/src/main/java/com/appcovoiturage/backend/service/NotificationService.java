@@ -51,7 +51,7 @@ public class NotificationService {
 
         simpMessagingTemplate.convertAndSend(
                 "/topic/users/" + recipient.getId() + "/notifications",
-                WsEventDto.<NotificationResponseDto>builder()
+                WsEventDto.builder()
                         .type("NOTIFICATION_CREATED")
                         .payload(dto)
                         .build()
@@ -90,6 +90,60 @@ public class NotificationService {
         } catch (Exception e) {
             log.warn("Email réservation non envoyé à {}", conducteur.getEmail(), e);
         }
+    }
+
+    public void notifyTrajetCreated(User conducteur, Trajet trajet) {
+        String trajetLabel = trajet.getVilleDepart() + " → " + trajet.getVilleArrivee();
+
+        createAndDispatch(
+                conducteur,
+                NotificationType.TRAJET_CREATED,
+                "Trajet créé",
+                "Votre trajet " + trajetLabel + " a bien été créé.",
+                "TRAJET",
+                trajet.getId()
+        );
+    }
+
+    public void notifyTrajetUpdated(User conducteur, Trajet trajet) {
+        String trajetLabel = trajet.getVilleDepart() + " → " + trajet.getVilleArrivee();
+
+        createAndDispatch(
+                conducteur,
+                NotificationType.TRAJET_UPDATED,
+                "Trajet modifié",
+                "Votre trajet " + trajetLabel + " a bien été modifié.",
+                "TRAJET",
+                trajet.getId()
+        );
+    }
+
+    public void notifyTrajetUpdatedPassengers(List<User> passagers, Trajet trajet) {
+        String trajetLabel = trajet.getVilleDepart() + " → " + trajet.getVilleArrivee();
+
+        for (User passager : passagers) {
+            createAndDispatch(
+                    passager,
+                    NotificationType.TRAJET_UPDATED,
+                    "Trajet modifié",
+                    "Le trajet " + trajetLabel + " a été modifié par le conducteur.",
+                    "TRAJET",
+                    trajet.getId()
+            );
+        }
+    }
+
+    public void notifyTrajetDeletedConducteur(User conducteur, Trajet trajet) {
+        String trajetLabel = trajet.getVilleDepart() + " → " + trajet.getVilleArrivee();
+
+        createAndDispatch(
+                conducteur,
+                NotificationType.TRAJET_DELETED,
+                "Trajet supprimé",
+                "Votre trajet " + trajetLabel + " a bien été supprimé.",
+                "TRAJET",
+                trajet.getId()
+        );
     }
 
     public void notifyTrajetDeleted(List<User> passagers, Trajet trajet) {
@@ -134,6 +188,7 @@ public class NotificationService {
 
         notif.setIsRead(true);
         Notification saved = notificationRepository.save(notif);
+
         return toDto(saved);
     }
 
@@ -142,11 +197,13 @@ public class NotificationService {
                 .orElseThrow(() -> new NotFoundException("Utilisateur non trouvé"));
 
         List<Notification> notifs = notificationRepository.findByRecipientIdOrderByCreatedAtDesc(user.getId());
+
         for (Notification n : notifs) {
             if (!Boolean.TRUE.equals(n.getIsRead())) {
                 n.setIsRead(true);
             }
         }
+
         notificationRepository.saveAll(notifs);
     }
 
