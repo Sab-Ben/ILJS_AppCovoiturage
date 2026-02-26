@@ -28,14 +28,14 @@ services:
       - db
     restart: always
 
-  frontend:
-    build: ./frontend
-    container_name: covoiturage-frontend
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
-    restart: always
+#  frontend:
+#    build: ./frontend
+#    container_name: covoiturage-frontend
+#    ports:
+#      - "80:80"
+#    depends_on:
+#      - backend
+#    restart: always
 
 volumes:
   postgres_data:
