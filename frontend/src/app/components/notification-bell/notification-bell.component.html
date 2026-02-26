@@ -1,0 +1,26 @@
+<div class="relative">
+  <button type="button" (click)="toggle()" class="px-3 py-2 rounded border">
+    🔔
+    <span *ngIf="unreadCount > 0" class="ml-1 text-xs font-bold">({{ unreadCount }})</span>
+  </button>
+
+  <div *ngIf="open" class="absolute right-0 mt-2 w-96 max-h-96 overflow-auto bg-white border rounded shadow z-50 p-2">
+    <div class="flex items-center justify-between mb-2">
+      <strong>Notifications</strong>
+      <button type="button" (click)="markAllAsRead()" class="text-sm underline">Tout lire</button>
+    </div>
+
+    <div *ngIf="notifications.length === 0" class="text-sm text-gray-500">
+      Aucune notification
+    </div>
+
+    <div *ngFor="let n of notifications" class="border-b py-2 cursor-pointer" (click)="markAsRead(n)">
+      <div class="flex items-center justify-between">
+        <strong [class.opacity-60]="n.isRead">{{ n.title }}</strong>
+        <span *ngIf="!n.isRead" class="text-xs">●</span>
+      </div>
+      <div class="text-sm">{{ n.content }}</div>
+      <div class="text-xs text-gray-500">{{ n.createdAt | date:'short' }}</div>
+    </div>
+  </div>
+</div>

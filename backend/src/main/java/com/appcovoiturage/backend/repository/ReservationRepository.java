@@ -4,12 +4,17 @@ import com.appcovoiturage.backend.entity.Reservation;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
-    // ✅ Reservation.trajet.id
-    List<Reservation> findByTrajet_Id(Long trajetId);
+    List<Reservation> findByPassagerId(Long passagerId);
 
-    // (optionnel mais souvent utile)
-    // List<Reservation> findByPassager_Id(Long passagerId);
+    List<Reservation> findByTrajetId(Long trajetId);
+
+    Optional<Reservation> findByTrajetIdAndPassagerId(Long trajetId, Long passagerId);
+
+    boolean existsByTrajetIdAndPassagerId(Long trajetId, Long passagerId);
+
+    long countByTrajetId(Long trajetId);
 }

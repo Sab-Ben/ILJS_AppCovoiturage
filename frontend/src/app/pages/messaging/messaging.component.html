@@ -1,0 +1,69 @@
+<div class="grid grid-cols-12 gap-4 p-4">
+  <!-- Colonne conversations -->
+  <div class="col-span-4 border rounded p-3">
+    <h2 class="font-bold mb-3">Messagerie</h2>
+
+    <div *ngIf="conversations.length === 0" class="text-sm text-gray-500">
+      Aucune conversation
+    </div>
+
+    <button
+      *ngFor="let c of conversations"
+      type="button"
+      class="w-full text-left border rounded p-2 mb-2"
+      [class.bg-gray-100]="selectedConversation?.id === c.id"
+      (click)="selectConversation(c)"
+    >
+      <div class="font-semibold">{{ c.villeDepart }} → {{ c.villeArrivee }}</div>
+      <div class="text-xs text-gray-500">Conversation #{{ c.id }}</div>
+      <div class="text-xs">{{ c.passagerEmail }} / {{ c.conducteurEmail }}</div>
+    </button>
+  </div>
+
+  <!-- Colonne chat -->
+  <div class="col-span-8 border rounded p-3 flex flex-col h-[70vh]">
+    <ng-container *ngIf="selectedConversation; else noConv">
+      <div class="mb-3 border-b pb-2">
+        <div class="font-bold">
+          {{ selectedConversation.villeDepart }} → {{ selectedConversation.villeArrivee }}
+        </div>
+        <div class="text-sm text-gray-500">
+          Conversation privée conducteur / passager
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-auto border rounded p-2 mb-3">
+        <div *ngFor="let msg of messages" class="mb-2">
+          <div
+            class="inline-block px-3 py-2 rounded max-w-[80%]"
+            [class.ml-auto]="isMine(msg)"
+            [class.block]="true"
+            [class.bg-gray-200]="!isMine(msg)"
+            [class.bg-blue-200]="isMine(msg)"
+          >
+            <div class="text-xs opacity-70">{{ msg.senderEmail }}</div>
+            <div>{{ msg.content }}</div>
+            <div class="text-xs opacity-70">{{ msg.sentAt | date:'shortTime' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <input
+          [(ngModel)]="messageInput"
+          (keydown.enter)="sendMessage()"
+          type="text"
+          class="flex-1 border rounded px-3 py-2"
+          placeholder="Écrire un message..."
+        />
+        <button type="button" (click)="sendMessage()" class="border rounded px-4 py-2">
+          Envoyer
+        </button>
+      </div>
+    </ng-container>
+
+    <ng-template #noConv>
+      <div class="text-gray-500">Sélectionne une conversation</div>
+    </ng-template>
+  </div>
+</div>
