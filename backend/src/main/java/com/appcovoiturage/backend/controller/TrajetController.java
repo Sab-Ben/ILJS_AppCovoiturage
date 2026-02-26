@@ -34,7 +34,7 @@ public class TrajetController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTrajet(@PathVariable Long id, Principal principal) {
         trajetService.deleteTrajet(id, principal.getName());
-        return ResponseEntity.noContent().build(); // Renvoie 204 No Content (succès sans corps)
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/search")
@@ -55,6 +55,4 @@ public class TrajetController {
     public ResponseEntity<Trajet> getById(@PathVariable Long id) {
         return ResponseEntity.ok(trajetService.getTrajetById(id));
     }
-
-
 }

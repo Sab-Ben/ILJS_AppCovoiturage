@@ -1,61 +1,34 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { ReservationModel } from '../models/reservation.model';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
-const BASE_URL = 'http://localhost:8080/api/v1';
-
-export interface CreateReservationPayload {
-  // ton ancien code semble envoyer rideId (id trajet)
-  rideId?: number;
-  trajetId?: number; // au cas où
-  seats?: number;
-  desiredRoute?: string;
-}
+import {
+  Reservation,
+  ReservationStatus,
+  CreateReservationRequest
+} from '../models/reservation.model';
 
 @Injectable({ providedIn: 'root' })
 export class ReservationService {
+  private readonly apiUrl = `${environment.apiUrl}/reservations`;
+
   constructor(private http: HttpClient) {}
 
-  /**
-   * ✅ Nouvelle API (simple)
-   * backend: POST /api/v1/trajets/{trajetId}/reservations
-   */
-  reserveTrajet(trajetId: number): Observable<any> {
-    return this.http.post<any>(`${BASE_URL}/trajets/${trajetId}/reservations`, {});
+  createReservation(payload: CreateReservationRequest): Observable<Reservation> {
+    return this.http.post<Reservation>(this.apiUrl, payload);
   }
 
-  /**
-   * ✅ COMPAT (ancien front)
-   * ride-detail / ride-results appellent createReservation(payload)
-   * On convertit payload.rideId -> trajetId
-   *
-   * NB: le backend actuel ignore seats/desiredRoute (il met seats=1, route par défaut),
-   * donc on ne les envoie pas ici.
-   */
-  createReservation(payload: CreateReservationPayload): Observable<any> {
-    const trajetId = payload.trajetId ?? payload.rideId;
-    if (!trajetId) {
-      return throwError(() => new Error('trajetId/rideId manquant pour créer une réservation'));
-    }
-    return this.reserveTrajet(trajetId);
+  getMyReservations(status: ReservationStatus): Observable<Reservation[]> {
+    const params = new HttpParams().set('status', status);
+    return this.http.get<Reservation[]>(`${this.apiUrl}/me`, { params });
   }
 
-  /**
-   * backend: GET /api/v1/reservations/me
-   */
-  getMyReservations(): Observable<ReservationModel[]> {
-    return this.http.get<ReservationModel[]>(`${BASE_URL}/reservations/me`);
+  cancelReservation(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  /**
-   * backend: GET /api/v1/trajets/{trajetId}/reservations
-   */
-  getReservationsByTrajet(trajetId: number): Observable<ReservationModel[]> {
-    return this.http.get<ReservationModel[]>(`${BASE_URL}/trajets/${trajetId}/reservations`);
-  }
-
-  cancelReservation(reservationId: number): Observable<void> {
-    return throwError(() => new Error("Annulation non disponible: endpoint backend manquant"));
+  getReservationsForRide(rideId: number): Observable<Reservation[]> {
+    return this.http.get<Reservation[]>(`${this.apiUrl}/ride/${rideId}`);
   }
 }

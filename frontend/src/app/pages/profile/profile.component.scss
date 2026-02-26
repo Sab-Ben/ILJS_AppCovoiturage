@@ -16,34 +16,56 @@
   margin-bottom: 2rem;
   flex-wrap: wrap;
   gap: 1rem;
+  width: 100%;
 
   h1 {
     font-size: 2rem;
     margin: 0;
+    flex-shrink: 0;
     color: $text-main;
-    text-align: left;
-    @include dark-mode { color: white; }
+    @include dark-mode {
+      color: white;
+    }
   }
 }
 
 .top-actions {
   display: flex;
   gap: 1rem;
+  margin-left: auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+
   button {
     width: auto;
     margin: 0;
     white-space: nowrap;
+    padding: 0.6rem 1.2rem;
   }
 }
 
-.btn-create { @include btn-color($success); }
-.btn-view   { @include btn-color($info); }
-.btn-edit   { @include btn-color($warning); margin-top: 1rem; padding: 0.75rem; }
+
+.btn-create {
+  @include btn-color($success);
+}
+
+.btn-view {
+  @include btn-color($info);
+}
+
+.btn-edit {
+  @include btn-color($warning);
+  margin-top: 1rem;
+  padding: 0.75rem;
+}
 
 .btn-cancel {
   @include btn-color(transparent, $danger);
   border: 1px solid $danger;
-  &:hover { background-color: lighten($danger, 42%); }
+
+  &:hover {
+    background-color: lighten($danger, 42%);
+  }
 }
 
 .card {
@@ -67,8 +89,16 @@
 .points-card {
   text-align: center;
   background: linear-gradient(135deg, $primary 0%, $primary-dark-mode 100%);
-  h2, p { color: white !important; border: none; }
-  .points-value { font-size: 3rem; font-weight: 800; }
+
+  h2, p {
+    color: white !important;
+    border: none;
+  }
+
+  .points-value {
+    font-size: 3rem;
+    font-weight: 800;
+  }
 }
 
 .info-card {
@@ -85,7 +115,9 @@
 
     strong {
       color: $text-main;
-      @include dark-mode { color: white; }
+      @include dark-mode {
+        color: white;
+      }
     }
   }
 
@@ -110,16 +142,25 @@
   cursor: pointer;
   text-align: center;
 
-  @include dark-mode { background-color: #451a1a; }
-  &:hover { background-color: lighten($danger, 35%); }
+  @include dark-mode {
+    background-color: #451a1a;
+  }
+
+  &:hover {
+    background-color: lighten($danger, 35%);
+  }
 }
+
 
 @media (max-width: 600px) {
   .header-row {
     flex-direction: column;
-    align-items: stretch;
-    text-align: center;
-    h1 { text-align: center; margin-bottom: 1rem; }
-    .top-actions { justify-content: center; }
+    align-items: center;
+
+    .top-actions {
+      margin-left: 0;
+      justify-content: center;
+      width: 100%;
+    }
   }
 }

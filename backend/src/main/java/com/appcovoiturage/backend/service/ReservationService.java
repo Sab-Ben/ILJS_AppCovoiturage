@@ -7,13 +7,13 @@ import com.appcovoiturage.backend.entity.Trajet;
 import com.appcovoiturage.backend.entity.User;
 import com.appcovoiturage.backend.repository.ReservationRepository;
 import com.appcovoiturage.backend.repository.TrajetRepository;
-import com.appcovoiturage.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,38 +21,17 @@ public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final TrajetRepository trajetRepository;
-    private final UserRepository userRepository;
 
-    //on l’utilise pour notifier le conducteur.
-    private final NotificationService notificationService;
-
-    /**
-     * réservation via body (rideId, seats, desiredRoute) + user connecté.
-     */
     @Transactional
     public ReservationResponse createReservation(ReservationRequest req, User user) {
-        if (req.getRideId() == null) {
-            throw new IllegalArgumentException("rideId est requis");
-        }
-        if (req.getSeats() == null || req.getSeats() <= 0) {
-            throw new IllegalArgumentException("seats invalide");
-        }
+        if (req.getRideId() == null) throw new IllegalArgumentException("rideId est requis");
+        if (req.getSeats() == null || req.getSeats() <= 0) throw new IllegalArgumentException("seats invalide");
         if (req.getDesiredRoute() == null || req.getDesiredRoute().trim().isEmpty()) {
             throw new IllegalArgumentException("desiredRoute est requis");
         }
 
         Trajet trajet = trajetRepository.findById(req.getRideId())
                 .orElseThrow(() -> new IllegalArgumentException("Trajet introuvable"));
-
-        // Empêcher le conducteur de réserver son propre trajet
-        if (trajet.getConducteur() != null && trajet.getConducteur().getId().equals(user.getId())) {
-            throw new IllegalArgumentException("Le conducteur ne peut pas réserver son propre trajet");
-        }
-
-        // Empêcher doublon de réservation (1 réservation par passager / trajet)
-        if (reservationRepository.existsByTrajet_IdAndPassager_Id(trajet.getId(), user.getId())) {
-            throw new IllegalArgumentException("Vous avez déjà réservé ce trajet");
-        }
 
         if (trajet.getPlacesDisponibles() < req.getSeats()) {
             throw new IllegalArgumentException("Pas assez de places disponibles");
@@ -71,35 +50,52 @@ public class ReservationService {
 
         reservation = reservationRepository.save(reservation);
 
-        // Notification conducteur
-        if (notificationService != null && trajet.getConducteur() != null) {
-            try {
-                notificationService.notifyReservationCreated(trajet.getConducteur(), trajet, user);
-            } catch (Exception ignored) {
-                // On ne casse pas la réservation si la notif échoue
-            }
-        }
-
+        // On renvoie juste l'id et les infos de base pour valider la création
         return ReservationResponse.builder()
                 .id(reservation.getId())
+                .seats(reservation.getSeats())
+                .desiredRoute(reservation.getDesiredRoute())
+                .createdAt(reservation.getCreatedAt())
                 .build();
     }
 
-    /**
-     * réservation via trajetId + email
-     * On crée une ReservationRequest par défaut.
-     */
-    @Transactional
-    public ReservationResponse createReservation(Long trajetId, String userEmail) {
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IllegalArgumentException("Utilisateur introuvable"));
+    @Transactional(readOnly = true)
+    public List<ReservationResponse> getMyReservations(User user, String status) {
+        List<Reservation> reservations = reservationRepository.findByPassager(user);
+        LocalDateTime now = LocalDateTime.now();
 
-        ReservationRequest req = new ReservationRequest();
-        req.setRideId(trajetId);
-        req.setSeats(1); // par défaut 1 place
-        req.setDesiredRoute("Trajet complet");
+        return reservations.stream()
+                .filter(res -> {
+                    boolean isPast = res.getTrajet().getDateHeureDepart().isBefore(now);
+                    if ("COMPLETED".equalsIgnoreCase(status)) return isPast;
+                    if ("RESERVED".equalsIgnoreCase(status)) return !isPast;
+                    return true;
+                })
+                .map(res -> {
+                    Trajet trajet = res.getTrajet();
+                    boolean isPast = trajet.getDateHeureDepart().isBefore(now);
 
-        return createReservation(req, user);
+                    // Conversion des infos du trajet pour le Front
+                    ReservationResponse.RideSummary rideSummary = ReservationResponse.RideSummary.builder()
+                            .id(trajet.getId())
+                            .from(trajet.getVilleDepart())
+                            .to(trajet.getVilleArrivee())
+                            .date(trajet.getDateHeureDepart().toLocalDate().toString())
+                            .departureTime(trajet.getDateHeureDepart().toLocalTime().toString())
+                            .availableSeats(trajet.getPlacesDisponibles())
+                            .driverName(trajet.getConducteur().getFirstname() + " " + trajet.getConducteur().getLastname())
+                            .build();
+
+                    return ReservationResponse.builder()
+                            .id(res.getId())
+                            .seats(res.getSeats())
+                            .desiredRoute(res.getDesiredRoute())
+                            .status(isPast ? "COMPLETED" : "RESERVED")
+                            .createdAt(res.getCreatedAt())
+                            .ride(rideSummary)
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -113,46 +109,30 @@ public class ReservationService {
 
         Trajet trajet = reservation.getTrajet();
 
-        // règle des 2h avant départ
         LocalDateTime depart = trajet.getDateHeureDepart();
-        if (depart != null && LocalDateTime.now().isAfter(depart.minusHours(2))) {
+        if (LocalDateTime.now().isAfter(depart.minusHours(2))) {
             throw new IllegalArgumentException("Impossible d'annuler moins de 2h avant le départ");
         }
 
-        // libère la/les place(s)
-        Integer seats = reservation.getSeats() == null ? 1 : reservation.getSeats();
-        trajet.setPlacesDisponibles(trajet.getPlacesDisponibles() + seats);
+        trajet.setPlacesDisponibles(trajet.getPlacesDisponibles() + reservation.getSeats());
         trajetRepository.save(trajet);
 
         reservationRepository.delete(reservation);
     }
 
-    /**
-     * Réservations du passager connecté
-     */
     @Transactional(readOnly = true)
-    public List<Reservation> getMyReservations(String userEmail) {
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IllegalArgumentException("Utilisateur introuvable"));
+    public List<ReservationResponse> getReservationsByRide(Long rideId) {
+        List<Reservation> reservations = reservationRepository.findByTrajetId(rideId);
 
-        return reservationRepository.findByPassager_Id(user.getId());
-    }
+        System.out.println("Backend - Trajet ID: " + rideId + " | Réservations trouvées: " + reservations.size());
 
-    /**
-     * Réservations d’un trajet (uniquement conducteur du trajet).
-     */
-    @Transactional(readOnly = true)
-    public List<Reservation> getReservationsByTrajet(Long trajetId, String userEmail) {
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IllegalArgumentException("Utilisateur introuvable"));
-
-        Trajet trajet = trajetRepository.findById(trajetId)
-                .orElseThrow(() -> new IllegalArgumentException("Trajet introuvable"));
-
-        if (trajet.getConducteur() == null || !trajet.getConducteur().getId().equals(user.getId())) {
-            throw new IllegalArgumentException("Accès refusé");
-        }
-
-        return reservationRepository.findByTrajet_Id(trajetId);
+        return reservations.stream()
+                .map(res -> ReservationResponse.builder()
+                        .id(res.getId())
+                        .seats(res.getSeats())
+                        .passengerName(res.getPassager().getFirstname() + " " + res.getPassager().getLastname())
+                        .desiredRoute(res.getDesiredRoute())
+                        .build())
+                .collect(Collectors.toList());
     }
 }

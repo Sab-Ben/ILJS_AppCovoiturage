@@ -1,28 +1,56 @@
 import { createAction, props } from '@ngrx/store';
-import { ReservationModel } from '../../models/reservation.model';
+import { Reservation, ReservationStatus } from '../../models/reservation.model';
 
-export const loadMyReservations = createAction('[Reservation] Load My Reservations');
+export interface CreateReservationRequest {
+    rideId: number;
+    seats: number;
+    desiredRoute: string;
+}
 
-export const loadMyReservationsSuccess = createAction(
-  '[Reservation] Load My Reservations Success',
-  props<{ reservations: ReservationModel[] }>()
+// Chargement
+export const loadReservations = createAction(
+    '[Reservation] Load Reservations',
+    props<{ status: ReservationStatus }>()
 );
 
-export const loadMyReservationsFailure = createAction(
-  '[Reservation] Load My Reservations Failure',
-  props<{ error: any }>()
+export const loadReservationsSuccess = createAction(
+    '[Reservation] Load Reservations Success',
+    props<{ reservations: Reservation[], status: ReservationStatus }>()
 );
 
-export const reserveTrajet = createAction(
-  '[Reservation] Reserve Trajet',
-  props<{ trajetId: number }>()
+export const loadReservationsFailure = createAction(
+    '[Reservation] Load Reservations Failure',
+    props<{ error: any }>()
 );
 
-export const reserveTrajetSuccess = createAction(
-  '[Reservation] Reserve Trajet Success'
+// Annulation
+export const cancelReservation = createAction(
+    '[Reservation] Cancel Reservation',
+    props<{ id: number }>()
 );
 
-export const reserveTrajetFailure = createAction(
-  '[Reservation] Reserve Trajet Failure',
-  props<{ error: any }>()
+export const cancelReservationSuccess = createAction(
+    '[Reservation] Cancel Reservation Success',
+    props<{ id: number }>()
+);
+
+export const cancelReservationFailure = createAction(
+    '[Reservation] Cancel Reservation Failure',
+    props<{ error: any }>()
+);
+
+
+export const createReservation = createAction(
+    '[Reservation] Create Reservation',
+    props<{ payload: CreateReservationRequest }>()
+);
+
+export const createReservationSuccess = createAction(
+    '[Reservation] Create Reservation Success',
+    props<{ reservation: Reservation }>()
+);
+
+export const createReservationFailure = createAction(
+    '[Reservation] Create Reservation Failure',
+    props<{ error: any }>()
 );

@@ -1,38 +1,48 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import * as ReservationActions from './reservation.actions';
 import { ReservationService } from '../../services/reservation.service';
-import { catchError, map, mergeMap, of, switchMap } from 'rxjs';
+import * as ReservationActions from './reservation.actions';
+import { catchError, map, mergeMap } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Injectable()
 export class ReservationEffects {
-  constructor(private actions$: Actions, private reservationService: ReservationService) {}
+    private actions$ = inject(Actions);
+    private reservationService = inject(ReservationService);
 
-  loadMyReservations$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(ReservationActions.loadMyReservations),
-      switchMap(() =>
-        this.reservationService.getMyReservations().pipe(
-          map((reservations) => ReservationActions.loadMyReservationsSuccess({ reservations })),
-          catchError((error) => of(ReservationActions.loadMyReservationsFailure({ error })))
+    loadReservations$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(ReservationActions.loadReservations),
+            mergeMap(action =>
+                this.reservationService.getMyReservations(action.status).pipe(
+                    map(reservations => ReservationActions.loadReservationsSuccess({ reservations, status: action.status })),
+                    catchError(error => of(ReservationActions.loadReservationsFailure({ error })))
+                )
+            )
         )
-      )
-    )
-  );
+    );
 
-  reserveTrajet$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(ReservationActions.reserveTrajet),
-      mergeMap(({ trajetId }) =>
-        this.reservationService.reserveTrajet(trajetId).pipe(
-          // après réservation OK, on refresh la liste
-          mergeMap(() => [
-            ReservationActions.reserveTrajetSuccess(),
-            ReservationActions.loadMyReservations()
-          ]),
-          catchError((error) => of(ReservationActions.reserveTrajetFailure({ error })))
+    cancelReservation$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(ReservationActions.cancelReservation),
+            mergeMap(action =>
+                this.reservationService.cancelReservation(action.id).pipe(
+                    map(() => ReservationActions.cancelReservationSuccess({ id: action.id })),
+                    catchError(error => of(ReservationActions.cancelReservationFailure({ error })))
+                )
+            )
         )
-      )
-    )
-  );
+    );
+
+    createReservation$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(ReservationActions.createReservation),
+            mergeMap(action =>
+                this.reservationService.createReservation(action.payload).pipe(
+                    map(reservation => ReservationActions.createReservationSuccess({ reservation })),
+                    catchError(error => of(ReservationActions.createReservationFailure({ error })))
+                )
+            )
+        )
+    );
 }

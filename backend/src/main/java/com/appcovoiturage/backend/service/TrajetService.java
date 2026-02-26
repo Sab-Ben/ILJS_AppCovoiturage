@@ -92,7 +92,6 @@ public class TrajetService {
         return completed.stream().map(t -> {
             String itineraire = buildItineraire(t);
 
-            // ✅ règle simple, stable et "exacte" : 1 point/km arrondi
             int points = (int) Math.round(t.getDistanceKm() != null ? t.getDistanceKm() : 0.0);
 
             return CompletedTrajetDto.builder()
@@ -125,6 +124,4 @@ public class TrajetService {
         return trajetRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Trajet non trouvé"));
     }
-
-
 }

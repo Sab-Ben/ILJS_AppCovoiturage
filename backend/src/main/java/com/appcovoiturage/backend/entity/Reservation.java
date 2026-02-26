@@ -11,33 +11,24 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(
-        name = "reservation",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"trajet_id", "passager_id"})
-        }
-)
+@Table(name = "reservation")
 public class Reservation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Trajet réservé
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "trajet_id", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "trajet_id")
     private Trajet trajet;
 
-    // Utilisateur passager
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "passager_id", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "passager_id")
     private User passager;
 
-    // Nombre de places réservées
     @Column(nullable = false)
     private Integer seats;
 
-    // Itinéraire souhaité / info complémentaire
     @Column(nullable = false)
     private String desiredRoute;
 

@@ -2,10 +2,12 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { Actions, ofType } from '@ngrx/effects';
 
 import { RideService } from '../../services/ride.service';
-import { ReservationService } from '../../services/reservation.service';
 import { Ride } from '../../models/ride.model';
+import * as ReservationActions from '../../store/reservation/reservation.actions';
 
 @Component({
   selector: 'app-ride-results',
@@ -27,23 +29,41 @@ export class RideResultsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private rideService: RideService,
-    private reservationService: ReservationService
+      private route: ActivatedRoute,
+      private router: Router,
+      private rideService: RideService,
+      private store: Store,
+      private actions$: Actions
   ) {}
 
   ngOnInit(): void {
     this.route.queryParamMap
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((qp) => {
-        this.from = qp.get('from') ?? '';
-        this.to = qp.get('to') ?? '';
-        this.date = qp.get('date') ?? '';
-        this.seats = Number(qp.get('seats') ?? '1') || 1;
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((qp) => {
+          this.from = qp.get('from') ?? '';
+          this.to = qp.get('to') ?? '';
+          this.date = qp.get('date') ?? '';
+          this.seats = Number(qp.get('seats') ?? '1') || 1;
 
-        this.fetchRides();
-      });
+          this.fetchRides();
+        });
+
+    // Écoute de la réussite de la réservation
+    this.actions$
+        .pipe(ofType(ReservationActions.createReservationSuccess), takeUntil(this.destroy$))
+        .subscribe(() => {
+          alert('Réservation effectuée ✅');
+          this.router.navigate(['/my-reservations']);
+        });
+
+    // Écoute de l'échec de la réservation
+    this.actions$
+        .pipe(ofType(ReservationActions.createReservationFailure), takeUntil(this.destroy$))
+        .subscribe((action: any) => {
+          const err = action.error;
+          const msg = err?.error?.message || err?.error || err?.message || 'Erreur lors de la réservation.';
+          alert(msg);
+        });
   }
 
   fetchRides(): void {
@@ -57,23 +77,22 @@ export class RideResultsComponent implements OnInit, OnDestroy {
     this.errorMsg = null;
 
     this.rideService
-      .searchRides(this.from, this.to, this.date)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (rides) => {
-          this.rides = rides ?? [];
-          this.loading = false;
-          if (this.rides.length === 0) this.errorMsg = 'Aucun trajet trouvé.';
-        },
-        error: (err) => {
-          console.error(err);
-          this.errorMsg = 'Erreur lors de la recherche.';
-          this.loading = false;
-        },
-      });
+        .searchRides(this.from, this.to, this.date)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (rides) => {
+            this.rides = rides ?? [];
+            this.loading = false;
+            if (this.rides.length === 0) this.errorMsg = 'Aucun trajet trouvé.';
+          },
+          error: (err) => {
+            console.error(err);
+            this.errorMsg = 'Erreur lors de la recherche.';
+            this.loading = false;
+          },
+        });
   }
 
-  // ===== Helpers template (pour éviter "as any" dans le HTML) =====
   getDepartureTime(ride: Ride): string {
     return (ride as any).departureTime ?? '';
   }
@@ -85,14 +104,13 @@ export class RideResultsComponent implements OnInit, OnDestroy {
 
   getDriverName(ride: Ride): string {
     return (
-      (ride as any).driverName ??
-      (ride as any).driver?.firstname ??
-      (ride as any).driver?.name ??
-      '—'
+        (ride as any).driverName ??
+        (ride as any).driver?.firstname ??
+        (ride as any).driver?.name ??
+        '—'
     );
   }
 
-  // ===== Réservation =====
   book(ride: Ride): void {
     if (!ride?.id) {
       alert("Impossible de réserver : id du trajet manquant.");
@@ -113,26 +131,14 @@ export class RideResultsComponent implements OnInit, OnDestroy {
 
     const desiredRoute = `${ride.from} -> ${ride.to}`;
 
-    this.reservationService
-      .createReservation({
+    // On déclenche simplement l'action au lieu du service !
+    this.store.dispatch(ReservationActions.createReservation({
+      payload: {
         rideId: Number(ride.id),
         seats: seatsToBook,
         desiredRoute,
-      })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          alert('Réservation effectuée ✅');
-          this.router.navigate(['/my-reservations']);
-        },
-
-        error: (err:any) => {
-          console.error(err);
-          const msg =
-            err?.error?.message || err?.error || 'Erreur lors de la réservation.';
-          alert(msg);
-        },
-      });
+      }
+    }));
   }
 
   goBackToSearch(): void {
