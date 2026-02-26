@@ -1,5 +1,5 @@
 services:
   db:
-    image: postgres:16
+    image: postgres:latest
     ports:
       - "5434:5432"

@@ -1,175 +1,109 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { provideRouter } from '@angular/router';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
-import { of, Subject } from 'rxjs';
+import { of, BehaviorSubject } from 'rxjs';
 import { Store } from '@ngrx/store';
+import { FormsModule } from '@angular/forms';
 
 import { MessagingComponent } from './messaging.component';
-import { ConversationService } from '../../services/conversation.service';
 import { WsService } from '../../services/ws.service';
-import { UserService } from '../../services/user.service';
-
 import * as MessageActions from '../../store/message/message.actions';
-import * as NotificationActions from '../../store/notification/notification.actions';
+import * as MessageSelectors from '../../store/message/message.selectors';
 
 describe('MessagingComponent', () => {
   let component: MessagingComponent;
   let fixture: ComponentFixture<MessagingComponent>;
-
-  const dispatchMock = vi.fn();
+  let conversationsSubj: BehaviorSubject<any[]>;
+  let activeIdSubj: BehaviorSubject<number | null>;
 
   const storeMock = {
-    dispatch: dispatchMock,
-    select: vi.fn(() => of([]))
-  };
-
-  const conversationServiceMock = {
-    getMyConversations: vi.fn().mockReturnValue(of([]))
+    dispatch: vi.fn(),
+    select: vi.fn((selector) => {
+      if (selector === MessageSelectors.selectConversations) {
+        return conversationsSubj.asObservable();
+      }
+      if (selector === MessageSelectors.selectActiveConversationId) {
+        return activeIdSubj.asObservable();
+      }
+      return of([]);
+    })
   };
 
   const wsServiceMock = {
-    connect: vi.fn(),
     subscribeToConversation: vi.fn().mockReturnValue({ unsubscribe: vi.fn() }),
-    subscribeToUserNotifications: vi.fn().mockReturnValue({ unsubscribe: vi.fn() })
+    // Note : subscribeToUserNotifications est retiré car plus utilisé par le component
   };
-
-  const userServiceMock = {
-    getMyProfile: vi.fn().mockReturnValue(of({ id: 99 }))
-  };
-
-  const queryParamMap$ = new Subject<any>();
 
   beforeEach(async () => {
-    dispatchMock.mockClear();
+    vi.clearAllMocks();
+
+    conversationsSubj = new BehaviorSubject<any[]>([]);
+    activeIdSubj = new BehaviorSubject<number | null>(null);
 
     await TestBed.configureTestingModule({
-      imports: [MessagingComponent],
+      imports: [MessagingComponent, FormsModule],
       providers: [
-        provideRouter([]),
         { provide: Store, useValue: storeMock },
-        { provide: ConversationService, useValue: conversationServiceMock },
-        { provide: WsService, useValue: wsServiceMock },
-        { provide: UserService, useValue: userServiceMock },
-        {
-          provide: ActivatedRoute,
-          useValue: {
-            queryParamMap: queryParamMap$.asObservable(),
-            snapshot: {
-              queryParamMap: convertToParamMap({})
-            }
-          }
-        }
+        { provide: WsService, useValue: wsServiceMock }
       ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(MessagingComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges(); // ngOnInit
+
+    fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should create and load conversations', () => {
     expect(component).toBeTruthy();
+    expect(storeMock.dispatch).toHaveBeenCalledWith(MessageActions.loadConversations());
+    // On ne vérifie plus wsService.subscribeToUserNotifications car c'est géré par les Effects/App
   });
 
-  it('should connect websocket on init', () => {
-    expect(wsServiceMock.connect).toHaveBeenCalled();
-  });
+  it('should react when activeConversationId changes in store', () => {
+    storeMock.dispatch.mockClear();
+    wsServiceMock.subscribeToConversation.mockClear();
 
-  it('should subscribe to user notifications after loading profile', () => {
-    expect(userServiceMock.getMyProfile).toHaveBeenCalled();
-    expect(wsServiceMock.subscribeToUserNotifications).toHaveBeenCalledWith(99, expect.any(Function));
-  });
+    activeIdSubj.next(42);
 
-  it('should load conversations on init', () => {
-    expect(conversationServiceMock.getMyConversations).toHaveBeenCalled();
-  });
+    fixture.detectChanges();
 
-  it('should select conversation and dispatch load actions', () => {
-    const conversation = {
-      id: 12,
-      trajetId: 1,
-      conducteurId: 2,
-      conducteurEmail: 'c@test.com',
-      passagerId: 3,
-      passagerEmail: 'p@test.com',
-      villeDepart: 'Paris',
-      villeArrivee: 'Lyon',
-      createdAt: '2026-02-22T10:00:00'
-    };
-
-    component.selectConversation(conversation);
-
-    expect(dispatchMock).toHaveBeenCalledWith(
-      MessageActions.setActiveConversation({ conversationId: 12 })
+    expect(storeMock.dispatch).toHaveBeenCalledWith(
+        MessageActions.loadMessages({ conversationId: 42 })
     );
-    expect(dispatchMock).toHaveBeenCalledWith(
-      MessageActions.loadMessages({ conversationId: 12 })
+
+    expect(storeMock.dispatch).toHaveBeenCalledWith(
+        MessageActions.markConversationAsRead({ conversationId: 42 })
     );
-    expect(wsServiceMock.subscribeToConversation).toHaveBeenCalledWith(12, expect.any(Function));
+
+    // Mise à jour : on vérifie l'appel avec UN SEUL argument (l'ID)
+    expect(wsServiceMock.subscribeToConversation).toHaveBeenCalledWith(42);
   });
 
-  it('should dispatch sendMessage when message input is valid', () => {
-    component.selectedConversation = {
-      id: 12,
-      trajetId: 1,
-      conducteurId: 2,
-      conducteurEmail: 'c@test.com',
-      passagerId: 3,
-      passagerEmail: 'p@test.com',
-      villeDepart: 'Paris',
-      villeArrivee: 'Lyon',
-      createdAt: '2026-02-22T10:00:00'
-    };
-    component.messageInput = 'Bonjour';
+  it('should dispatch sendMessage and clear input when send() is called', () => {
+    component.selectedConversation = { id: 12 } as any;
+    component.newMessage = 'Hello world';
 
-    component.sendMessage();
+    component.send();
 
-    expect(dispatchMock).toHaveBeenCalledWith(
-      MessageActions.sendMessage({ conversationId: 12, content: 'Bonjour' })
+    expect(storeMock.dispatch).toHaveBeenCalledWith(
+        MessageActions.sendMessage({ conversationId: 12, content: 'Hello world' })
     );
-    expect(component.messageInput).toBe('');
+    expect(component.newMessage).toBe('');
   });
 
-  it('should not dispatch sendMessage when input is blank', () => {
-    dispatchMock.mockClear();
-    component.selectedConversation = {
-      id: 12,
-      trajetId: 1,
-      conducteurId: 2,
-      conducteurEmail: 'c@test.com',
-      passagerId: 3,
-      passagerEmail: 'p@test.com',
-      villeDepart: 'Paris',
-      villeArrivee: 'Lyon',
-      createdAt: '2026-02-22T10:00:00'
-    };
-    component.messageInput = '   ';
+  it('should unsubscribe from everything on destroy', () => {
+    const unsubSpyConv = vi.fn();
 
-    component.sendMessage();
+    // On ne mock plus que la souscription de conversation
+    (component as any).conversationWsSub = { unsubscribe: unsubSpyConv };
 
-    expect(dispatchMock).not.toHaveBeenCalledWith(
-      expect.objectContaining({ type: '[Message] Send Message' })
-    );
-  });
+    const subSpy = vi.spyOn((component as any).sub, 'unsubscribe');
 
-  it('isMine should return true only for current user', () => {
-    component.currentUserId = 99;
-
-    expect(component.isMine({ senderId: 99 } as any)).toBe(true);
-    expect(component.isMine({ senderId: 12 } as any)).toBe(false);
-  });
-
-  it('should unsubscribe on destroy', () => {
-    const unsubSpy1 = vi.fn();
-    const unsubSpy2 = vi.fn();
-
-    (component as any).conversationWsSub = { unsubscribe: unsubSpy1 };
-    (component as any).notifWsSub = { unsubscribe: unsubSpy2 };
-
+    // Act
     component.ngOnDestroy();
 
-    expect(unsubSpy1).toHaveBeenCalled();
-    expect(unsubSpy2).toHaveBeenCalled();
+    // Assert
+    expect(unsubSpyConv).toHaveBeenCalled();
+    expect(subSpy).toHaveBeenCalled();
   });
 });

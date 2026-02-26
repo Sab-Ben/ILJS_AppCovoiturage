@@ -1,58 +1,57 @@
-import { Injectable } from '@angular/core';
-import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { NotificationService } from '../../services/notification.service';
+import {inject, Injectable} from '@angular/core';
+import {Actions, createEffect} from '@ngrx/effects';
+import {Store} from '@ngrx/store';
+import {filter, switchMap, tap} from 'rxjs/operators';
+import {selectAuthToken, selectIsAuthenticated} from '../authentification/authentification.selectors';
 import * as NotificationActions from './notification.actions';
-import { catchError, map, mergeMap, of } from 'rxjs';
+import {WsService} from '../../services/ws.service';
 
 @Injectable()
 export class NotificationEffects {
-  constructor(private actions$: Actions, private notificationService: NotificationService) {}
+    private actions$ = inject(Actions);
+    private store = inject(Store);
+    private wsService = inject(WsService);
 
-  loadNotifications$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(NotificationActions.loadNotifications),
-      mergeMap(() =>
-        this.notificationService.getMyNotifications().pipe(
-          map((notifications) => NotificationActions.loadNotificationsSuccess({ notifications })),
-          catchError((error) => of(NotificationActions.loadNotificationsFailure({ error })))
+    /**
+     * Initialise le chargement des notifications dès que l'utilisateur est authentifié.
+     * switchMap renvoie ici un tableau d'actions qui seront toutes dispatchées.
+     */
+    initOnAuth$ = createEffect(() =>
+        this.store.select(selectIsAuthenticated).pipe(
+            filter(authenticated => authenticated),
+            switchMap(() => [
+                NotificationActions.loadNotifications(),
+                NotificationActions.loadUnreadCount()
+            ])
         )
-      )
-    )
-  );
+    );
 
-  loadUnreadCount$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(NotificationActions.loadUnreadCount),
-      mergeMap(() =>
-        this.notificationService.getUnreadCount().pipe(
-          map((res) => NotificationActions.loadUnreadCountSuccess({ count: res.count })),
-          catchError((error) => of(NotificationActions.loadUnreadCountFailure({ error })))
-        )
-      )
-    )
-  );
+    /**
+     * Gère la connexion au WebSocket dès qu'un token est disponible.
+     * { dispatch: false } car cette action ne déclenche pas d'autre action NgRx.
+     */
+    connectWs$ = createEffect(() =>
+            this.store.select(selectAuthToken).pipe(
+                filter(token => !!token),
+                tap(token => {
+                    console.log('[NotificationEffects] Connexion au WS...');
+                    this.wsService.connect(token as string);
+                })
+            ),
+        {dispatch: false}
+    );
 
-  markAsRead$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(NotificationActions.markNotificationAsRead),
-      mergeMap(({ id }) =>
-        this.notificationService.markAsRead(id).pipe(
-          map((notification) => NotificationActions.markNotificationAsReadSuccess({ notification })),
-          catchError((error) => of(NotificationActions.markNotificationAsReadFailure({ error })))
-        )
-      )
-    )
-  );
-
-  markAllAsRead$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(NotificationActions.markAllNotificationsAsRead),
-      mergeMap(() =>
-        this.notificationService.markAllAsRead().pipe(
-          map(() => NotificationActions.markAllNotificationsAsReadSuccess()),
-          catchError((error) => of(NotificationActions.markAllNotificationsAsReadFailure({ error })))
-        )
-      )
-    )
-  );
+    /**
+     * Gère la déconnexion du WebSocket dès que l'utilisateur n'est plus authentifié.
+     */
+    disconnectWs$ = createEffect(() =>
+            this.store.select(selectIsAuthenticated).pipe(
+                filter(authenticated => !authenticated),
+                tap(() => {
+                    console.log('[NotificationEffects] Déconnexion du WS...');
+                    this.wsService.disconnect();
+                })
+            ),
+        {dispatch: false}
+    );
 }

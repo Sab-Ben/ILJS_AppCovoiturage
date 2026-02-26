@@ -15,6 +15,10 @@ import {authentificationReducer} from "./store/authentification/authentification
 import {provideServiceWorker} from '@angular/service-worker';
 import {reservationReducer} from "./store/reservation/reservation.reducer";
 import {ReservationEffects} from "./store/reservation/reservation.effects";
+import {notificationReducer} from "./store/notification/notification.reducer";
+import {messageReducer} from "./store/message/message.reducer";
+import {NotificationEffects} from "./store/notification/notification.effects";
+import {MessageEffects} from "./store/message/message.effects";
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -27,9 +31,12 @@ export const appConfig: ApplicationConfig = {
             user: userReducer,
             trajet: trajetReducer,
             auth: authentificationReducer,
-            reservation: reservationReducer
+            reservation: reservationReducer,
+            notification: notificationReducer,
+            message: messageReducer
+
         }),
-        provideEffects([UserEffects, TrajetEffects, AuthentificationEffects, ReservationEffects]),
+        provideEffects([UserEffects, TrajetEffects, AuthentificationEffects, ReservationEffects, NotificationEffects, MessageEffects]),
         provideStoreDevtools({maxAge: 25, logOnly: !isDevMode()}),
         provideServiceWorker('ngsw-worker.js', {
             enabled: !isDevMode(),

@@ -10,14 +10,14 @@
               <div class="flex items-center gap-4">
                 <a routerLink="/" class="font-bold">ILJS Covoiturage</a>
 
-                <ng-container *ngIf="isAuthenticated()">
+                <ng-container>
                   <a routerLink="/my-rides" routerLinkActive="font-bold">Mes Trajets</a>
                   <a routerLink="/messaging" routerLinkActive="font-bold">Messagerie</a>
                   <a routerLink="/profile" routerLinkActive="font-bold">Profil</a>
                 </ng-container>
               </div>
               <div class="flex items-center gap-3">
-                <ng-container *ngIf="isAuthenticated()">
+                <ng-container>
                   <app-notification-bell></app-notification-bell>
                   <span *ngIf="user" class="text-sm">{{ user.firstname }} {{ user.lastname }}</span>
                   <button type="button" class="border rounded px-3 py-1" (click)="logout()">Déconnexion</button>

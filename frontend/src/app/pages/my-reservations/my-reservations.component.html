@@ -1,25 +1,43 @@
-<div class="page">
-  <h2>Mes réservations</h2>
+<div class="page container">
+    <h2>Mes réservations</h2>
 
-  <div *ngIf="(loading$ | async)">Chargement...</div>
-
-  <div *ngIf="(reservations$ | async) as reservations">
-    <div *ngIf="reservations.length === 0" class="empty">
-      Aucune réservation pour le moment.
+    <div *ngIf="errorMsg" class="alert alert-danger">
+        {{ errorMsg }}
     </div>
 
-    <div class="card" *ngFor="let r of reservations; trackBy: trackById">
-      <div><strong>Réservation #{{ r.id }}</strong></div>
-      <div>Places: {{ r.seats }}</div>
-      <div>Route: {{ r.desiredRoute }}</div>
-      <div>Date: {{ r.createdAt | date:'short' }}</div>
+    <div *ngIf="loading">Chargement...</div>
 
-      <div *ngIf="r.trajet">
-        <hr />
-        <div><strong>Trajet</strong></div>
-        <div>{{ r.trajet?.villeDepart }} → {{ r.trajet?.villeArrivee }}</div>
-        <div *ngIf="r.trajet?.dateHeureDepart">Départ: {{ r.trajet?.dateHeureDepart | date:'short' }}</div>
-      </div>
+    <div class="tabs mb-3">
+        <button class="btn" [class.active]="tab==='reserved'" (click)="switchTab('reserved')">
+            Réservées ({{ reserved.length }})
+        </button>
+        <button class="btn" [class.active]="tab==='completed'" (click)="switchTab('completed')">
+            Effectuées ({{ completed.length }})
+        </button>
     </div>
-  </div>
+
+    <div *ngIf="!loading">
+
+        <div *ngIf="tab === 'reserved'">
+            <div *ngIf="reserved.length === 0" class="empty">Aucune réservation en cours.</div>
+
+            <div class="card mb-3" *ngFor="let r of reserved; trackBy: trackById">
+                <div><strong>Réservation #{{ r.id }}</strong></div>
+                <div>Trajet: {{ r.ride?.from }} → {{ r.ride?.to }}</div>
+                <div>Places: {{ r.seats }}</div>
+                <button class="btn btn-outline-danger" (click)="cancel(r)">Annuler</button>
+            </div>
+        </div>
+
+        <div *ngIf="tab === 'completed'">
+            <div *ngIf="completed.length === 0" class="empty">Aucune course effectuée.</div>
+
+            <div class="card mb-3" *ngFor="let r of completed; trackBy: trackById">
+                <div><strong>Réservation #{{ r.id }}</strong></div>
+                <div>Trajet: {{ r.ride?.from }} → {{ r.ride?.to }}</div>
+                <div>Statut: Terminée</div>
+            </div>
+        </div>
+
+    </div>
 </div>

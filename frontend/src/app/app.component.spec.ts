@@ -1,11 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
 import { Component } from '@angular/core';
-import { NavbarComponent } from './components/navbar/navbar.component'; // Ajuste le chemin si besoin
+import { NavbarComponent } from './components/navbar/navbar.component';
 import { provideRouter } from '@angular/router';
 
-// 1. On crée un composant Mock (Faux) pour remplacer la vraie Navbar
-// Cela évite de devoir importer AuthService, UserService, etc. ici.
 @Component({
   selector: 'app-navbar',
   standalone: true,
@@ -17,10 +15,8 @@ describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppComponent],
-      // On fournit un routeur vide pour que <router-outlet> fonctionne
       providers: [provideRouter([])]
     })
-        // 2. On remplace la vraie Navbar par la MockNavbar dans le test
         .overrideComponent(AppComponent, {
           remove: { imports: [NavbarComponent] },
           add: { imports: [MockNavbarComponent] }

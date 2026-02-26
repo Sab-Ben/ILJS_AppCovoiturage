@@ -9,7 +9,6 @@ import * as MessageActions from '../store/message/message.actions';
 @Injectable({ providedIn: 'root' })
 export class WsService {
   private client?: Client;
-
   private userEventsSub?: StompSubscription;
   private conversationSub?: StompSubscription;
 
@@ -23,91 +22,31 @@ export class WsService {
       reconnectDelay: 3000,
       connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
       onConnect: () => {
-        // abonnement par défaut (utile même si personne n'appelle subscribeToUserNotifications)
-        this.userEventsSub = this.client?.subscribe('/user/queue/events', (msg) => {
-          this.handleIncoming(msg);
-        });
+        this.subscribeToUserEvents();
       },
     });
 
     this.client.activate();
   }
 
-  disconnect() {
-    this.userEventsSub?.unsubscribe();
-    this.conversationSub?.unsubscribe();
-    this.client?.deactivate();
-  }
-
-  /**
-   * ✅ COMPAT:
-   * - subscribeToUserNotifications(handler)
-   * - subscribeToUserNotifications(anything, handler)
-   *
-   * On ignore le 1er param si 2 params sont fournis (souvent userId/email/token legacy).
-   */
-  subscribeToUserNotifications(
-    a: any,
-    b?: (event: WsEventModel) => void
-  ): { unsubscribe: () => void } {
-    const handler: ((event: WsEventModel) => void) | undefined =
-      typeof a === 'function' ? a : b;
-
-    if (!this.client?.active) this.connect();
-
-    const sub = this.client?.subscribe('/user/queue/events', (msg: IMessage) => {
-      const ev = this.parseEvent(msg);
-      if (!ev) return;
-
-      handler?.(ev);
-      this.dispatchEvent(ev);
+  private subscribeToUserEvents() {
+    if (this.userEventsSub) return;
+    this.userEventsSub = this.client?.subscribe('/user/queue/events', (msg) => {
+      this.handleIncoming(msg); // <--- On garde la méthode ici
     });
-
-    return { unsubscribe: () => sub?.unsubscribe() };
   }
 
-  /**
-   * COMPAT conversation topic
-   */
-  subscribeToConversation(
-    conversationId: number,
-    handler: (event: WsEventModel) => void
-  ): { unsubscribe: () => void } {
-    if (!this.client?.active) this.connect();
-
-    const destination = `/topic/conversations/${conversationId}`;
-
-    const sub = this.client?.subscribe(destination, (msg: IMessage) => {
-      const ev = this.parseEvent(msg);
-      if (!ev) return;
-
-      handler(ev);
-      this.dispatchEvent(ev);
-    });
-
-    this.conversationSub?.unsubscribe();
-    this.conversationSub = sub;
-
-    return { unsubscribe: () => sub?.unsubscribe() };
-  }
-
+  // On garde handleIncoming séparé pour le test
   private handleIncoming(msg: IMessage) {
     const ev = this.parseEvent(msg);
-    if (!ev) return;
-    this.dispatchEvent(ev);
+    if (ev) this.dispatchEvent(ev);
   }
 
   private dispatchEvent(ev: WsEventModel) {
     if (ev.type === 'NOTIFICATION') {
-      this.store.dispatch(
-        NotificationActions.notificationReceivedRealtime({ notification: ev.payload })
-      );
-      return;
-    }
-
-    if (ev.type === 'MESSAGE') {
+      this.store.dispatch(NotificationActions.notificationReceivedRealtime({ notification: ev.payload }));
+    } else if (ev.type === 'MESSAGE') {
       this.store.dispatch(MessageActions.messageReceivedRealtime({ message: ev.payload }));
-      return;
     }
   }
 
@@ -117,5 +56,23 @@ export class WsService {
     } catch {
       return null;
     }
+  }
+
+  disconnect() {
+    this.userEventsSub?.unsubscribe();
+    this.userEventsSub = undefined;
+    this.conversationSub?.unsubscribe();
+    this.client?.deactivate();
+  }
+
+  subscribeToConversation(conversationId: number): { unsubscribe: () => void } {
+    if (!this.client?.active) this.connect();
+    const destination = `/topic/conversations/${conversationId}`;
+    this.conversationSub?.unsubscribe();
+    const sub = this.client?.subscribe(destination, (msg: IMessage) => {
+      this.handleIncoming(msg);
+    });
+    this.conversationSub = sub;
+    return { unsubscribe: () => sub?.unsubscribe() };
   }
 }

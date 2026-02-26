@@ -1,6 +1,7 @@
+// conversation.service.spec.ts
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ConversationService } from './conversation.service';
 import { environment } from '../../environments/environment';
@@ -11,33 +12,50 @@ describe('ConversationService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [ConversationService, provideHttpClient(), provideHttpClientTesting()]
+      providers: [
+        ConversationService,
+        provideHttpClient(),
+        provideHttpClientTesting()
+      ]
     });
     service = TestBed.inject(ConversationService);
     httpMock = TestBed.inject(HttpTestingController);
   });
 
-  afterEach(() => httpMock.verify());
+  afterEach(() => {
+    httpMock.verify(); // Vérifie qu'il n'y a pas de requêtes HTTP non gérées
+  });
 
-  it('should open conversation', () => {
-    const mock = { id: 1, trajetId: 2 } as any;
+  it('should create or get a conversation', () => {
+    const mockConversationId = 123;
+    const trajetId = 1;
+    const otherUserId = 45;
 
-    service.openConversation(2).subscribe((res) => {
-      expect(res.id).toBe(1);
+    service.createOrGetConversation(trajetId, otherUserId).subscribe((id) => {
+      expect(id).toBe(mockConversationId);
     });
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/trajets/2/conversations`);
+    // On attend l'URL définie dans le service avec les query params
+    const req = httpMock.expectOne(request =>
+        request.url === `${environment.apiUrl}/conversations` &&
+        request.params.get('trajetId') === '1' &&
+        request.params.get('otherUserId') === '45'
+    );
+
     expect(req.request.method).toBe('POST');
-    req.flush(mock);
+    req.flush(mockConversationId);
   });
 
   it('should get my conversations', () => {
+    const mockData = [{ id: 1 }, { id: 2 }] as any;
+
     service.getMyConversations().subscribe((res) => {
-      expect(res.length).toBe(1);
+      expect(res.length).toBe(2);
+      expect(res).toEqual(mockData);
     });
 
     const req = httpMock.expectOne(`${environment.apiUrl}/conversations/me`);
     expect(req.request.method).toBe('GET');
-    req.flush([{ id: 1 }]);
+    req.flush(mockData);
   });
 });
