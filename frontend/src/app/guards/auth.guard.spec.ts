@@ -10,7 +10,7 @@ describe('AuthGuard', () => {
     let routerMock: any;
 
     const routeMock = {} as ActivatedRouteSnapshot;
-    const stateMock = { url: '/profile' } as RouterStateSnapshot;
+    const stateMock = { url: '/dashboard' } as RouterStateSnapshot;
 
     beforeEach(() => {
         authServiceMock = {

@@ -29,7 +29,7 @@ export class LoginComponent implements OnDestroy {
             this.actions$.pipe(ofType(AuthActions.loginSuccess)).subscribe(() => {
                 this.successMessage = 'Connexion réussie ! Redirection en cours...';
                 setTimeout(() => {
-                    this.router.navigate(['/profile']);
+                    this.router.navigate(['/dashboard']);
                 }, 1500);
             })
         );

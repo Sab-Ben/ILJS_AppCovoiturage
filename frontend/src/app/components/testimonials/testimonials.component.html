@@ -1,0 +1,36 @@
+<section id="temoignages" class="testimonials">
+  <div class="testimonials__container">
+    <div class="testimonials__header">
+      <p class="testimonials__label">Témoignages</p>
+      <h2 class="testimonials__title">Ils nous font <span class="testimonials__title-accent">confiance</span></h2>
+    </div>
+
+    <div class="testimonials__grid">
+      <div
+        *ngFor="let testimonial of testimonials; let i = index; trackBy: trackByIndex"
+        class="testimonials__card"
+        [style.animation-delay]="(i * 100) + 'ms'"
+      >
+        <div class="testimonials__quote-icon">"</div>
+
+        <div class="testimonials__rating">
+          <span *ngFor="let star of getRatingArray(testimonial.rating)" class="testimonials__star">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+          </span>
+        </div>
+
+        <p class="testimonials__text">"{{ testimonial.text }}"</p>
+
+        <div class="testimonials__author">
+          <div class="testimonials__avatar" [style.background]="testimonial.avatarGradient">{{ testimonial.avatar }}</div>
+          <div class="testimonials__author-info">
+            <div class="testimonials__author-name">{{ testimonial.name }}</div>
+            <div class="testimonials__author-role">{{ testimonial.role }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

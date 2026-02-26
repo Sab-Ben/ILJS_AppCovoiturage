@@ -29,7 +29,7 @@ export class RegisterComponent implements OnDestroy {
             this.actions$.pipe(ofType(AuthActions.registerSuccess)).subscribe(() => {
                 this.successMessage = 'Inscription réussie ! Vous allez être redirigé vers la connexion...';
                 setTimeout(() => {
-                    this.router.navigate(['/login']);
+                    this.router.navigate(['/auth']);
                 }, 2000);
             })
         );

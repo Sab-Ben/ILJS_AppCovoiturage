@@ -46,7 +46,7 @@ describe('LoginComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('doit dispatcher login et rediriger vers /profile lors du succès', () => {
+    it('doit dispatcher login et rediriger vers /dashboard lors du succès', () => {
         vi.useFakeTimers();
 
         component.credentials.email = 'test@test.com';
@@ -63,7 +63,7 @@ describe('LoginComponent', () => {
         expect(component.successMessage).toContain('Connexion réussie');
 
         vi.advanceTimersByTime(1500);
-        expect(router.navigate).toHaveBeenCalledWith(['/profile']);
+        expect(router.navigate).toHaveBeenCalledWith(['/dashboard']);
     });
 
     it('doit afficher un message d\'erreur si le login échoue', () => {

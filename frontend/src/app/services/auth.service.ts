@@ -37,7 +37,7 @@ export class AuthService {
         if (isPlatformBrowser(this.platformId)) {
           localStorage.removeItem('token');
         }
-        this.router.navigate(['/login']);
+        this.router.navigate(['/auth']);
     }
 
     isAuthenticated(): boolean {

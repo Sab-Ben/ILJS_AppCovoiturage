@@ -1,9 +1,9 @@
-<app-navbar></app-navbar>
+<app-navbar *ngIf="!isLandingPage"></app-navbar>
 
-<main class="main-content">
-    <router-outlet></router-outlet>
+<main>
+  <router-outlet></router-outlet>
 </main>
 
-<footer class="text-center py-6 text-gray-500 text-sm">
-    &copy; 2026 IJLS Covoiturage.
+<footer *ngIf="!isLandingPage" class="app-footer">
+  &copy; 2026 CoVoiture. Tous droits réservés.
 </footer>

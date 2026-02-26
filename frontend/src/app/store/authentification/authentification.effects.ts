@@ -15,7 +15,6 @@ export class AuthentificationEffects {
         ofType(AuthActions.login),
         mergeMap(({ authRequest }) => this.authService.login(authRequest).pipe(
             map(response => AuthActions.loginSuccess({ token: response.token })),
-            tap(() => this.router.navigate(['/'])), // Redirection après login réussi
             catchError(error => of(AuthActions.loginFailure({ error })))
         ))
     ));
@@ -24,7 +23,7 @@ export class AuthentificationEffects {
         ofType(AuthActions.register),
         mergeMap(({ registerRequest }) => this.authService.register(registerRequest).pipe(
             map(() => AuthActions.registerSuccess()),
-            tap(() => this.router.navigate(['/login'])), // Redirection vers login après inscription
+            tap(() => this.router.navigate(['/auth'])),
             catchError(error => of(AuthActions.registerFailure({ error })))
         ))
     ));

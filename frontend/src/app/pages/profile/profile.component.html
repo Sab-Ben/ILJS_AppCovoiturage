@@ -1,77 +1,269 @@
-<div *ngIf="user" class="profile-container">
-    <div class="header-row">
-        <h1 i18n="@@mySpaceHeader">Mon Espace</h1>
+<div class="dashboard" *ngIf="user">
 
-      <!-- Actions CONDUCTEUR -->
-      <div class="top-actions" *ngIf="user.role === 'CONDUCTEUR'">
-        <button routerLink="/create-ride" class="btn-create">
-          <span class="icon">+</span> Créer un trajet
-        </button>
+  <div class="ambient-glows">
+    <div class="ambient-glows__blob ambient-glows__blob--blue"></div>
+    <div class="ambient-glows__blob ambient-glows__blob--violet"></div>
+    <div class="ambient-glows__blob ambient-glows__blob--coral"></div>
+  </div>
 
+  <main class="dash-main">
 
-        <button routerLink="/my-rides" class="btn-view">
-          Voir mes trajets
-        </button>
+    <div class="greeting">
+      <div class="greeting__text">
+        <p class="greeting__label">{{ greeting }}</p>
+        <h1 class="greeting__name">{{ user.firstname }}<span class="greeting__dot">.</span></h1>
       </div>
-
-      <!-- Actions PASSAGER -->
-      <div class="top-actions" *ngIf="user.role === 'PASSAGER'">
-        <button routerLink="/search-ride" class="btn-create">
-          🔎 Rechercher une course
-        </button>
-        <button routerLink="/passenger/bookings" class="btn-view">
-          Mes réservations
-        </button>
-        <button routerLink="/completed-rides" class="btn-view">
-          Voir mes courses effectuées
-        </button>
-      </div>
-
     </div>
 
-    <div class="card points-card">
-        <h2 i18n="@@pointsBalanceHeader">💰 Solde de points</h2>
-        <p class="points-value">{{ user.pointBalance }} <span i18n="@@pointsUnit">pts</span></p>
-    </div>
-
-    <div class="card info-card">
-        <h2 i18n="@@myInfoHeader">👤 Mes Informations</h2>
-
-        <div *ngIf="!isEditing">
-            <p><strong i18n="@@firstNameLabel">Prénom :</strong> {{ user.firstname }}</p>
-            <p><strong i18n="@@lastNameLabel">Nom :</strong> {{ user.lastname }}</p>
-            <p><strong i18n="@@emailLabel">Email :</strong> {{ user.email }}</p>
-            <p><strong i18n="@@roleLabel">Statut :</strong> {{ user.role }}</p>
-
-            <button (click)="isEditing = true" class="btn-edit" i18n="@@editProfileBtn">
-                Modifier mon profil
-            </button>
+    <div class="profile-panel" *ngIf="isEditing">
+      <div class="profile-panel__card">
+        <div class="profile-panel__header">
+          <h3 class="profile-panel__title">Mes informations</h3>
+          <button class="profile-panel__close" (click)="isEditing = false">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
         </div>
-
-        <div *ngIf="isEditing">
-            <label>
-                <span i18n="@@firstNameLabel">Prénom :</span>
-                <input [(ngModel)]="user.firstname">
-            </label>
-            <label>
-                <span i18n="@@lastNameLabel">Nom :</span>
-                <input [(ngModel)]="user.lastname">
-            </label>
-            <label>
-                <span i18n="@@roleLabel">Statut :</span>
-            </label>
-            <select [(ngModel)]="user.role" name="role">
-                <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+        <div class="profile-panel__body">
+          <div class="profile-panel__field">
+            <label>Prénom</label>
+            <input [(ngModel)]="user.firstname">
+          </div>
+          <div class="profile-panel__field">
+            <label>Nom</label>
+            <input [(ngModel)]="user.lastname">
+          </div>
+          <div class="profile-panel__field">
+            <label>Email</label>
+            <input [value]="user.email" disabled>
+          </div>
+          <div class="profile-panel__field">
+            <label>Statut</label>
+            <select [(ngModel)]="user.role">
+              <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
             </select>
-
-            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button (click)="saveProfile()" class="btn-create" style="margin:0">Enregistrer</button>
-                <button (click)="isEditing = false" class="btn-cancel" style="margin:0">Annuler</button>
-            </div>
+          </div>
+          <div class="profile-panel__actions">
+            <button class="profile-panel__save" (click)="saveProfile()">Enregistrer</button>
+            <button class="profile-panel__cancel" (click)="isEditing = false">Annuler</button>
+          </div>
+          <div *ngIf="successMessage" class="profile-panel__success">{{ successMessage }}</div>
         </div>
-
-        <p class="success" *ngIf="successMessage">{{ successMessage }}</p>
+      </div>
     </div>
 
-    <button class="logout-btn" (click)="logout()" i18n="@@logoutBtn">Se déconnecter</button>
+    <div class="hero-grid">
+
+      <div class="points-card">
+        <div class="points-card__glows">
+          <div class="points-card__glow points-card__glow--blue"></div>
+          <div class="points-card__glow points-card__glow--amber"></div>
+        </div>
+
+        <div class="points-card__top">
+          <div class="points-card__logo">
+            <svg viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="8" fill="#3b82f6"/>
+              <path d="M10 20c0-4.4 3.6-8 8-8h2" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="22" cy="12" r="2" fill="white"/>
+            </svg>
+            <span>CoVoiture</span>
+          </div>
+
+          <div class="points-card__circle">
+            <svg viewBox="0 0 48 48">
+              <circle cx="24" cy="24" r="20" fill="none" stroke="hsl(220, 15%, 18%)" stroke-width="3"/>
+              <circle cx="24" cy="24" r="20" fill="none"
+                stroke="url(#progGrad)" stroke-width="3" stroke-linecap="round"
+                [attr.stroke-dasharray]="2 * 3.14159 * 20"
+                [attr.stroke-dashoffset]="2 * 3.14159 * 20 * 0.7"
+                class="points-card__progress-ring"/>
+              <defs>
+                <linearGradient id="progGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="hsl(220, 65%, 55%)"/>
+                  <stop offset="100%" stop-color="hsl(38, 80%, 55%)"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <span class="points-card__percent">30%</span>
+          </div>
+        </div>
+
+        <div class="points-card__bottom">
+          <div class="points-card__balance">
+            <p class="points-card__solde-label">Solde actuel</p>
+            <p class="points-card__solde-value">{{ user.pointBalance || 0 }}</p>
+            <p class="points-card__solde-unit">Points</p>
+          </div>
+          <div class="points-card__objectif">
+            <p class="points-card__objectif-label">Objectif</p>
+            <p class="points-card__objectif-text">300 XP requis</p>
+            <div class="points-card__bar">
+              <div class="points-card__bar-track">
+                <div class="points-card__bar-fill"></div>
+                <div class="points-card__bar-thumb"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rank-card">
+        <div class="rank-card__glow"></div>
+
+        <div class="rank-card__star">
+          <svg viewBox="0 0 80 80" fill="none">
+            <defs>
+              <linearGradient id="starGrad" x1="30" y1="28" x2="66" y2="62">
+                <stop offset="0%" stop-color="hsl(42, 85%, 65%)"/>
+                <stop offset="100%" stop-color="hsl(36, 80%, 48%)"/>
+              </linearGradient>
+              <linearGradient id="shieldStroke" x1="16" y1="8" x2="80" y2="90">
+                <stop offset="0%" stop-color="hsl(38, 65%, 55%)" stop-opacity="0.6"/>
+                <stop offset="50%" stop-color="hsl(38, 55%, 40%)" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="hsl(38, 65%, 50%)" stop-opacity="0.5"/>
+              </linearGradient>
+            </defs>
+            <path d="M40 8 L60 18 L60 38 Q60 58 40 72 Q20 58 20 38 L20 18 Z" fill="none" stroke="url(#shieldStroke)" stroke-width="1.5"/>
+            <path d="M40 22 L44.5 31 L54.5 32.5 L47.2 39.5 L49 49.5 L40 44.8 L31 49.5 L32.8 39.5 L25.5 32.5 L35.5 31 Z" fill="url(#starGrad)"/>
+          </svg>
+        </div>
+
+        <div class="rank-card__badge">
+          <svg class="rank-card__badge-icon" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2l2.4 7.4h7.6l-6 4.6 2.3 7-6.3-4.6L5.7 21l2.3-7L2 9.4h7.6z" fill="currentColor"/>
+          </svg>
+          <span>Niveau 1</span>
+        </div>
+        <p class="rank-card__title">Rookie</p>
+        <p class="rank-card__desc">
+          Encore <span class="rank-card__highlight">5 trajets</span> pour<br/>le rang suivant
+        </p>
+      </div>
+
+    </div>
+
+    <div class="action-grid">
+      <a routerLink="/create-ride" class="action-card">
+        <img src="assets/images/Screenshot 2026-02-26 at 12.13.49.png" alt="" class="action-card__img"/>
+        <div class="action-card__overlay"></div>
+        <div class="action-card__body">
+          <p class="action-card__title">Proposer un trajet</p>
+          <p class="action-card__sub">Partagez la route et gagnez des points</p>
+          <div class="action-card__arrow-btn">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+      </a>
+
+      <a routerLink="/search-rides" class="action-card">
+        <img src="assets/images/dreamstime_xl_64512781.jpg" alt="" class="action-card__img"/>
+        <div class="action-card__overlay"></div>
+        <div class="action-card__body">
+          <p class="action-card__title">Rechercher un trajet</p>
+          <p class="action-card__sub">Trouvez un covoiturage près de chez vous</p>
+          <div class="action-card__arrow-btn">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="tabs-section">
+      <div class="tabs-bar">
+        <button class="tabs-bar__tab" [class.tabs-bar__tab--active]="activeTab === 'rides'" (click)="activeTab = 'rides'">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-2-2.1-3.2C13.1 5.6 11.7 5 10.3 5H5c-1.7 0-3 1.3-3 3v6c0 .6.4 1 1 1h1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="7" cy="17" r="2" stroke="currentColor" stroke-width="2"/>
+            <circle cx="17" cy="17" r="2" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          Mes trajets
+        </button>
+        <button class="tabs-bar__tab" [class.tabs-bar__tab--active]="activeTab === 'bookings'" (click)="activeTab = 'bookings'">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/>
+            <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          Réservations
+        </button>
+      </div>
+
+      <div class="tab-content" *ngIf="activeTab === 'rides'">
+        <ng-container *ngIf="(trajets$ | async) as trajets">
+          <div *ngIf="trajets.length === 0" class="empty-state">
+            <div class="empty-state__icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+                <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <p class="empty-state__title">Aucun trajet publié</p>
+            <p class="empty-state__sub">Publiez votre premier trajet et commencez à gagner des points</p>
+            <a routerLink="/create-ride" class="empty-state__btn">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+              Proposer un trajet
+            </a>
+          </div>
+
+          <div class="rides-grid" *ngIf="trajets.length > 0">
+            <div *ngFor="let trajet of trajets.slice(0, 5)" class="ride-item">
+              <div class="ride-item__header">
+                <div class="ride-item__nav-badge">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M3 11l19-9-9 19-2-8-8-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <span class="ride-item__status ride-item__status--active">
+                  <span class="ride-item__status-dot"></span>
+                  Actif
+                </span>
+              </div>
+
+              <div class="ride-item__route">
+                <div class="ride-item__city-group">
+                  <div class="ride-item__dot ride-item__dot--blue"></div>
+                  <p class="ride-item__city">{{ trajet.villeDepart }}</p>
+                </div>
+                <div class="ride-item__connector"></div>
+                <div class="ride-item__city-group">
+                  <div class="ride-item__dot ride-item__dot--coral"></div>
+                  <p class="ride-item__city">{{ trajet.villeArrivee }}</p>
+                </div>
+              </div>
+
+              <div class="ride-item__meta">
+                <span class="ride-item__meta-item">
+                  <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                  {{ trajet.dateHeureDepart | date:'EEE d MMM':'':'fr' }}
+                </span>
+                <span class="ride-item__meta-item">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  {{ trajet.placesDisponibles }} place(s)
+                </span>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <div class="tab-content" *ngIf="activeTab === 'bookings'">
+        <div class="empty-state">
+          <div class="empty-state__icon empty-state__icon--violet">
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+              <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <p class="empty-state__title">Aucune réservation</p>
+          <p class="empty-state__sub">Trouvez un trajet qui vous convient</p>
+          <a routerLink="/search-rides" class="empty-state__btn">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Chercher un trajet
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </main>
 </div>
