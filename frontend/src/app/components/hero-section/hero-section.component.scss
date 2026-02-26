@@ -1,4 +1,4 @@
-@import 'theme';
+@use 'theme' as *;
 
 @keyframes pulse-glow {
   0%, 100% { box-shadow: 0 0 8px var(--primary); }

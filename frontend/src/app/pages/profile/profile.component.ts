@@ -66,6 +66,13 @@ export class ProfileComponent implements OnInit, OnDestroy {
     return (first + last).toUpperCase();
   }
 
+  readonly pointsObjectif = 300;
+
+  get progressPercent(): number {
+    const balance = this.user?.pointBalance || 0;
+    return Math.min(Math.round((balance / this.pointsObjectif) * 100), 100);
+  }
+
   get greeting(): string {
     const hour = new Date().getHours();
     if (hour < 12) return 'Bonjour';

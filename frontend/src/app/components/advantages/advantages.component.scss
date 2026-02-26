@@ -1,4 +1,4 @@
-@import 'theme';
+@use 'theme' as *;
 
 @keyframes glow-line {
   0% { opacity: 0.3; }

@@ -60,49 +60,30 @@
         </div>
 
         <div class="points-card__top">
-          <div class="points-card__logo">
-            <svg viewBox="0 0 32 32" fill="none">
-              <rect width="32" height="32" rx="8" fill="#3b82f6"/>
-              <path d="M10 20c0-4.4 3.6-8 8-8h2" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-              <circle cx="22" cy="12" r="2" fill="white"/>
-            </svg>
-            <span>CoVoiture</span>
+          <div class="points-card__label-group">
+            <div class="points-card__icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="9" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
+                <circle cx="15" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+            <span class="points-card__label">Solde</span>
           </div>
-
-          <div class="points-card__circle">
-            <svg viewBox="0 0 48 48">
-              <circle cx="24" cy="24" r="20" fill="none" stroke="hsl(220, 15%, 18%)" stroke-width="3"/>
-              <circle cx="24" cy="24" r="20" fill="none"
-                stroke="url(#progGrad)" stroke-width="3" stroke-linecap="round"
-                [attr.stroke-dasharray]="2 * 3.14159 * 20"
-                [attr.stroke-dashoffset]="2 * 3.14159 * 20 * 0.7"
-                class="points-card__progress-ring"/>
-              <defs>
-                <linearGradient id="progGrad" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stop-color="hsl(220, 65%, 55%)"/>
-                  <stop offset="100%" stop-color="hsl(38, 80%, 55%)"/>
-                </linearGradient>
-              </defs>
-            </svg>
-            <span class="points-card__percent">30%</span>
-          </div>
+          <span class="points-card__objectif-tag">Objectif: {{ pointsObjectif }}</span>
         </div>
 
-        <div class="points-card__bottom">
-          <div class="points-card__balance">
-            <p class="points-card__solde-label">Solde actuel</p>
-            <p class="points-card__solde-value">{{ user.pointBalance || 0 }}</p>
-            <p class="points-card__solde-unit">Points</p>
+        <div class="points-card__center">
+          <p class="points-card__value">{{ user.pointBalance || 0 }}</p>
+          <p class="points-card__unit">Points</p>
+        </div>
+
+        <div class="points-card__bar">
+          <div class="points-card__bar-header">
+            <span class="points-card__bar-percent">{{ progressPercent }}%</span>
+            <span class="points-card__bar-fraction">{{ user.pointBalance || 0 }} / {{ pointsObjectif }}</span>
           </div>
-          <div class="points-card__objectif">
-            <p class="points-card__objectif-label">Objectif</p>
-            <p class="points-card__objectif-text">300 XP requis</p>
-            <div class="points-card__bar">
-              <div class="points-card__bar-track">
-                <div class="points-card__bar-fill"></div>
-                <div class="points-card__bar-thumb"></div>
-              </div>
-            </div>
+          <div class="points-card__bar-track">
+            <div class="points-card__bar-fill" [style.width.%]="progressPercent"></div>
           </div>
         </div>
       </div>
@@ -111,20 +92,25 @@
         <div class="rank-card__glow"></div>
 
         <div class="rank-card__star">
-          <svg viewBox="0 0 80 80" fill="none">
+          <svg viewBox="0 0 100 100" fill="none">
             <defs>
-              <linearGradient id="starGrad" x1="30" y1="28" x2="66" y2="62">
+              <linearGradient id="starGrad" x1="30" y1="28" x2="70" y2="72">
                 <stop offset="0%" stop-color="hsl(42, 85%, 65%)"/>
                 <stop offset="100%" stop-color="hsl(36, 80%, 48%)"/>
               </linearGradient>
-              <linearGradient id="shieldStroke" x1="16" y1="8" x2="80" y2="90">
+              <linearGradient id="shieldStroke" x1="16" y1="8" x2="84" y2="92">
                 <stop offset="0%" stop-color="hsl(38, 65%, 55%)" stop-opacity="0.6"/>
                 <stop offset="50%" stop-color="hsl(38, 55%, 40%)" stop-opacity="0.3"/>
                 <stop offset="100%" stop-color="hsl(38, 65%, 50%)" stop-opacity="0.5"/>
               </linearGradient>
+              <radialGradient id="starGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="hsl(38, 80%, 55%)" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="hsl(38, 80%, 55%)" stop-opacity="0"/>
+              </radialGradient>
             </defs>
-            <path d="M40 8 L60 18 L60 38 Q60 58 40 72 Q20 58 20 38 L20 18 Z" fill="none" stroke="url(#shieldStroke)" stroke-width="1.5"/>
-            <path d="M40 22 L44.5 31 L54.5 32.5 L47.2 39.5 L49 49.5 L40 44.8 L31 49.5 L32.8 39.5 L25.5 32.5 L35.5 31 Z" fill="url(#starGrad)"/>
+            <circle cx="50" cy="45" r="35" fill="url(#starGlow)"/>
+            <path d="M50 10 L70 22 L70 45 Q70 68 50 82 Q30 68 30 45 L30 22 Z" fill="none" stroke="url(#shieldStroke)" stroke-width="1.5"/>
+            <path d="M50 26 L55.5 37 L67.5 38.5 L58.5 47 L60.5 59 L50 53.5 L39.5 59 L41.5 47 L32.5 38.5 L44.5 37 Z" fill="url(#starGrad)"/>
           </svg>
         </div>
 

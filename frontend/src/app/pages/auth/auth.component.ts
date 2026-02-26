@@ -69,8 +69,9 @@ export class AuthComponent implements OnInit, OnDestroy {
     );
 
     this.subscription.add(
-      this.actions$.pipe(ofType(AuthActions.loginFailure)).subscribe(() => {
-        this.loginError = 'Identifiants invalides ou erreur de connexion.';
+      this.actions$.pipe(ofType(AuthActions.loginFailure)).subscribe((action: any) => {
+        const serverMessage = action.error?.error?.message;
+        this.loginError = serverMessage || 'Identifiants invalides ou erreur de connexion.';
         this.isLoading = false;
       })
     );
@@ -90,11 +91,11 @@ export class AuthComponent implements OnInit, OnDestroy {
 
     this.subscription.add(
       this.actions$.pipe(ofType(AuthActions.registerFailure)).subscribe((action: any) => {
-        const err = action.error;
-        if (err && err.status === 409) {
-          this.registerError = 'Cet email est déjà utilisé.';
+        const serverMessage = action.error?.error?.message;
+        if (action.error?.status === 409) {
+          this.registerError = serverMessage || 'Cet email est déjà utilisé.';
         } else {
-          this.registerError = "Une erreur est survenue lors de l'inscription.";
+          this.registerError = serverMessage || "Une erreur est survenue lors de l'inscription.";
         }
         this.isLoading = false;
       })

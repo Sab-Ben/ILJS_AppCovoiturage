@@ -1,5 +1,5 @@
-@import 'leaflet/dist/leaflet.css';
-@import "variables";
+@use 'leaflet/dist/leaflet.css';
+@use "variables" as *;
 
 @tailwind base;
 @tailwind components;
@@ -50,6 +50,18 @@
   --auth-input-focus-bg: #ffffff;
   --auth-error-color: #dc2626;
   --auth-success-color: #2563eb;
+  --card-solid-bg: #ffffff;
+  --card-solid-border: #e5e7eb;
+  --card-solid-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  --card-solid-shadow-hover: 0 8px 40px rgba(0, 0, 0, 0.1);
+  --card-label-color: #6b7280;
+  --card-tag-bg: rgba(0, 0, 0, 0.03);
+  --card-tag-border: #e5e7eb;
+  --card-tag-color: #6b7280;
+  --card-value-color: #1f2937;
+  --card-bar-track: #e5e7eb;
+  --card-desc-color: #6b7280;
+  --card-glow-opacity: 0;
 }
 
 :root.dark {
@@ -97,6 +109,18 @@
   --auth-input-focus-bg: hsla(222, 30%, 18%, 0.6);
   --auth-error-color: #fca5a5;
   --auth-success-color: #93c5fd;
+  --card-solid-bg: hsl(228, 28%, 11%);
+  --card-solid-border: hsl(225, 20%, 16%);
+  --card-solid-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  --card-solid-shadow-hover: 0 20px 60px rgba(0, 0, 0, 0.35);
+  --card-label-color: hsl(220, 15%, 55%);
+  --card-tag-bg: rgba(255, 255, 255, 0.04);
+  --card-tag-border: hsl(225, 20%, 18%);
+  --card-tag-color: hsl(220, 15%, 45%);
+  --card-value-color: #ffffff;
+  --card-bar-track: hsl(225, 20%, 16%);
+  --card-desc-color: hsl(220, 15%, 50%);
+  --card-glow-opacity: 1;
 }
 
 @layer base {

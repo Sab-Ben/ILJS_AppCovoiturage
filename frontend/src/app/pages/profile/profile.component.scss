@@ -1,4 +1,4 @@
-@import 'theme';
+@use 'theme' as *;
 
 $amber: hsl(38, 80%, 55%);
 $coral: hsl(0, 75%, 60%);
@@ -293,19 +293,26 @@ $blue: $primary;
 .points-card {
   position: relative;
   overflow: hidden;
-  background: hsl(225, 30%, 12%);
-  border: 1px solid hsl(225, 20%, 18%);
+  background: var(--card-solid-bg);
+  border: 1px solid var(--card-solid-border);
   border-radius: 24px;
-  padding: 1.5rem;
-  box-shadow: 0 12px 50px hsla(0, 0%, 0%, 0.3);
+  padding: 1.75rem;
+  box-shadow: var(--card-solid-shadow);
+  transition: all 0.35s ease;
 
-  @media (min-width: 640px) { padding: 2rem; }
+  @media (min-width: 640px) { padding: 2rem 2.25rem; }
+
+  &:hover {
+    box-shadow: var(--card-solid-shadow-hover);
+    transform: translateY(-2px);
+  }
 
   &__glows {
     position: absolute;
     inset: 0;
     pointer-events: none;
     overflow: hidden;
+    opacity: var(--card-glow-opacity);
   }
 
   &__glow {
@@ -313,21 +320,21 @@ $blue: $primary;
     border-radius: 50%;
 
     &--blue {
-      top: -20px;
-      left: 33%;
+      top: -60px;
+      left: 10%;
       width: 400px;
-      height: 200px;
-      background: rgba(hsl(220, 60%, 50%), 0.08);
-      filter: blur(100px);
+      height: 250px;
+      background: rgba($blue, 0.07);
+      filter: blur(120px);
     }
 
     &--amber {
-      bottom: 0;
-      right: 0;
+      bottom: -40px;
+      right: -10%;
       width: 300px;
-      height: 150px;
-      background: rgba(hsl(38, 70%, 50%), 0.06);
-      filter: blur(80px);
+      height: 180px;
+      background: rgba($amber, 0.05);
+      filter: blur(100px);
     }
   }
 
@@ -340,191 +347,176 @@ $blue: $primary;
     margin-bottom: 2rem;
   }
 
-  &__logo {
+  &__label-group {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-
-    svg { width: 24px; height: 24px; }
-
-    span {
-      font-family: 'Sora', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.7);
-    }
   }
 
-  &__circle {
-    position: relative;
-    width: 48px;
-    height: 48px;
-
-    svg {
-      width: 100%;
-      height: 100%;
-      transform: rotate(-90deg);
-    }
-  }
-
-  &__progress-ring {
-    transition: stroke-dashoffset 1.2s ease-out;
-  }
-
-  &__percent {
-    position: absolute;
-    inset: 0;
+  &__icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: rgba($amber, 0.12);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Sora', sans-serif;
-    font-size: 10px;
-    font-weight: 700;
-    color: hsl(0, 0%, 65%);
+    color: $amber;
+
+    svg { width: 18px; height: 18px; }
   }
 
-  &__bottom {
+  &__label {
+    font-family: 'Sora', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--card-label-color);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  &__objectif-tag {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--card-tag-color);
+    padding: 0.3rem 0.75rem;
+    background: var(--card-tag-bg);
+    border: 1px solid var(--card-tag-border);
+    border-radius: 20px;
+  }
+
+  &__center {
     position: relative;
     z-index: 10;
-    display: flex;
-    align-items: end;
-    justify-content: space-between;
-    gap: 1.5rem;
+    margin-bottom: 2rem;
   }
 
-  &__balance { flex-shrink: 0; }
-
-  &__solde-label {
-    font-family: 'Inter', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    color: hsl(220, 10%, 50%);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    margin: 0 0 0.5rem;
-  }
-
-  &__solde-value {
+  &__value {
     font-family: 'Sora', sans-serif;
-    font-size: 3rem;
+    font-size: 4.5rem;
     font-weight: 800;
-    color: white;
+    color: var(--card-value-color);
     margin: 0;
     line-height: 1;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.04em;
 
-    @media (min-width: 640px) { font-size: 4rem; }
+    @media (min-width: 640px) { font-size: 5.5rem; }
   }
 
-  &__solde-unit {
+  &__unit {
     font-family: 'Inter', sans-serif;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 700;
     color: $amber;
     text-transform: uppercase;
-    letter-spacing: 0.2em;
-    margin: 0.35rem 0 0;
+    letter-spacing: 0.25em;
+    margin: 0.5rem 0 0;
   }
 
-  &__objectif {
-    text-align: right;
-    padding-bottom: 0.5rem;
+  &__bar {
+    position: relative;
+    z-index: 10;
+    width: 100%;
   }
 
-  &__objectif-label {
+  &__bar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+
+  &__bar-percent {
+    font-family: 'Sora', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--card-value-color);
+  }
+
+  &__bar-fraction {
     font-family: 'Inter', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    color: hsl(220, 10%, 50%);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    margin: 0 0 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--card-desc-color);
   }
-
-  &__objectif-text {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.8rem;
-    color: hsl(220, 10%, 50%);
-    margin: 0 0 0.75rem;
-  }
-
-  &__bar { position: relative; width: 100%; min-width: 120px; }
 
   &__bar-track {
-    position: relative;
     width: 100%;
-    height: 6px;
-    background: hsl(225, 20%, 18%);
+    height: 8px;
+    background: var(--card-bar-track);
     border-radius: 10px;
-    overflow: visible;
+    overflow: hidden;
   }
 
   &__bar-fill {
-    width: 30%;
+    width: 0%;
     height: 100%;
     border-radius: 10px;
-    background: linear-gradient(90deg, hsl(38, 80%, 55%), hsl(25, 70%, 52%), hsl(8, 65%, 55%));
+    background: linear-gradient(90deg, $blue, $violet, $coral);
+    background-size: 200% 100%;
+    animation: shimmer 4s ease-in-out infinite;
     transition: width 1.2s ease-out;
   }
+}
 
-  &__bar-thumb {
-    position: absolute;
-    top: 50%;
-    left: 30%;
-    transform: translate(-50%, -50%);
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: white;
-    box-shadow: 0 0 16px rgba($amber, 0.5), 0 0 4px rgba($amber, 0.3);
-    margin-left: -10px;
-  }
+@keyframes shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 .rank-card {
   position: relative;
   overflow: hidden;
-  background: hsl(225, 30%, 12%);
-  border: 1px solid hsl(225, 20%, 18%);
+  background: var(--card-solid-bg);
+  border: 1px solid var(--card-solid-border);
   border-radius: 24px;
-  padding: 1.5rem;
+  padding: 2rem 1.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  box-shadow: 0 12px 50px hsla(0, 0%, 0%, 0.3);
+  box-shadow: var(--card-solid-shadow);
+  transition: all 0.35s ease;
+
+  &:hover {
+    box-shadow: var(--card-solid-shadow-hover);
+    transform: translateY(-2px);
+  }
 
   &__glow {
     position: absolute;
     top: 25%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 160px;
-    height: 160px;
+    width: 220px;
+    height: 220px;
     background: rgba($amber, 0.08);
     border-radius: 50%;
     filter: blur(80px);
     pointer-events: none;
+    opacity: var(--card-glow-opacity);
   }
 
   &__star {
     position: relative;
     z-index: 10;
-    width: 80px;
-    height: 80px;
+    width: 110px;
+    height: 110px;
     animation: float-star 4s ease-in-out infinite;
+    filter: drop-shadow(0 10px 30px rgba($amber, 0.25));
   }
 
   &__badge {
     position: relative;
     z-index: 10;
-    margin-top: 1.5rem;
+    margin-top: 1.25rem;
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.35rem 0.85rem;
-    background: rgba($amber, 0.12);
+    gap: 0.4rem;
+    padding: 0.4rem 1rem;
+    background: rgba($amber, 0.1);
     border: 1px solid rgba($amber, 0.2);
     border-radius: 20px;
 
@@ -545,10 +537,11 @@ $blue: $primary;
     position: relative;
     z-index: 10;
     font-family: 'Sora', sans-serif;
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     font-weight: 800;
-    color: white;
-    margin: 0.5rem 0 0;
+    color: var(--card-value-color);
+    margin: 0.6rem 0 0;
+    letter-spacing: -0.02em;
   }
 
   &__desc {
@@ -556,9 +549,9 @@ $blue: $primary;
     z-index: 10;
     font-family: 'Inter', sans-serif;
     font-size: 0.8rem;
-    color: hsl(220, 10%, 50%);
+    color: var(--card-desc-color);
     margin: 0.5rem 0 0;
-    line-height: 1.5;
+    line-height: 1.6;
   }
 
   &__highlight {
@@ -569,7 +562,7 @@ $blue: $primary;
 
 @keyframes float-star {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  50% { transform: translateY(-8px); }
 }
 
 .action-grid {
