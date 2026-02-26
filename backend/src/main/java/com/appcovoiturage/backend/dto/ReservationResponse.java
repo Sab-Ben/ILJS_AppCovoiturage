@@ -14,6 +14,7 @@ public class ReservationResponse {
     private String status;
     private String desiredRoute;
     private LocalDateTime createdAt;
+    private String passengerName;
     private RideSummary ride;
 
     @Getter

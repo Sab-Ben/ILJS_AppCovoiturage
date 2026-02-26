@@ -3,13 +3,12 @@ export interface Ride {
 
   from: string;
   to: string;
-  date: string;                // ex: 2026-02-11
-  departureTime?: string;      // ex: 08:30
+  date: string;
+  departureTime?: string;
   availableSeats?: number;
   price?: number;
   driverName?: string;
 
-  // ✅ nécessaire pour la carte/itinéraire
   fromLat?: number;
   fromLng?: number;
   toLat?: number;

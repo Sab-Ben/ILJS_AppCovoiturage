@@ -114,11 +114,25 @@ public class ReservationService {
             throw new IllegalArgumentException("Impossible d'annuler moins de 2h avant le départ");
         }
 
-        // On rend les places au trajet
         trajet.setPlacesDisponibles(trajet.getPlacesDisponibles() + reservation.getSeats());
         trajetRepository.save(trajet);
 
-        // On supprime la réservation
         reservationRepository.delete(reservation);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReservationResponse> getReservationsByRide(Long rideId) {
+        List<Reservation> reservations = reservationRepository.findByTrajetId(rideId);
+
+        System.out.println("Backend - Trajet ID: " + rideId + " | Réservations trouvées: " + reservations.size());
+
+        return reservations.stream()
+                .map(res -> ReservationResponse.builder()
+                        .id(res.getId())
+                        .seats(res.getSeats())
+                        .passengerName(res.getPassager().getFirstname() + " " + res.getPassager().getLastname())
+                        .desiredRoute(res.getDesiredRoute())
+                        .build())
+                .collect(Collectors.toList());
     }
 }

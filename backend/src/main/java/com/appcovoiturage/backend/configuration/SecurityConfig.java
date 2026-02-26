@@ -26,14 +26,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(Customizer.withDefaults()) // Utilise le bean corsConfigurationSource défini ci-dessous
+                .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/trajets/**").hasAuthority("CONDUCTEUR")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/trajets/**").hasAuthority("CONDUCTEUR")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/reservations/ride/**").hasAuthority("CONDUCTEUR")
                         .requestMatchers(HttpMethod.GET, "/api/v1/reservations/**").hasAuthority("PASSAGER")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/reservations/**").hasAuthority("PASSAGER")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/trajets/**").hasAuthority("CONDUCTEUR")
                         .requestMatchers("/api/v1/users/**").authenticated()
                         .anyRequest().authenticated()
                 )

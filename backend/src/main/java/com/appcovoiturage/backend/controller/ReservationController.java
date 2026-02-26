@@ -32,6 +32,11 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.getMyReservations(user, status));
     }
 
+    @GetMapping("/ride/{rideId}")
+    public ResponseEntity<List<ReservationResponse>> getReservationsByRide(@PathVariable Long rideId) {
+        return ResponseEntity.ok(reservationService.getReservationsByRide(rideId));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> cancel(@PathVariable Long id,
                                        @AuthenticationPrincipal User user) {

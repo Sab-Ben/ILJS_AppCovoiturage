@@ -8,6 +8,7 @@ import {Actions, ofType} from '@ngrx/effects';
 import {Subscription} from 'rxjs';
 import * as TrajetActions from '../../store/trajet/trajet.actions';
 import * as TrajetSelectors from '../../store/trajet/trajet.selectors';
+import { ReservationService } from '../../services/reservation.service';
 
 @Component({
     selector: 'app-my-rides',
@@ -20,13 +21,15 @@ export class MyRidesComponent implements OnInit, OnDestroy {
     trajets: Trajet[] = [];
     selectedTrajet: Trajet | null = null;
     isLoading = true;
+    passagersMap: { [key: number]: any[] } = {};
+
     private subscription: Subscription = new Subscription();
 
     constructor(
         private store: Store,
-        private actions$: Actions
-    ) {
-    }
+        private actions$: Actions,
+        private reservationService: ReservationService
+    ) {}
 
     ngOnInit(): void {
         this.store.dispatch(TrajetActions.loadTrajets());
@@ -34,6 +37,14 @@ export class MyRidesComponent implements OnInit, OnDestroy {
         this.subscription.add(
             this.store.select(TrajetSelectors.selectAllTrajets).subscribe(data => {
                 this.trajets = data;
+
+                if (data && data.length > 0) {
+                    data.forEach(trajet => {
+                        if (trajet.id) {
+                            this.fetchPassagers(trajet.id);
+                        }
+                    });
+                }
             })
         );
 
@@ -56,6 +67,22 @@ export class MyRidesComponent implements OnInit, OnDestroy {
                 alert("Impossible de supprimer ce trajet.");
             })
         );
+    }
+
+    /**
+     * Appelle le service pour récupérer les passagers d'un trajet spécifique
+     * et les stocke dans la map.
+     */
+    private fetchPassagers(rideId: number): void {
+        this.reservationService.getReservationsForRide(rideId).subscribe({
+            next: (res) => {
+                this.passagersMap[rideId] = res;
+            },
+            error: (err) => {
+                console.error(`Erreur passagers pour le trajet ${rideId}`, err);
+                this.passagersMap[rideId] = [];
+            }
+        });
     }
 
     isDeletable(dateHeureDepart: string): boolean {
