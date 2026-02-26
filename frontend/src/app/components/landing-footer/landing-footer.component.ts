@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 
 interface FooterLink {
   label: string;
@@ -15,7 +14,7 @@ interface FooterColumn {
 @Component({
   selector: 'app-landing-footer',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './landing-footer.component.html',
   styleUrls: ['./landing-footer.component.scss']
 })
