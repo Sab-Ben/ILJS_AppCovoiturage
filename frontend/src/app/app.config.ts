@@ -23,6 +23,7 @@ import { pointReducer } from './store/point/point.reducer';
 import { MessageEffects } from './store/message/message.effects';
 import { NotificationEffects } from './store/notification/notification.effects';
 import { PointEffects } from './store/point/point.effects';
+import {OfflineEffects} from "./store/offline/offline.effects";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -45,6 +46,7 @@ export const appConfig: ApplicationConfig = {
       AuthentificationEffects,
       MessageEffects,
       NotificationEffects,
+      OfflineEffects,
       PointEffects
     ]),
 
