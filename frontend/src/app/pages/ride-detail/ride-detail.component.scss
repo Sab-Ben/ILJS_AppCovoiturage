@@ -404,6 +404,18 @@ $coral: hsl(0, 75%, 60%);
         cursor: not-allowed;
       }
     }
+
+    &--secondary {
+      background: rgba($primary, 0.08);
+      color: $primary;
+      border: 1px solid rgba($primary, 0.2);
+      text-decoration: none;
+
+      &:hover {
+        background: rgba($primary, 0.15);
+        transform: translateY(-1px);
+      }
+    }
   }
 
   &__spinner-sm {

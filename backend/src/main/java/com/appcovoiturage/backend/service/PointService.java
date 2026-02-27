@@ -94,7 +94,6 @@ public class PointService {
         return points;
     }
 
-    @Transactional
     public int debitPassengerPoints(Trajet trajet, User passager, int totalPassengers) {
         int cost = calculatePassengerCost(trajet, totalPassengers, passager);
 
@@ -111,7 +110,6 @@ public class PointService {
         return cost;
     }
 
-    @Transactional
     public void refundPassengerPoints(Reservation reservation) {
         List<PointTransaction> transactions = pointTransactionRepository
                 .findByUserIdOrderByCreatedAtDesc(reservation.getPassager().getId());
@@ -277,8 +275,12 @@ public class PointService {
         if (newLevel.getRank() > previousLevel.getRank()) {
             createTransaction(conducteur, PointTransactionType.BONUS_NIVEAU, 10,
                     "Bonus passage au niveau " + newLevel.getLabel(), null);
-            notificationService.notifyLevelUp(
-                    conducteur, newLevel.getLabel(), newLevel.getAvantages());
+            try {
+                notificationService.notifyLevelUp(
+                        conducteur, newLevel.getLabel(), newLevel.getAvantages());
+            } catch (Exception e) {
+                log.error("Erreur notification level up pour {}: {}", conducteur.getEmail(), e.getMessage());
+            }
         }
     }
 

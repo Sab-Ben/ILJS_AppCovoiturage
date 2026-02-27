@@ -53,7 +53,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
         log.error("Erreur interne non geree: {}", ex.getMessage(), ex);
-        return build(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur interne du serveur");
+        String detail = ex.getClass().getSimpleName() + ": " + ex.getMessage();
+        Throwable cause = ex.getCause();
+        if (cause != null) {
+            detail += " | Cause: " + cause.getClass().getSimpleName() + ": " + cause.getMessage();
+        }
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, detail);
     }
 
     private ResponseEntity<Map<String, Object>> build(HttpStatus status, String message) {

@@ -1,13 +1,9 @@
 package com.appcovoiturage.backend.controller;
 
-import com.appcovoiturage.backend.dto.ReservationRequest;
-import com.appcovoiturage.backend.dto.ReservationResponse;
-import com.appcovoiturage.backend.entity.User;
 import com.appcovoiturage.backend.dto.ReservationResponseDto;
 import com.appcovoiturage.backend.service.ReservationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -33,7 +29,7 @@ public class ReservationController {
     }
 
     // Voir mes réservations (passager)
-    @GetMapping("/reservations/me")
+    @GetMapping("/me")
     public ResponseEntity<List<ReservationResponseDto>> getMyReservations(Principal principal) {
         return ResponseEntity.ok(
                 reservationService.getMyReservations(principal.getName())

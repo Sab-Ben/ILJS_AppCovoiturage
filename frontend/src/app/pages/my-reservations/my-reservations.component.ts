@@ -51,7 +51,7 @@ export class MyReservationsComponent implements OnInit, OnDestroy {
     this.errorMsg = null;
 
     this.reservationService
-      .getAllMyReservations()
+      .getMyReservations()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {

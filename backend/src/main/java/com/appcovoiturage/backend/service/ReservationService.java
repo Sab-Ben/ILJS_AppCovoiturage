@@ -8,7 +8,9 @@ import com.appcovoiturage.backend.repository.ReservationRepository;
 import com.appcovoiturage.backend.repository.TrajetRepository;
 import com.appcovoiturage.backend.repository.UserRepository;
 import com.appcovoiturage.backend.dto.WsEventDto;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +24,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@lombok.extern.slf4j.Slf4j
+@Slf4j
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
@@ -31,6 +33,7 @@ public class ReservationService {
     private final NotificationService notificationService;
     private final PointService pointService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final EntityManager entityManager;
 
     @Transactional
     public ReservationResponseDto createReservation(Long trajetId, String emailPassager) {
@@ -69,24 +72,41 @@ public class ReservationService {
 
         Reservation saved = reservationRepository.save(reservation);
 
+        entityManager.flush();
+
+        ReservationResponseDto responseDto = toDto(saved);
+
         String itineraire = trajet.getVilleDepart() + " → " + trajet.getVilleArrivee();
+        sendNotificationsSafely(trajet, passager, cost, itineraire);
+
+        return responseDto;
+    }
+
+    private void sendNotificationsSafely(Trajet trajet, User passager, int cost, String itineraire) {
+        log.info("=== DEBUT NOTIFICATIONS === trajetId={}, passager={}", trajet.getId(), passager.getEmail());
 
         try {
+            log.info(">>> Envoi RESERVATION_CREATED au conducteur {}", trajet.getConducteur().getEmail());
             notificationService.notifyReservationCreated(trajet.getConducteur(), trajet, passager);
+            log.info("<<< RESERVATION_CREATED OK");
         } catch (Exception e) {
-            log.error("Erreur notification conducteur: {}", e.getMessage(), e);
+            log.error("!!! RESERVATION_CREATED ECHEC: {} - {}", e.getClass().getSimpleName(), e.getMessage(), e);
         }
 
         try {
+            log.info(">>> Envoi RESERVATION_CONFIRMED au passager {}", passager.getEmail());
             notificationService.notifyReservationConfirmed(passager, trajet);
+            log.info("<<< RESERVATION_CONFIRMED OK");
         } catch (Exception e) {
-            log.error("Erreur notification confirmation passager: {}", e.getMessage(), e);
+            log.error("!!! RESERVATION_CONFIRMED ECHEC: {} - {}", e.getClass().getSimpleName(), e.getMessage(), e);
         }
 
         try {
+            log.info(">>> Envoi POINTS_DEBITED au passager {}, cost={}", passager.getEmail(), cost);
             notificationService.notifyPointsDebited(passager, cost, itineraire, trajet.getId());
+            log.info("<<< POINTS_DEBITED OK");
         } catch (Exception e) {
-            log.error("Erreur notification points debites: {}", e.getMessage(), e);
+            log.error("!!! POINTS_DEBITED ECHEC: {} - {}", e.getClass().getSimpleName(), e.getMessage(), e);
         }
 
         try {
@@ -95,7 +115,7 @@ public class ReservationService {
             log.error("Erreur broadcast seats: {}", e.getMessage(), e);
         }
 
-        return toDto(saved);
+        log.info("=== FIN NOTIFICATIONS ===");
     }
 
     public boolean isAlreadyReserved(Long trajetId, String email) {
@@ -188,14 +208,24 @@ public class ReservationService {
 
         reservationRepository.delete(reservation);
 
+        entityManager.flush();
+
         try {
             notificationService.notifyReservationCancelled(user, trajet);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            log.error("Erreur notification annulation passager: {}", e.getMessage(), e);
+        }
+
+        try {
+            notificationService.notifyReservationCancelledToDriver(trajet.getConducteur(), trajet, user);
+        } catch (Exception e) {
+            log.error("Erreur notification annulation conducteur: {}", e.getMessage(), e);
         }
 
         try {
             broadcastSeatsUpdate(trajet);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            log.error("Erreur broadcast seats: {}", e.getMessage(), e);
         }
     }
 

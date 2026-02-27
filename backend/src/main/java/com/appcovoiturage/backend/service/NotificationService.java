@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -22,6 +21,7 @@ import java.util.List;
 @Slf4j
 public class NotificationService {
 
+    private final NotificationPersistenceService persistenceService;
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
@@ -35,32 +35,25 @@ public class NotificationService {
             String referenceType,
             Long referenceId
     ) {
-        Notification notification = Notification.builder()
-                .recipient(recipient)
-                .type(type)
-                .title(title)
-                .content(content)
-                .isRead(false)
-                .createdAt(LocalDateTime.now())
-                .referenceType(referenceType)
-                .referenceId(referenceId)
-                .build();
+        log.info("createAndDispatch type={} recipient={} title={}", type, recipient.getEmail(), title);
 
-        Notification saved = notificationRepository.save(notification);
-        NotificationResponseDto dto = toDto(saved);
+        NotificationResponseDto dto = persistenceService.saveNotification(
+                recipient.getId(), type, title, content, referenceType, referenceId);
 
-        simpMessagingTemplate.convertAndSend(
-                "/topic/users/" + recipient.getId() + "/notifications",
-                WsEventDto.<NotificationResponseDto>builder()
-                        .type("NOTIFICATION_CREATED")
-                        .payload(dto)
-                        .build()
-        );
+        try {
+            simpMessagingTemplate.convertAndSend(
+                    "/topic/users/" + recipient.getId() + "/notifications",
+                    WsEventDto.<NotificationResponseDto>builder()
+                            .type("NOTIFICATION_CREATED")
+                            .payload(dto)
+                            .build()
+            );
+        } catch (Exception e) {
+            log.warn("Erreur envoi WebSocket notification: {}", e.getMessage());
+        }
 
         return dto;
     }
-
-    // -------- Hooks métier --------
 
     public void notifyMessageReceived(User recipient, Long conversationId, String trajetLabel) {
         createAndDispatch(
@@ -74,46 +67,56 @@ public class NotificationService {
     }
 
     public void notifyReservationCreated(User conducteur, Trajet trajet, User passager) {
-        String trajetLabel = trajet.getVilleDepart() + " → " + trajet.getVilleArrivee();
+        String trajetLabel = trajet.getVilleDepart() + " \u2192 " + trajet.getVilleArrivee();
 
         createAndDispatch(
                 conducteur,
                 NotificationType.RESERVATION_CREATED,
-                "Nouvelle réservation",
-                "Nouvelle réservation de " + passager.getEmail() + " pour le trajet " + trajetLabel,
+                "Nouvelle r\u00e9servation",
+                "Nouvelle r\u00e9servation de " + passager.getEmail() + " pour le trajet " + trajetLabel,
                 "TRAJET",
                 trajet.getId()
         );
 
-        try {
-            emailService.sendReservationCreatedEmail(conducteur.getEmail(), trajetLabel, passager.getEmail());
-        } catch (Exception e) {
-            log.warn("Email réservation non envoyé à {}", conducteur.getEmail(), e);
-        }
+        sendEmailSafely(() ->
+                emailService.sendReservationCreatedEmail(conducteur.getEmail(), trajetLabel, passager.getEmail()));
     }
 
     public void notifyReservationConfirmed(User passager, Trajet trajet) {
-        String trajetLabel = trajet.getVilleDepart() + " → " + trajet.getVilleArrivee();
-        String conducteurName = trajet.getConducteur().getFirstname() + " " + trajet.getConducteur().getLastname();
+        String trajetLabel = trajet.getVilleDepart() + " \u2192 " + trajet.getVilleArrivee();
+        String conducteurName = buildConducteurName(trajet);
 
         createAndDispatch(
                 passager,
                 NotificationType.RESERVATION_CONFIRMED,
-                "Réservation confirmée",
-                "Votre réservation pour " + trajetLabel + " (conducteur : " + conducteurName + ") est confirmée",
+                "R\u00e9servation confirm\u00e9e",
+                "Votre r\u00e9servation pour " + trajetLabel + " (conducteur : " + conducteurName + ") est confirm\u00e9e",
                 "TRAJET",
                 trajet.getId()
         );
     }
 
     public void notifyReservationCancelled(User passager, Trajet trajet) {
-        String trajetLabel = trajet.getVilleDepart() + " → " + trajet.getVilleArrivee();
+        String trajetLabel = trajet.getVilleDepart() + " \u2192 " + trajet.getVilleArrivee();
 
         createAndDispatch(
                 passager,
                 NotificationType.RESERVATION_CANCELLED,
-                "Réservation annulée",
-                "Votre réservation pour " + trajetLabel + " a été annulée. Vos points ont été remboursés",
+                "R\u00e9servation annul\u00e9e",
+                "Votre r\u00e9servation pour " + trajetLabel + " a \u00e9t\u00e9 annul\u00e9e. Vos points ont \u00e9t\u00e9 rembours\u00e9s",
+                "TRAJET",
+                trajet.getId()
+        );
+    }
+
+    public void notifyReservationCancelledToDriver(User conducteur, Trajet trajet, User passager) {
+        String trajetLabel = trajet.getVilleDepart() + " \u2192 " + trajet.getVilleArrivee();
+
+        createAndDispatch(
+                conducteur,
+                NotificationType.RESERVATION_CANCELLED,
+                "R\u00e9servation annul\u00e9e",
+                passager.getEmail() + " a annul\u00e9 sa r\u00e9servation pour " + trajetLabel,
                 "TRAJET",
                 trajet.getId()
         );
@@ -124,30 +127,30 @@ public class NotificationService {
                 passager,
                 NotificationType.POINTS_DEBITED,
                 "-" + points + " points",
-                points + " points débités pour la réservation du trajet " + itineraire,
+                points + " points d\u00e9bit\u00e9s pour la r\u00e9servation du trajet " + itineraire,
                 "TRAJET",
                 trajetId
         );
     }
 
     public void notifyTrajetDeleted(List<User> passagers, Trajet trajet) {
-        String trajetLabel = trajet.getVilleDepart() + " → " + trajet.getVilleArrivee();
+        String trajetLabel = trajet.getVilleDepart() + " \u2192 " + trajet.getVilleArrivee();
 
         for (User passager : passagers) {
-            createAndDispatch(
-                    passager,
-                    NotificationType.TRAJET_DELETED,
-                    "Trajet supprimé",
-                    "Le trajet " + trajetLabel + " a été supprimé par le conducteur",
-                    "TRAJET",
-                    trajet.getId()
-            );
-
             try {
-                emailService.sendTrajetDeletedEmail(passager.getEmail(), trajetLabel);
+                createAndDispatch(
+                        passager,
+                        NotificationType.TRAJET_DELETED,
+                        "Trajet supprim\u00e9",
+                        "Le trajet " + trajetLabel + " a \u00e9t\u00e9 supprim\u00e9 par le conducteur",
+                        "TRAJET",
+                        trajet.getId()
+                );
             } catch (Exception e) {
-                log.warn("Email suppression trajet non envoyé à {}", passager.getEmail(), e);
+                log.error("Erreur notification TRAJET_DELETED pour {}: {}", passager.getEmail(), e.getMessage());
             }
+
+            sendEmailSafely(() -> emailService.sendTrajetDeletedEmail(passager.getEmail(), trajetLabel));
         }
     }
 
@@ -156,7 +159,7 @@ public class NotificationService {
                 conducteur,
                 NotificationType.POINTS_CREDITED,
                 "+" + points + " points !",
-                "Vous avez gagné " + points + " points pour le trajet " + itineraire,
+                "Vous avez gagn\u00e9 " + points + " points pour le trajet " + itineraire,
                 "TRAJET",
                 trajetId
         );
@@ -166,18 +169,16 @@ public class NotificationService {
         createAndDispatch(
                 user,
                 NotificationType.LEVEL_UP,
-                "Niveau " + levelLabel + " débloqué !",
-                "Félicitations ! Vous êtes maintenant " + levelLabel + ". " + avantages,
+                "Niveau " + levelLabel + " d\u00e9bloqu\u00e9 !",
+                "F\u00e9licitations ! Vous \u00eates maintenant " + levelLabel + ". " + avantages,
                 "LEVEL",
                 null
         );
     }
 
-    // -------- utilisateur --------
-
     public List<NotificationResponseDto> getMyNotifications(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("Utilisateur non trouvé"));
+                .orElseThrow(() -> new NotFoundException("Utilisateur non trouv\u00e9"));
 
         return notificationRepository.findByRecipientIdOrderByCreatedAtDesc(user.getId())
                 .stream()
@@ -187,10 +188,10 @@ public class NotificationService {
 
     public NotificationResponseDto markAsRead(Long notificationId, String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("Utilisateur non trouvé"));
+                .orElseThrow(() -> new NotFoundException("Utilisateur non trouv\u00e9"));
 
         Notification notif = notificationRepository.findByIdAndRecipientId(notificationId, user.getId())
-                .orElseThrow(() -> new NotFoundException("Notification non trouvée"));
+                .orElseThrow(() -> new NotFoundException("Notification non trouv\u00e9e"));
 
         notif.setIsRead(true);
         Notification saved = notificationRepository.save(notif);
@@ -199,7 +200,7 @@ public class NotificationService {
 
     public void markAllAsRead(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("Utilisateur non trouvé"));
+                .orElseThrow(() -> new NotFoundException("Utilisateur non trouv\u00e9"));
 
         List<Notification> notifs = notificationRepository.findByRecipientIdOrderByCreatedAtDesc(user.getId());
         for (Notification n : notifs) {
@@ -212,9 +213,29 @@ public class NotificationService {
 
     public long getUnreadCount(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("Utilisateur non trouvé"));
+                .orElseThrow(() -> new NotFoundException("Utilisateur non trouv\u00e9"));
 
         return notificationRepository.countByRecipientIdAndIsReadFalse(user.getId());
+    }
+
+    private String buildConducteurName(Trajet trajet) {
+        try {
+            User conducteur = trajet.getConducteur();
+            String firstname = conducteur.getFirstname() != null ? conducteur.getFirstname() : "";
+            String lastname = conducteur.getLastname() != null ? conducteur.getLastname() : "";
+            return (firstname + " " + lastname).trim();
+        } catch (Exception e) {
+            log.warn("Impossible de recuperer le nom du conducteur: {}", e.getMessage());
+            return "le conducteur";
+        }
+    }
+
+    private void sendEmailSafely(Runnable emailAction) {
+        try {
+            emailAction.run();
+        } catch (Exception e) {
+            log.warn("Envoi email echoue: {}", e.getMessage());
+        }
     }
 
     private NotificationResponseDto toDto(Notification n) {

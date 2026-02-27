@@ -29,6 +29,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   user: User | undefined;
   isScrolled = false;
   isDarkMode = false;
+  mobileMenuOpen = false;
 
   private notifWsSub: StompSubscription | null = null;
   private userSub: Subscription | undefined;
@@ -70,6 +71,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
       },
       error: () => this.user = undefined
     });
+  }
+
+  toggleMobileMenu(): void {
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+  }
+
+  closeMobileMenu(): void {
+    this.mobileMenuOpen = false;
   }
 
   toggleTheme(): void {
@@ -133,6 +142,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
         break;
       case 'RESERVATION_CREATED':
         this.toastService.show(notification.title, notification.content, 'info', 5000);
+        break;
+      case 'MESSAGE_RECEIVED':
+        this.toastService.show(notification.title, notification.content, 'info', 4000);
         break;
       default:
         this.toastService.show(notification.title, notification.content, 'info', 5000);

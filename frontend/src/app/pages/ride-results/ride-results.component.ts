@@ -111,25 +111,16 @@ export class RideResultsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const desiredRoute = `${ride.from} -> ${ride.to}`;
-
     this.reservationService
-      .createReservation({
-        rideId: Number(ride.id),
-        seats: seatsToBook,
-        desiredRoute,
-      })
+      .reserveRide(Number(ride.id))
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          alert('Réservation effectuée ✅');
+          alert('Réservation effectuée !');
           this.router.navigate(['/my-reservations']);
         },
-
-        error: (err:any) => {
-          console.error(err);
-          const msg =
-            err?.error?.message || err?.error || 'Erreur lors de la réservation.';
+        error: (err: { error?: { message?: string } }) => {
+          const msg = err?.error?.message ?? 'Erreur lors de la réservation.';
           alert(msg);
         },
       });

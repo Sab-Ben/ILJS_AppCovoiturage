@@ -129,11 +129,19 @@
               <span class="ride-detail__passenger-name">{{ r.passagerName || r.passagerEmail }}</span>
               <span class="ride-detail__passenger-meta">{{ r.seats }} place(s) · Réservé le {{ formatReservationDate(r.createdAt) }}</span>
             </div>
-            <a *ngIf="r.passagerEmail" class="ride-detail__passenger-action" [routerLink]="['/messaging']" [queryParams]="{ email: r.passagerEmail }">
+            <a *ngIf="r.passagerEmail" class="ride-detail__passenger-action" [routerLink]="['/messaging']" [queryParams]="{ trajetId: getRideId() }">
               <svg viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </a>
           </div>
         </div>
+      </div>
+
+      <!-- ========== VUE PASSAGER : Contacter le conducteur ========== -->
+      <div *ngIf="!isOwner && alreadyReserved" class="ride-detail__card">
+        <a class="ride-detail__btn ride-detail__btn--secondary" [routerLink]="['/messaging']" [queryParams]="{ trajetId: getRideId() }">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Contacter le conducteur
+        </a>
       </div>
 
       <!-- ========== VUE PASSAGER : Formulaire de réservation ========== -->

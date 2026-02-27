@@ -135,11 +135,6 @@ export class RideDetailComponent implements OnInit, OnDestroy {
     this.errorMsg = null;
     this.successMsg = null;
 
-    if (!this.desiredRoute.trim()) {
-      this.errorMsg = 'Veuillez indiquer le trajet souhaité.';
-      return;
-    }
-
     const availableSeats = Number((this.ride as any).availableSeats ?? 0);
     if (availableSeats && this.selectedSeats > availableSeats) {
       this.errorMsg = 'Pas assez de places disponibles.';
@@ -225,6 +220,11 @@ export class RideDetailComponent implements OnInit, OnDestroy {
       });
   }
 
+  getRideId(): number | null {
+    if (!this.ride) return null;
+    return Number((this.ride as any).id) || null;
+  }
+
   getPassengerInitials(name: string): string {
     if (!name) return '?';
     return name.split(' ').map(n => n.charAt(0).toUpperCase()).join('');
@@ -232,7 +232,8 @@ export class RideDetailComponent implements OnInit, OnDestroy {
 
   formatReservationDate(dateStr: string | undefined): string {
     if (!dateStr) return '';
-    const date = new Date(dateStr);
+    const normalized = dateStr.endsWith('Z') || dateStr.includes('+') ? dateStr : dateStr + 'Z';
+    const date = new Date(normalized);
     return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 

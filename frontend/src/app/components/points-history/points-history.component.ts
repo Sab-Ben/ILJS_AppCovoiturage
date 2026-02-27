@@ -5,6 +5,7 @@ import { Subscription } from 'rxjs';
 import { PointTransaction, PointTransactionType } from '../../models/point-transaction.model';
 import * as PointActions from '../../store/point/point.actions';
 import * as PointSelectors from '../../store/point/point.selectors';
+import { UtcDatePipe } from '../../pipes/utc-date.pipe';
 
 interface TransactionDisplay {
     icon: string;
@@ -23,7 +24,7 @@ const TRANSACTION_CONFIG: Record<PointTransactionType, TransactionDisplay> = {
 @Component({
     selector: 'app-points-history',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, UtcDatePipe],
     templateUrl: './points-history.component.html',
     styleUrls: ['./points-history.component.scss']
 })

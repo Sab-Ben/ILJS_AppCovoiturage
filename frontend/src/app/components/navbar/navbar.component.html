@@ -14,19 +14,23 @@
     <nav class="nav__links">
       <a routerLink="/dashboard" routerLinkActive="nav__link--active" [routerLinkActiveOptions]="{exact: true}" class="nav__link">
         <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="9,22 9,12 15,12 15,22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Dashboard
+        <span class="nav__link-label">Dashboard</span>
       </a>
       <a routerLink="/search-rides" routerLinkActive="nav__link--active" class="nav__link">
         <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        Rechercher
+        <span class="nav__link-label">Rechercher</span>
       </a>
       <a *ngIf="user?.role === 'CONDUCTEUR'" routerLink="/create-ride" routerLinkActive="nav__link--active" class="nav__link">
         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        Proposer
+        <span class="nav__link-label">Proposer</span>
       </a>
       <a *ngIf="user?.role === 'CONDUCTEUR'" routerLink="/my-rides" routerLinkActive="nav__link--active" class="nav__link">
         <svg viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="9" r="2.5" stroke="currentColor" stroke-width="1.5"/></svg>
-        Mes trajets
+        <span class="nav__link-label">Mes trajets</span>
+      </a>
+      <a routerLink="/messaging" routerLinkActive="nav__link--active" class="nav__link">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="nav__link-label">Messages</span>
       </a>
     </nav>
   </div>
@@ -53,10 +57,52 @@
       </svg>
     </a>
 
-    <button class="nav__logout" (click)="logout()" title="Déconnexion">
+    <button class="nav__logout nav__logout--desktop" (click)="logout()" title="Déconnexion">
       <svg viewBox="0 0 24 24" fill="none">
         <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
+
+    <button class="nav__hamburger" (click)="toggleMobileMenu()" [class.nav__hamburger--active]="mobileMenuOpen">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
   </div>
 </header>
+
+<div class="nav__mobile-overlay" [class.nav__mobile-overlay--open]="mobileMenuOpen" (click)="closeMobileMenu()"></div>
+
+<div class="nav__mobile-menu" [class.nav__mobile-menu--open]="mobileMenuOpen">
+  <nav class="nav__mobile-links">
+    <a routerLink="/dashboard" routerLinkActive="nav__mobile-link--active" [routerLinkActiveOptions]="{exact: true}" class="nav__mobile-link" (click)="closeMobileMenu()">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="9,22 9,12 15,12 15,22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Dashboard
+    </a>
+    <a routerLink="/search-rides" routerLinkActive="nav__mobile-link--active" class="nav__mobile-link" (click)="closeMobileMenu()">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Rechercher
+    </a>
+    <a *ngIf="user?.role === 'CONDUCTEUR'" routerLink="/create-ride" routerLinkActive="nav__mobile-link--active" class="nav__mobile-link" (click)="closeMobileMenu()">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Proposer
+    </a>
+    <a *ngIf="user?.role === 'CONDUCTEUR'" routerLink="/my-rides" routerLinkActive="nav__mobile-link--active" class="nav__mobile-link" (click)="closeMobileMenu()">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="9" r="2.5" stroke="currentColor" stroke-width="1.5"/></svg>
+      Mes trajets
+    </a>
+    <a routerLink="/messaging" routerLinkActive="nav__mobile-link--active" class="nav__mobile-link" (click)="closeMobileMenu()">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Messages
+    </a>
+  </nav>
+
+  <div class="nav__mobile-footer">
+    <button class="nav__mobile-logout" (click)="logout(); closeMobileMenu()">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Déconnexion
+    </button>
+  </div>
+</div>

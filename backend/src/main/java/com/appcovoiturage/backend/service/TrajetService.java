@@ -11,6 +11,7 @@ import com.appcovoiturage.backend.exception.BadRequestException;
 import com.appcovoiturage.backend.exception.ForbiddenException;
 import com.appcovoiturage.backend.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TrajetService {
 
     private final TrajetRepository trajetRepository;
@@ -90,11 +92,15 @@ public class TrajetService {
 
         reservationRepository.deleteAll(reservations);
 
-        if (!passagers.isEmpty()) {
-            notificationService.notifyTrajetDeleted(passagers, trajet);
-        }
-
         trajetRepository.delete(trajet);
+
+        if (!passagers.isEmpty()) {
+            try {
+                notificationService.notifyTrajetDeleted(passagers, trajet);
+            } catch (Exception e) {
+                log.error("Erreur notifications suppression trajet {}: {}", id, e.getMessage());
+            }
+        }
     }
 
     public List<Trajet> searchTrajets(String from, String to, LocalDate date) {

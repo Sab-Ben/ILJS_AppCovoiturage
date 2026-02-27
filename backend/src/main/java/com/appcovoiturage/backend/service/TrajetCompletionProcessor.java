@@ -31,9 +31,13 @@ public class TrajetCompletionProcessor {
                 trajet.getVilleArrivee());
 
         if (points > 0) {
-            String itineraire = trajet.getVilleDepart() + " \u2192 " + trajet.getVilleArrivee();
-            notificationService.notifyPointsCredited(
-                    trajet.getConducteur(), points, itineraire, trajet.getId());
+            try {
+                String itineraire = trajet.getVilleDepart() + " \u2192 " + trajet.getVilleArrivee();
+                notificationService.notifyPointsCredited(
+                        trajet.getConducteur(), points, itineraire, trajet.getId());
+            } catch (Exception e) {
+                log.error("Erreur notification points credites trajet {}: {}", trajet.getId(), e.getMessage());
+            }
         }
 
         return true;

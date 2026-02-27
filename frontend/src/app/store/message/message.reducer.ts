@@ -45,10 +45,17 @@ export const messageReducer = createReducer(
     }
   })),
 
-  on(MessageActions.sendMessageSuccess, (state) => ({
-    ...state,
-    loading: false
-  })),
+  on(MessageActions.sendMessageSuccess, (state, { message }) => {
+    const current = state.messagesByConversation[message.conversationId] ?? [];
+    return {
+      ...state,
+      loading: false,
+      messagesByConversation: {
+        ...state.messagesByConversation,
+        [message.conversationId]: upsertMessage(current, message)
+      }
+    };
+  }),
 
   on(MessageActions.messageReceivedRealtime, (state, { message }) => {
     const current = state.messagesByConversation[message.conversationId] ?? [];

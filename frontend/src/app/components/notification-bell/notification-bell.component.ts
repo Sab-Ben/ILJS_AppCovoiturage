@@ -66,7 +66,8 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   }
 
   getTimeAgo(dateStr: string): string {
-    const date = new Date(dateStr);
+    const raw = dateStr.endsWith('Z') || dateStr.includes('+') ? dateStr : dateStr + 'Z';
+    const date = new Date(raw);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMin = Math.floor(diffMs / 60000);

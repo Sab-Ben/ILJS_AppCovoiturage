@@ -11,6 +11,7 @@ import com.appcovoiturage.backend.exception.NotFoundException;
 import com.appcovoiturage.backend.repository.MessageRepository;
 import com.appcovoiturage.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MessageService {
 
     private final MessageRepository messageRepository;
@@ -66,7 +68,11 @@ public class MessageService {
                 + " → "
                 + conversation.getTrajet().getVilleArrivee();
 
-        notificationService.notifyMessageReceived(recipient, conversation.getId(), trajetLabel);
+        try {
+            notificationService.notifyMessageReceived(recipient, conversation.getId(), trajetLabel);
+        } catch (Exception e) {
+            log.warn("Erreur notification message conversation {}: {}", conversationId, e.getMessage());
+        }
 
         return response;
     }

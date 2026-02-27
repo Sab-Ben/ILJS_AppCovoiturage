@@ -7,10 +7,16 @@ import { WsEvent } from '../models/ws-event.model';
 import { Message } from '../models/message.model';
 import { AppNotification } from '../models/notification.model';
 
+interface PendingSubscription {
+  topic: string;
+  callback: (msg: IMessage) => void;
+}
+
 @Injectable({ providedIn: 'root' })
 export class WsService {
   private client: Client | null = null;
   private connected = false;
+  private pendingSubscriptions: PendingSubscription[] = [];
 
   constructor(
     private authService: AuthService,
@@ -29,14 +35,13 @@ export class WsService {
       connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
       onConnect: () => {
         this.connected = true;
-        console.log('[WS] connecté');
+        this.flushPendingSubscriptions();
       },
       onStompError: (frame) => {
         console.error('[WS] erreur STOMP', frame.headers['message'], frame.body);
       },
       onWebSocketClose: () => {
         this.connected = false;
-        console.warn('[WS] connexion fermée');
       }
     });
 
@@ -44,6 +49,7 @@ export class WsService {
   }
 
   disconnect(): void {
+    this.pendingSubscriptions = [];
     this.client?.deactivate();
     this.connected = false;
   }
@@ -52,9 +58,8 @@ export class WsService {
     conversationId: number,
     callback: (event: WsEvent<Message>) => void
   ): StompSubscription | null {
-    if (!this.client || !this.connected) return null;
-
-    return this.client.subscribe(`/topic/conversations/${conversationId}`, (msg: IMessage) => {
+    const topic = `/topic/conversations/${conversationId}`;
+    return this.doSubscribe(topic, (msg: IMessage) => {
       callback(JSON.parse(msg.body));
     });
   }
@@ -63,9 +68,8 @@ export class WsService {
     userId: number,
     callback: (event: WsEvent<AppNotification>) => void
   ): StompSubscription | null {
-    if (!this.client || !this.connected) return null;
-
-    return this.client.subscribe(`/topic/users/${userId}/notifications`, (msg: IMessage) => {
+    const topic = `/topic/users/${userId}/notifications`;
+    return this.doSubscribe(topic, (msg: IMessage) => {
       callback(JSON.parse(msg.body));
     });
   }
@@ -74,14 +78,33 @@ export class WsService {
     trajetId: number,
     callback: (event: WsEvent<{ trajetId: number; availableSeats: number }>) => void
   ): StompSubscription | null {
-    if (!this.client || !this.connected) return null;
-
-    return this.client.subscribe(`/topic/rides/${trajetId}`, (msg: IMessage) => {
+    const topic = `/topic/rides/${trajetId}`;
+    return this.doSubscribe(topic, (msg: IMessage) => {
       callback(JSON.parse(msg.body));
     });
   }
 
   isConnected(): boolean {
     return this.connected;
+  }
+
+  private doSubscribe(topic: string, callback: (msg: IMessage) => void): StompSubscription | null {
+    if (this.client && this.connected) {
+      return this.client.subscribe(topic, callback);
+    }
+
+    this.pendingSubscriptions.push({ topic, callback });
+    return null;
+  }
+
+  private flushPendingSubscriptions(): void {
+    if (!this.client || !this.connected) return;
+
+    const pending = [...this.pendingSubscriptions];
+    this.pendingSubscriptions = [];
+
+    pending.forEach(({ topic, callback }) => {
+      this.client!.subscribe(topic, callback);
+    });
   }
 }

@@ -159,7 +159,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   loadMyReservations(): void {
     this.reservationsLoading = true;
-    this.reservationService.getAllMyReservations().subscribe({
+    this.reservationService.getMyReservations().subscribe({
       next: (data) => {
         this.myReservations = data ?? [];
         this.reservationsLoading = false;
