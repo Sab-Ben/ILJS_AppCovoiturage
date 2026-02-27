@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject, switchMap, takeUntil } from 'rxjs';
 import { Store } from '@ngrx/store';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { RideService } from '../../services/ride.service';
 import { MapService } from '../../services/map.service';
@@ -17,7 +18,7 @@ import * as UserSelectors from '../../store/user/user.selectors';
 @Component({
   selector: 'app-ride-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ConfirmModalComponent],
+  imports: [CommonModule, RouterModule, FormsModule, ConfirmModalComponent, TranslateModule],
   templateUrl: './ride-detail.component.html',
   styleUrls: ['./ride-detail.component.scss'],
 })
@@ -48,7 +49,8 @@ export class RideDetailComponent implements OnInit, OnDestroy {
     private mapService: MapService,
     private reservationService: ReservationService,
     private wsService: WsService,
-    private store: Store
+    private store: Store,
+    private translateService: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -74,7 +76,7 @@ export class RideDetailComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         switchMap((params) => {
           const id = params.get('id');
-          if (!id) throw new Error('ID course manquant');
+          if (!id) throw new Error('ID missing');
           return this.rideService.getRideById(id);
         })
       )
@@ -114,17 +116,17 @@ export class RideDetailComponent implements OnInit, OnDestroy {
                   (ride as any).toLng
                 );
               } else {
-                this.errorMsg = 'Coordonnées manquantes pour afficher l\'itinéraire.';
+                this.errorMsg = this.translateService.instant('RIDES.MISSING_COORDS');
               }
             } catch (e: any) {
-              this.errorMsg = e?.message ?? 'Erreur affichage carte/itinéraire';
+              this.errorMsg = e?.message ?? this.translateService.instant('RIDES.MAP_ERROR');
             }
           }, 0);
         },
         error: (err: any) => {
           this.loading = false;
           this.ride = null;
-          this.errorMsg = err?.message ?? 'Erreur chargement course';
+          this.errorMsg = err?.message ?? this.translateService.instant('RIDES.LOAD_ERROR');
         },
       });
   }
@@ -137,13 +139,13 @@ export class RideDetailComponent implements OnInit, OnDestroy {
 
     const availableSeats = Number((this.ride as any).availableSeats ?? 0);
     if (availableSeats && this.selectedSeats > availableSeats) {
-      this.errorMsg = 'Pas assez de places disponibles.';
+      this.errorMsg = this.translateService.instant('RIDES.NO_SEATS_ERROR');
       return;
     }
 
     const rideId = Number((this.ride as any).id);
     if (!rideId || Number.isNaN(rideId)) {
-      this.errorMsg = "Impossible de réserver : id du trajet invalide.";
+      this.errorMsg = this.translateService.instant('RIDES.INVALID_ID_ERROR');
       return;
     }
 
@@ -155,7 +157,7 @@ export class RideDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res) => {
           this.loading = false;
-          this.successMsg = 'Réservation confirmée !';
+          this.successMsg = this.translateService.instant('RIDES.RESERVATION_CONFIRMED');
           this.alreadyReserved = true;
 
           this.lastReservationId = res.id;
@@ -172,7 +174,7 @@ export class RideDetailComponent implements OnInit, OnDestroy {
           this.loading = false;
           const httpErr = err as { error?: { message?: string } };
           this.errorMsg =
-            httpErr?.error?.message ?? 'Impossible de réserver (erreur serveur)';
+            httpErr?.error?.message ?? this.translateService.instant('RIDES.SERVER_ERROR');
         },
       });
   }
@@ -200,7 +202,7 @@ export class RideDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.loading = false;
-          this.successMsg = 'Réservation annulée avec succès.';
+          this.successMsg = this.translateService.instant('RIDES.CANCEL_RESERVATION_SUCCESS');
 
           if (this.ride && (this.ride as any).availableSeats != null) {
             (this.ride as any).availableSeats =
@@ -215,7 +217,7 @@ export class RideDetailComponent implements OnInit, OnDestroy {
           this.loading = false;
           console.error(err);
           this.errorMsg =
-            err?.error?.message ?? 'Impossible d\'annuler (moins de 2h avant le départ)';
+            err?.error?.message ?? this.translateService.instant('RIDES.CANCEL_RESERVATION_ERROR');
         },
       });
   }
@@ -234,7 +236,8 @@ export class RideDetailComponent implements OnInit, OnDestroy {
     if (!dateStr) return '';
     const normalized = dateStr.endsWith('Z') || dateStr.includes('+') ? dateStr : dateStr + 'Z';
     const date = new Date(normalized);
-    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+    const lang = this.translateService.currentLang || 'fr';
+    return date.toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
   private checkOwnership(): void {

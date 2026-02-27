@@ -15,12 +15,13 @@ import { GeocodingService } from '../../services/geocoding.service';
 import { debounceTime, distinctUntilChanged, forkJoin, map, Subject, Subscription, switchMap } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { Actions, ofType } from '@ngrx/effects';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import * as TrajetActions from '../../store/trajet/trajet.actions';
 import { environment } from '../../../environments/environment';
 
 interface WizardStep {
   num: number;
-  label: string;
+  labelKey: string;
   icon: string;
 }
 
@@ -47,7 +48,7 @@ function differentCitiesValidator(group: AbstractControl): ValidationErrors | nu
 @Component({
   selector: 'app-create-trajet',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslateModule],
   templateUrl: './create-trajet.component.html',
   styleUrls: ['./create-trajet.component.scss']
 })
@@ -61,10 +62,10 @@ export class CreateTrajetComponent implements OnInit, OnDestroy {
   slideDirection: 'left' | 'right' = 'right';
 
   readonly steps: WizardStep[] = [
-    { num: 1, label: 'Itinéraire', icon: 'route' },
-    { num: 2, label: 'Date & heure', icon: 'calendar' },
-    { num: 3, label: 'Détails', icon: 'details' },
-    { num: 4, label: 'Récapitulatif', icon: 'check' }
+    { num: 1, labelKey: 'RIDES.STEP_ROUTE', icon: 'route' },
+    { num: 2, labelKey: 'RIDES.STEP_DATETIME', icon: 'calendar' },
+    { num: 3, labelKey: 'RIDES.STEP_DETAILS', icon: 'details' },
+    { num: 4, labelKey: 'RIDES.STEP_SUMMARY', icon: 'check' }
   ];
 
   private searchTerms = new Subject<{ field: string; query: string; index?: number }>();
@@ -80,7 +81,8 @@ export class CreateTrajetComponent implements OnInit, OnDestroy {
     private routingService: RoutingService,
     private router: Router,
     private store: Store,
-    private actions$: Actions
+    private actions$: Actions,
+    private translateService: TranslateService
   ) {
     this.trajetForm = this.fb.group({
       villeDepart: ['', Validators.required],
@@ -93,14 +95,14 @@ export class CreateTrajetComponent implements OnInit, OnDestroy {
 
     this.subscription.add(
       this.actions$.pipe(ofType(TrajetActions.createTrajetSuccess)).subscribe(() => {
-        this.successMessage = 'Trajet créé avec succès ! Redirection...';
+        this.successMessage = this.translateService.instant('RIDES.CREATE_SUCCESS');
         setTimeout(() => this.router.navigate(['/my-rides']), 1500);
       })
     );
 
     this.subscription.add(
       this.actions$.pipe(ofType(TrajetActions.createTrajetFailure)).subscribe(() => {
-        this.errorMsg = 'Erreur lors de la sauvegarde du trajet.';
+        this.errorMsg = this.translateService.instant('RIDES.CREATE_ERROR');
         this.calculatingRoute = false;
       })
     );
@@ -164,7 +166,8 @@ export class CreateTrajetComponent implements OnInit, OnDestroy {
     const val = this.trajetForm.get('dateDepart')?.value;
     if (!val) return '';
     const date = new Date(val);
-    return date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const lang = this.translateService.currentLang || 'fr';
+    return date.toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   }
 
   goToStep(stepIndex: number): void {
@@ -235,9 +238,9 @@ export class CreateTrajetComponent implements OnInit, OnDestroy {
       : [];
 
     const requests = [
-      { label: 'Ville de départ', address: formVal.villeDepart },
-      ...etapesNettoyees.map((e: string, index: number) => ({ label: `Étape ${index + 1}`, address: e })),
-      { label: "Ville d'arrivée", address: formVal.villeArrivee }
+      { label: this.translateService.instant('RIDES.DEPARTURE_CITY'), address: formVal.villeDepart },
+      ...etapesNettoyees.map((e: string, index: number) => ({ label: 'Stop ' + (index + 1), address: e })),
+      { label: this.translateService.instant('RIDES.ARRIVAL_CITY'), address: formVal.villeArrivee }
     ];
 
     const geocodingObservables = requests.map(req =>
@@ -251,7 +254,7 @@ export class CreateTrajetComponent implements OnInit, OnDestroy {
         const invalidResults = results.filter(r => r.coords === null);
         if (invalidResults.length > 0) {
           const labels = invalidResults.map(r => r.label).join(', ');
-          throw new Error(`Adresse(s) introuvable(s) : ${labels}`);
+          throw new Error(labels);
         }
         const validCoords = results.map(r => r.coords) as number[][];
         const startCoords = validCoords[0];
@@ -263,7 +266,7 @@ export class CreateTrajetComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (result) => {
         const { routeData, startCoords, endCoords } = result;
-        const dateHeure = `${formVal.dateDepart}T${formVal.heureDepart}:00`;
+        const dateHeure = formVal.dateDepart + 'T' + formVal.heureDepart + ':00';
         const nouveauTrajet = {
           villeDepart: formVal.villeDepart,
           villeArrivee: formVal.villeArrivee,
@@ -280,7 +283,7 @@ export class CreateTrajetComponent implements OnInit, OnDestroy {
         this.store.dispatch(TrajetActions.createTrajet({ trajet: nouveauTrajet }));
       },
       error: (err) => {
-        this.errorMsg = err.message || "Impossible de calculer l'itinéraire.";
+        this.errorMsg = err.message || this.translateService.instant('RIDES.ROUTE_ERROR');
         this.calculatingRoute = false;
       }
     });

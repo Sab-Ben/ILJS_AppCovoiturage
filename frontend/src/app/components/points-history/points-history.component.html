@@ -1,7 +1,7 @@
 <div class="points-history">
   <div class="points-history__header">
-    <h3 class="points-history__title">Historique des points</h3>
-    <span class="points-history__count">{{ transactions.length }} transaction(s)</span>
+    <h3 class="points-history__title">{{ 'DASHBOARD.POINTS_HISTORY' | translate }}</h3>
+    <span class="points-history__count">{{ transactions.length }} {{ 'DASHBOARD.TRANSACTIONS' | translate }}</span>
   </div>
 
   <div class="points-history__list" *ngIf="!loading && transactions.length > 0">
@@ -21,13 +21,13 @@
     </div>
 
     <button *ngIf="hasMore" class="points-history__more-btn" (click)="showMore()">
-      Voir plus
+      {{ 'COMMON.SEE_MORE' | translate }}
     </button>
   </div>
 
   <div class="points-history__empty" *ngIf="!loading && transactions.length === 0">
     <span class="points-history__empty-icon">📭</span>
-    <p class="points-history__empty-text">Aucune transaction pour le moment</p>
+    <p class="points-history__empty-text">{{ 'DASHBOARD.NO_TRANSACTIONS' | translate }}</p>
   </div>
 
   <div class="points-history__loading" *ngIf="loading">

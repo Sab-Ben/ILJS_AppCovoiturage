@@ -4,8 +4,8 @@
 
   <div class="advantages__container">
     <div class="advantages__header">
-      <p class="advantages__label">Pourquoi nous choisir</p>
-      <h2 class="advantages__title">Des avantages <span class="advantages__title-accent">concrets</span></h2>
+      <p class="advantages__label">{{ 'LANDING.ADVANTAGES_LABEL' | translate }}</p>
+      <h2 class="advantages__title">{{ 'LANDING.ADVANTAGES_TITLE_1' | translate }} <span class="advantages__title-accent">{{ 'LANDING.ADVANTAGES_TITLE_2' | translate }}</span></h2>
     </div>
 
     <div class="advantages__grid">
@@ -16,11 +16,11 @@
       >
         <div class="advantages__stat-block">
           <div class="advantages__stat-value" [style.color]="advantage.statColor">{{ advantage.stat }}</div>
-          <div class="advantages__stat-label">{{ advantage.statLabel }}</div>
+          <div class="advantages__stat-label">{{ advantage.statLabelKey | translate }}</div>
         </div>
 
-        <h3 class="advantages__card-title">{{ advantage.title }}</h3>
-        <p class="advantages__card-description">{{ advantage.description }}</p>
+        <h3 class="advantages__card-title">{{ advantage.titleKey | translate }}</h3>
+        <p class="advantages__card-description">{{ advantage.descriptionKey | translate }}</p>
       </div>
     </div>
   </div>

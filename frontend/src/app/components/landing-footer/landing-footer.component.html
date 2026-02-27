@@ -11,23 +11,23 @@
           <span class="footer__logo-text">CoVoiture</span>
         </div>
         <p class="footer__brand-description">
-          La plateforme de covoiturage la plus sécurisée et économique de France.
+          {{ 'LANDING.FOOTER_DESC' | translate }}
         </p>
       </div>
 
       <div class="footer__columns">
         <div *ngFor="let column of columns; let i = index; trackBy: trackByIndex" class="footer__column">
-          <h4 class="footer__column-title">{{ column.title }}</h4>
+          <h4 class="footer__column-title">{{ column.titleKey | translate }}</h4>
           <ul class="footer__column-links">
             <li *ngFor="let link of column.links" class="footer__link-item">
-              <a [href]="link.href" class="footer__link">{{ link.label }}</a>
+              <a [href]="link.href" class="footer__link">{{ link.labelKey | translate }}</a>
             </li>
           </ul>
         </div>
       </div>
 
       <div class="footer__social">
-        <h4 class="footer__column-title">Nous suivre</h4>
+        <h4 class="footer__column-title">{{ 'LANDING.FOOTER_FOLLOW' | translate }}</h4>
         <div class="footer__social-links">
           <a href="#" class="footer__social-link" title="Facebook">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -50,12 +50,12 @@
 
     <div class="footer__bottom">
       <p class="footer__copyright">
-        &copy; {{ currentYear }} CoVoiture. Tous droits réservés.
+        &copy; {{ currentYear }} CoVoiture. {{ 'COMMON.ALL_RIGHTS' | translate }}
       </p>
       <div class="footer__legal">
-        <a href="#" class="footer__legal-link">Confidentialité</a>
-        <a href="#" class="footer__legal-link">Conditions d'utilisation</a>
-        <a href="#" class="footer__legal-link">Cookies</a>
+        <a href="#" class="footer__legal-link">{{ 'COMMON.PRIVACY' | translate }}</a>
+        <a href="#" class="footer__legal-link">{{ 'COMMON.TERMS' | translate }}</a>
+        <a href="#" class="footer__legal-link">{{ 'COMMON.COOKIES' | translate }}</a>
       </div>
     </div>
   </div>

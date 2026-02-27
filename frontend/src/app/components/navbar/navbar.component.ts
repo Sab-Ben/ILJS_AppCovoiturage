@@ -9,6 +9,7 @@ import { AuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
 import { WsService } from '../../services/ws.service';
 import { ToastService } from '../../services/toast.service';
+import { LanguageService } from '../../services/language.service';
 import { User } from '../../models/user.model';
 import { AppNotification } from '../../models/notification.model';
 import { WsEvent } from '../../models/ws-event.model';
@@ -17,11 +18,12 @@ import * as PointActions from '../../store/point/point.actions';
 import * as TrajetActions from '../../store/trajet/trajet.actions';
 import * as UserActions from '../../store/user/user.actions';
 import { NotificationBellComponent } from '../notification-bell/notification-bell.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, CommonModule, NotificationBellComponent],
+  imports: [RouterLink, RouterLinkActive, CommonModule, NotificationBellComponent, TranslateModule],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.scss']
 })
@@ -41,8 +43,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
     private wsService: WsService,
     private toastService: ToastService,
     private store: Store,
-    private router: Router
+    private router: Router,
+    private languageService: LanguageService
   ) {}
+
+  get currentLang(): string {
+    return this.languageService.getCurrentLang();
+  }
 
   ngOnInit(): void {
     this.isDarkMode = this.themeService.darkMode();
@@ -79,6 +86,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   closeMobileMenu(): void {
     this.mobileMenuOpen = false;
+  }
+
+  switchLanguage(): void {
+    const next = this.currentLang === 'fr' ? 'en' : 'fr';
+    this.languageService.switchLanguage(next);
   }
 
   toggleTheme(): void {

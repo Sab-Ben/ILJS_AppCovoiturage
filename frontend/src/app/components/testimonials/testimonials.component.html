@@ -1,8 +1,8 @@
 <section id="temoignages" class="testimonials">
   <div class="testimonials__container">
     <div class="testimonials__header">
-      <p class="testimonials__label">Témoignages</p>
-      <h2 class="testimonials__title">Ils nous font <span class="testimonials__title-accent">confiance</span></h2>
+      <p class="testimonials__label">{{ 'LANDING.TESTIMONIALS_LABEL' | translate }}</p>
+      <h2 class="testimonials__title">{{ 'LANDING.TESTIMONIALS_TITLE_1' | translate }} <span class="testimonials__title-accent">{{ 'LANDING.TESTIMONIALS_TITLE_2' | translate }}</span></h2>
     </div>
 
     <div class="testimonials__grid">
@@ -21,13 +21,13 @@
           </span>
         </div>
 
-        <p class="testimonials__text">"{{ testimonial.text }}"</p>
+        <p class="testimonials__text">"{{ testimonial.textKey | translate }}"</p>
 
         <div class="testimonials__author">
           <div class="testimonials__avatar" [style.background]="testimonial.avatarGradient">{{ testimonial.avatar }}</div>
           <div class="testimonials__author-info">
             <div class="testimonials__author-name">{{ testimonial.name }}</div>
-            <div class="testimonials__author-role">{{ testimonial.role }}</div>
+            <div class="testimonials__author-role">{{ testimonial.roleKey | translate }}</div>
           </div>
         </div>
       </div>

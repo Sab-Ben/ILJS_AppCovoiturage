@@ -24,16 +24,20 @@
            class="navbar__link"
            [class.navbar__link--active]="activeSection === section.id"
            (click)="handleSmoothScroll($event, section.id)">
-          {{ section.label }}
+          {{ section.labelKey | translate }}
         </a>
       </div>
 
       <div class="navbar__actions">
-        <button class="navbar__cta" (click)="onCommencer()">
-          Commencer
+        <button class="navbar__lang-toggle" (click)="switchLanguage()">
+          {{ currentLang === 'fr' ? 'EN' : 'FR' }}
         </button>
 
-        <button class="navbar__theme-toggle" (click)="toggleTheme()" [attr.title]="isDarkMode ? 'Mode clair' : 'Mode sombre'">
+        <button class="navbar__cta" (click)="onCommencer()">
+          {{ 'LANDING.CTA_START' | translate }}
+        </button>
+
+        <button class="navbar__theme-toggle" (click)="toggleTheme()" [attr.title]="isDarkMode ? ('NAV.LIGHT_MODE' | translate) : ('NAV.DARK_MODE' | translate)">
           <svg *ngIf="isDarkMode" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="5"/>
             <line x1="12" y1="1" x2="12" y2="3"/>

@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 import { PointBalance, USER_LEVELS, UserLevelConfig } from '../../models/point-balance.model';
@@ -9,7 +10,7 @@ import * as PointSelectors from '../../store/point/point.selectors';
 @Component({
     selector: 'app-level-badge',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, TranslateModule],
     templateUrl: './level-badge.component.html',
     styleUrls: ['./level-badge.component.scss']
 })

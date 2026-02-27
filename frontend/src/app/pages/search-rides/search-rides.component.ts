@@ -6,12 +6,13 @@ import { HttpClient } from '@angular/common/http';
 import { GeocodingService } from '../../services/geocoding.service';
 import { debounceTime, distinctUntilChanged, Subject, switchMap, map } from 'rxjs';
 import { Trajet } from '../../models/trajet.model';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-search-rides',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TranslateModule],
   templateUrl: './search-rides.component.html',
   styleUrls: ['./search-rides.component.scss']
 })

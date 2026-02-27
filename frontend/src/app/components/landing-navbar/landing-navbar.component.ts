@@ -3,16 +3,18 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
+import { LanguageService } from '../../services/language.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 interface NavSection {
   id: string;
-  label: string;
+  labelKey: string;
 }
 
 @Component({
   selector: 'app-landing-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TranslateModule],
   templateUrl: './landing-navbar.component.html',
   styleUrls: ['./landing-navbar.component.scss']
 })
@@ -23,9 +25,9 @@ export class LandingNavbarComponent implements OnInit, OnDestroy {
   isDarkMode = true;
 
   navSections: NavSection[] = [
-    { id: 'comment-ca-marche', label: 'Comment ça marche' },
-    { id: 'avantages', label: 'Avantages' },
-    { id: 'temoignages', label: 'Témoignages' }
+    { id: 'comment-ca-marche', labelKey: 'NAV.HOW_IT_WORKS' },
+    { id: 'avantages', labelKey: 'NAV.ADVANTAGES' },
+    { id: 'temoignages', labelKey: 'NAV.TESTIMONIALS' }
   ];
 
   private scrollObserver: IntersectionObserver | undefined;
@@ -33,9 +35,15 @@ export class LandingNavbarComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private languageService: LanguageService,
+    private translateService: TranslateService
   ) {
     this.isDarkMode = this.themeService.darkMode();
+  }
+
+  get currentLang(): string {
+    return this.languageService.getCurrentLang();
   }
 
   ngOnInit(): void {
@@ -62,6 +70,11 @@ export class LandingNavbarComponent implements OnInit, OnDestroy {
   toggleTheme(): void {
     this.themeService.toggleTheme();
     this.isDarkMode = this.themeService.darkMode();
+  }
+
+  switchLanguage(): void {
+    const next = this.currentLang === 'fr' ? 'en' : 'fr';
+    this.languageService.switchLanguage(next);
   }
 
   handleSmoothScroll(event: MouseEvent, sectionId: string): void {

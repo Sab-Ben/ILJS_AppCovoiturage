@@ -4,18 +4,18 @@
     <div class="messaging__sidebar" [class.messaging__sidebar--hidden-mobile]="showChatOnMobile">
       <h2 class="messaging__sidebar-title">
         <svg viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Messagerie
+        {{ 'MESSAGING.TITLE' | translate }}
       </h2>
 
       <div *ngIf="loadingConversations" class="messaging__loading">
         <div class="messaging__spinner"></div>
-        <span>Chargement...</span>
+        <span>{{ 'COMMON.LOADING' | translate }}</span>
       </div>
 
       <div *ngIf="!loadingConversations && conversations.length === 0" class="messaging__empty">
         <svg viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span>Aucune conversation</span>
-        <span class="messaging__empty-sub">Vos conversations apparaitront ici.</span>
+        <span>{{ 'MESSAGING.NO_CONVERSATIONS' | translate }}</span>
+        <span class="messaging__empty-sub">{{ 'MESSAGING.CONVERSATIONS_HINT' | translate }}</span>
       </div>
 
       <div *ngIf="!loadingConversations" class="messaging__conversation-list">
@@ -55,7 +55,7 @@
 
         <div class="messaging__messages" #messagesContainer>
           <div *ngIf="messages.length === 0" class="messaging__no-messages">
-            Aucun message. Envoyez le premier !
+            {{ 'MESSAGING.NO_MESSAGES' | translate }}
           </div>
 
           <div *ngFor="let msg of messages"
@@ -77,7 +77,7 @@
             (keydown.enter)="sendMessage()"
             type="text"
             class="messaging__input"
-            placeholder="Écrire un message..."
+            [placeholder]="'MESSAGING.INPUT_PLACEHOLDER' | translate"
           />
           <button type="button" class="messaging__send-btn" (click)="sendMessage()" [disabled]="!messageInput.trim()">
             <svg viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -89,7 +89,7 @@
       <ng-template #noConv>
         <div class="messaging__no-selection">
           <svg viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span>Sélectionnez une conversation</span>
+          <span>{{ 'MESSAGING.SELECT_CONVERSATION' | translate }}</span>
         </div>
       </ng-template>
     </div>

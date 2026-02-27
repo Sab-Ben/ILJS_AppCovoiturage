@@ -11,17 +11,16 @@
     <div class="hero__content">
       <div class="hero__badge">
         <span class="hero__badge-dot"></span>
-        <span class="hero__badge-text">Covoiturage gratuit basé sur les points</span>
+        <span class="hero__badge-text">{{ 'LANDING.HERO_BADGE' | translate }}</span>
       </div>
 
       <h1 class="hero__title">
-        Partagez la route,<br>
-        <span class="hero__title-accent">gagnez des points.</span>
+        {{ 'LANDING.HERO_TITLE_1' | translate }}<br>
+        <span class="hero__title-accent">{{ 'LANDING.HERO_TITLE_2' | translate }}</span>
       </h1>
 
       <p class="hero__subtitle">
-        Pas d'argent, juste des points. Conduisez pour en gagner, voyagez pour en dépenser.<br>
-        Un covoiturage solidaire et écologique.
+        {{ 'LANDING.HERO_SUBTITLE' | translate }}
       </p>
 
       <form class="hero__search" (ngSubmit)="onSearch()">
@@ -29,14 +28,14 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="currentColor"/>
           </svg>
-          <input type="text" placeholder="Départ" [(ngModel)]="departure" name="departure" class="hero__input"/>
+          <input type="text" [placeholder]="'LANDING.HERO_DEPARTURE' | translate" [(ngModel)]="departure" name="departure" class="hero__input"/>
         </div>
 
         <div class="hero__search-input">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="currentColor"/>
           </svg>
-          <input type="text" placeholder="Arrivée" [(ngModel)]="arrival" name="arrival" class="hero__input"/>
+          <input type="text" [placeholder]="'LANDING.HERO_ARRIVAL' | translate" [(ngModel)]="arrival" name="arrival" class="hero__input"/>
         </div>
 
         <div class="hero__search-input">
@@ -49,7 +48,7 @@
         </div>
 
         <button type="submit" class="hero__search-btn">
-          Rechercher
+          {{ 'LANDING.HERO_SEARCH' | translate }}
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
@@ -59,12 +58,12 @@
       <div class="hero__stats">
         <div class="hero__stat">
           <div class="hero__stat-value">0&euro;</div>
-          <div class="hero__stat-label">Aucun paiement</div>
+          <div class="hero__stat-label">{{ 'LANDING.HERO_NO_PAYMENT' | translate }}</div>
         </div>
         <div class="hero__stat-divider"></div>
         <div class="hero__stat">
           <div class="hero__stat-value hero__stat-value--primary">Points</div>
-          <div class="hero__stat-label">Système solidaire</div>
+          <div class="hero__stat-label">{{ 'LANDING.HERO_SOLIDARITY' | translate }}</div>
         </div>
       </div>
     </div>

@@ -1,18 +1,19 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 
 interface Advantage {
   stat: string;
-  statLabel: string;
+  statLabelKey: string;
   statColor: string;
-  title: string;
-  description: string;
+  titleKey: string;
+  descriptionKey: string;
 }
 
 @Component({
   selector: 'app-advantages',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './advantages.component.html',
   styleUrls: ['./advantages.component.scss']
 })
@@ -20,31 +21,31 @@ export class AdvantagesComponent {
   advantages: Advantage[] = [
     {
       stat: '0€',
-      statLabel: 'toujours gratuit',
+      statLabelKey: 'LANDING.ADV_FREE_STAT_LABEL',
       statColor: '#10b981',
-      title: '100% Gratuit',
-      description: 'Aucun échange d\'argent. Gagnez des points en conduisant, dépensez-les en voyageant.'
+      titleKey: 'LANDING.ADV_FREE_TITLE',
+      descriptionKey: 'LANDING.ADV_FREE_DESC'
     },
     {
       stat: '-60%',
-      statLabel: 'de CO₂',
+      statLabelKey: 'LANDING.ADV_ECO_STAT_LABEL',
       statColor: '#8b5cf6',
-      title: 'Écologique',
-      description: 'Réduisez votre empreinte carbone en partageant votre véhicule avec d\'autres voyageurs.'
+      titleKey: 'LANDING.ADV_ECO_TITLE',
+      descriptionKey: 'LANDING.ADV_ECO_DESC'
     },
     {
       stat: '💬',
-      statLabel: 'en temps réel',
+      statLabelKey: 'LANDING.ADV_MSG_STAT_LABEL',
       statColor: '#6b7280',
-      title: 'Messagerie intégrée',
-      description: 'Communiquez directement avec conducteurs et passagers. Notifications in-app et email.'
+      titleKey: 'LANDING.ADV_MSG_TITLE',
+      descriptionKey: 'LANDING.ADV_MSG_DESC'
     },
     {
       stat: '🗺️',
-      statLabel: 'temps réel',
+      statLabelKey: 'LANDING.ADV_MAP_STAT_LABEL',
       statColor: '#6b7280',
-      title: 'Carte interactive',
-      description: 'Visualisez les trajets, définissez des étapes et estimez distance et durée automatiquement.'
+      titleKey: 'LANDING.ADV_MAP_TITLE',
+      descriptionKey: 'LANDING.ADV_MAP_DESC'
     }
   ];
 

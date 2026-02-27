@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { Component, OnDestroy, OnInit, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -21,7 +22,7 @@ import { UtcDatePipe } from '../../pipes/utc-date.pipe';
 @Component({
   selector: 'app-messaging',
   standalone: true,
-  imports: [CommonModule, FormsModule, UtcDatePipe],
+  imports: [CommonModule, FormsModule, UtcDatePipe, TranslateModule],
   templateUrl: './messaging.component.html',
   styleUrls: ['./messaging.component.scss']
 })

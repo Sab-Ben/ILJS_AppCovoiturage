@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 
 interface Testimonial {
   name: string;
-  role: string;
-  text: string;
+  roleKey: string;
+  textKey: string;
   rating: number;
   avatar: string;
   avatarGradient: string;
@@ -13,7 +14,7 @@ interface Testimonial {
 @Component({
   selector: 'app-testimonials',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './testimonials.component.html',
   styleUrls: ['./testimonials.component.scss']
 })
@@ -21,24 +22,24 @@ export class TestimonialsComponent {
   testimonials: Testimonial[] = [
     {
       name: 'Sophie Martin',
-      role: 'Passagère régulière',
-      text: 'Le système de points est génial ! Je conduis le lundi et j\'utilise mes points pour voyager le weekend. Zéro euro dépensé !',
+      roleKey: 'LANDING.TESTIMONIAL1_ROLE',
+      textKey: 'LANDING.TESTIMONIAL1_TEXT',
       rating: 5,
       avatar: 'SM',
       avatarGradient: 'linear-gradient(135deg, #f97316, #ef4444)'
     },
     {
       name: 'Karim Benali',
-      role: 'Conducteur',
-      text: 'J\'accumule des points en proposant mes trajets quotidiens. La carte interactive et la messagerie rendent tout simple.',
+      roleKey: 'LANDING.TESTIMONIAL2_ROLE',
+      textKey: 'LANDING.TESTIMONIAL2_TEXT',
       rating: 5,
       avatar: 'KB',
       avatarGradient: 'linear-gradient(135deg, #3b82f6, #8b5cf6)'
     },
     {
       name: 'Marie Leclerc',
-      role: 'Étudiante',
-      text: 'Parfait pour les étudiants ! Pas besoin d\'argent, juste des points. Les notifications me préviennent dès qu\'un trajet est dispo.',
+      roleKey: 'LANDING.TESTIMONIAL3_ROLE',
+      textKey: 'LANDING.TESTIMONIAL3_TEXT',
       rating: 5,
       avatar: 'ML',
       avatarGradient: 'linear-gradient(135deg, #ec4899, #8b5cf6)'

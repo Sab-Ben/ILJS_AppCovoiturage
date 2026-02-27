@@ -5,6 +5,7 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Actions, ofType } from '@ngrx/effects';
 import { Subscription } from 'rxjs';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import * as AuthActions from '../../store/authentification/authentification.actions';
 
 interface Credentials {
@@ -24,7 +25,7 @@ type AuthTab = 'login' | 'register';
 @Component({
   selector: 'app-auth',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TranslateModule],
   templateUrl: './auth.component.html',
   styleUrl: './auth.component.scss'
 })
@@ -46,7 +47,8 @@ export class AuthComponent implements OnInit, OnDestroy {
     private store: Store,
     private actions$: Actions,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private translateService: TranslateService
   ) {
     this.setupAuthListeners();
   }
@@ -62,7 +64,7 @@ export class AuthComponent implements OnInit, OnDestroy {
   private setupAuthListeners(): void {
     this.subscription.add(
       this.actions$.pipe(ofType(AuthActions.loginSuccess)).subscribe(() => {
-        this.loginSuccess = 'Connexion réussie !';
+        this.loginSuccess = this.translateService.instant('AUTH.LOGIN_SUCCESS');
         this.isLoading = false;
         this.router.navigate(['/dashboard']);
       })
@@ -71,7 +73,7 @@ export class AuthComponent implements OnInit, OnDestroy {
     this.subscription.add(
       this.actions$.pipe(ofType(AuthActions.loginFailure)).subscribe((action: any) => {
         const serverMessage = action.error?.error?.message;
-        this.loginError = serverMessage || 'Identifiants invalides ou erreur de connexion.';
+        this.loginError = serverMessage || this.translateService.instant('AUTH.LOGIN_ERROR');
         this.isLoading = false;
       })
     );
@@ -79,7 +81,7 @@ export class AuthComponent implements OnInit, OnDestroy {
     this.subscription.add(
       this.actions$.pipe(ofType(AuthActions.registerSuccess)).subscribe(() => {
         sessionStorage.setItem('showWelcomeToast', 'true');
-        this.registerSuccess = 'Inscription réussie ! Vous allez être redirigé vers la connexion...';
+        this.registerSuccess = this.translateService.instant('AUTH.REGISTER_SUCCESS');
         this.isLoading = false;
         setTimeout(() => {
           this.credentials = { email: this.user.email, password: this.user.password };
@@ -94,9 +96,9 @@ export class AuthComponent implements OnInit, OnDestroy {
       this.actions$.pipe(ofType(AuthActions.registerFailure)).subscribe((action: any) => {
         const serverMessage = action.error?.error?.message;
         if (action.error?.status === 409) {
-          this.registerError = serverMessage || 'Cet email est déjà utilisé.';
+          this.registerError = serverMessage || this.translateService.instant('AUTH.REGISTER_EMAIL_TAKEN');
         } else {
-          this.registerError = serverMessage || "Une erreur est survenue lors de l'inscription.";
+          this.registerError = serverMessage || this.translateService.instant('AUTH.REGISTER_ERROR');
         }
         this.isLoading = false;
       })

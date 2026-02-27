@@ -18,33 +18,33 @@
     <div class="profile-panel" *ngIf="isEditing">
       <div class="profile-panel__card">
         <div class="profile-panel__header">
-          <h3 class="profile-panel__title">Mes informations</h3>
+          <h3 class="profile-panel__title">{{ 'DASHBOARD.MY_INFO' | translate }}</h3>
           <button class="profile-panel__close" (click)="isEditing = false">
             <svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </button>
         </div>
         <div class="profile-panel__body">
           <div class="profile-panel__field">
-            <label>Prénom</label>
+            <label>{{ 'DASHBOARD.FIRSTNAME' | translate }}</label>
             <input [(ngModel)]="user.firstname">
           </div>
           <div class="profile-panel__field">
-            <label>Nom</label>
+            <label>{{ 'DASHBOARD.LASTNAME' | translate }}</label>
             <input [(ngModel)]="user.lastname">
           </div>
           <div class="profile-panel__field">
-            <label>Email</label>
+            <label>{{ 'DASHBOARD.EMAIL' | translate }}</label>
             <input [value]="user.email" disabled>
           </div>
           <div class="profile-panel__field">
-            <label>Statut</label>
+            <label>{{ 'DASHBOARD.STATUS' | translate }}</label>
             <select [(ngModel)]="user.role">
               <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
             </select>
           </div>
           <div class="profile-panel__actions">
-            <button class="profile-panel__save" (click)="saveProfile()">Enregistrer</button>
-            <button class="profile-panel__cancel" (click)="isEditing = false">Annuler</button>
+            <button class="profile-panel__save" (click)="saveProfile()">{{ 'COMMON.SAVE' | translate }}</button>
+            <button class="profile-panel__cancel" (click)="isEditing = false">{{ 'COMMON.CANCEL' | translate }}</button>
           </div>
           <div *ngIf="successMessage" class="profile-panel__success">{{ successMessage }}</div>
         </div>
@@ -67,16 +67,16 @@
                 <circle cx="15" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
               </svg>
             </div>
-            <span class="points-card__label">Solde</span>
+            <span class="points-card__label">{{ 'DASHBOARD.BALANCE' | translate }}</span>
           </div>
           <span class="points-card__objectif-tag" *ngIf="balance">
-            Total gagn&eacute;: {{ balance.totalEarned }}
+            {{ 'DASHBOARD.TOTAL_EARNED' | translate }}: {{ balance.totalEarned }}
           </span>
         </div>
 
         <div class="points-card__center">
           <p class="points-card__value">{{ balance?.currentBalance ?? (user.pointBalance || 0) }}</p>
-          <p class="points-card__unit">Points</p>
+          <p class="points-card__unit">{{ 'COMMON.POINTS' | translate | titlecase }}</p>
         </div>
 
         <div class="points-card__bar" *ngIf="balance">
@@ -96,13 +96,13 @@
 
     <div *ngIf="isTestMode" class="test-completion-section" style="margin-bottom: 1.5rem; padding: 1rem; border-radius: 12px; background: linear-gradient(135deg, rgba(255,165,0,0.08), rgba(255,100,50,0.08)); border: 1px dashed rgba(255,165,0,0.3);">
       <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-        <span style="font-size: 0.8rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px;">Mode Test</span>
+        <span style="font-size: 0.8rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px;">{{ 'DASHBOARD.MODE_TEST' | translate }}</span>
         <button
           (click)="lancerTestCompletion()"
           [disabled]="testEnCours"
           style="padding: 0.6rem 1.2rem; border-radius: 8px; border: none; background: linear-gradient(135deg, #f59e0b, #ef4444); color: white; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: opacity 0.2s;"
           [style.opacity]="testEnCours ? '0.5' : '1'">
-          {{ testEnCours ? 'Test en cours...' : 'Tester les points conducteur' }}
+          {{ testEnCours ? 'Test en cours...' : ('DASHBOARD.TEST_DRIVER_POINTS' | translate) }}
         </button>
         <span *ngIf="testResultat" style="font-size: 0.9rem; color: #4ade80; font-weight: 600;">{{ testResultat }}</span>
       </div>
@@ -124,8 +124,8 @@
         <img src="assets/images/Screenshot 2026-02-26 at 12.13.49.png" alt="" class="action-card__img"/>
         <div class="action-card__overlay"></div>
         <div class="action-card__body">
-          <p class="action-card__title">Proposer un trajet</p>
-          <p class="action-card__sub">Partagez la route et gagnez des points</p>
+          <p class="action-card__title">{{ 'DASHBOARD.PROPOSE_RIDE' | translate }}</p>
+          <p class="action-card__sub">{{ 'DASHBOARD.PROPOSE_RIDE_DESC' | translate }}</p>
           <div class="action-card__arrow-btn">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -138,8 +138,8 @@
         <img src="assets/images/dreamstime_xl_64512781.jpg" alt="" class="action-card__img"/>
         <div class="action-card__overlay"></div>
         <div class="action-card__body">
-          <p class="action-card__title">Rechercher un trajet</p>
-          <p class="action-card__sub">Trouvez un covoiturage près de chez vous</p>
+          <p class="action-card__title">{{ 'DASHBOARD.SEARCH_RIDE' | translate }}</p>
+          <p class="action-card__sub">{{ 'DASHBOARD.SEARCH_RIDE_DESC' | translate }}</p>
           <div class="action-card__arrow-btn">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -157,20 +157,20 @@
             <circle cx="7" cy="17" r="2" stroke="currentColor" stroke-width="2"/>
             <circle cx="17" cy="17" r="2" stroke="currentColor" stroke-width="2"/>
           </svg>
-          Mes trajets
+          {{ 'DASHBOARD.TAB_RIDES' | translate }}
         </button>
         <button class="tabs-bar__tab" [class.tabs-bar__tab--active]="activeTab === 'bookings'" (click)="activeTab = 'bookings'">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/>
             <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
           </svg>
-          Réservations
+          {{ 'DASHBOARD.TAB_BOOKINGS' | translate }}
         </button>
         <button class="tabs-bar__tab" [class.tabs-bar__tab--active]="activeTab === 'history'" (click)="activeTab = 'history'">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          Historique points
+          {{ 'DASHBOARD.TAB_HISTORY' | translate }}
         </button>
       </div>
 
@@ -183,11 +183,11 @@
                 <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               </svg>
             </div>
-            <p class="empty-state__title">Aucun trajet publié</p>
-            <p class="empty-state__sub">Publiez votre premier trajet et commencez à gagner des points</p>
+            <p class="empty-state__title">{{ 'DASHBOARD.NO_RIDES' | translate }}</p>
+            <p class="empty-state__sub">{{ 'DASHBOARD.NO_RIDES_DESC' | translate }}</p>
             <a routerLink="/create-ride" class="empty-state__btn">
               <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-              Proposer un trajet
+              {{ 'DASHBOARD.PROPOSE_RIDE' | translate }}
             </a>
           </div>
 
@@ -199,7 +199,7 @@
                 </div>
                 <span class="ride-item__status ride-item__status--active">
                   <span class="ride-item__status-dot"></span>
-                  Actif
+                  {{ 'COMMON.ACTIVE' | translate }}
                 </span>
               </div>
 
@@ -222,14 +222,14 @@
                 </span>
                 <span class="ride-item__meta-item">
                   <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  {{ trajet.placesDisponibles }} place(s)
+                  {{ trajet.placesDisponibles }} {{ 'COMMON.PLACES_S' | translate }}
                 </span>
               </div>
             </div>
           </div>
 
           <a *ngIf="trajets.length > 6" routerLink="/my-rides" class="voir-tout-link">
-            Voir tout ({{ trajets.length }})
+            {{ 'COMMON.SEE_ALL' | translate }} ({{ trajets.length }})
             <svg viewBox="0 0 24 24" fill="none" style="width: 16px; height: 16px;">
               <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -243,7 +243,7 @@
 
       <div class="tab-content" *ngIf="activeTab === 'bookings'">
         <div *ngIf="reservationsLoading" class="empty-state">
-          <p class="empty-state__title">Chargement...</p>
+          <p class="empty-state__title">{{ 'COMMON.LOADING' | translate }}</p>
         </div>
 
         <div *ngIf="!reservationsLoading && myReservations.length === 0" class="empty-state">
@@ -253,11 +253,11 @@
               <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
           </div>
-          <p class="empty-state__title">Aucune réservation</p>
-          <p class="empty-state__sub">Trouvez un trajet qui vous convient</p>
+          <p class="empty-state__title">{{ 'DASHBOARD.NO_BOOKINGS' | translate }}</p>
+          <p class="empty-state__sub">{{ 'DASHBOARD.NO_BOOKINGS_DESC' | translate }}</p>
           <a routerLink="/search-rides" class="empty-state__btn">
             <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            Chercher un trajet
+            {{ 'DASHBOARD.SEARCH_A_RIDE' | translate }}
           </a>
         </div>
 
@@ -272,7 +272,7 @@
               </div>
               <span class="ride-item__status" [class.ride-item__status--active]="!isRidePast(r)" [class.ride-item__status--past]="isRidePast(r)">
                 <span class="ride-item__status-dot"></span>
-                {{ isRidePast(r) ? 'Trajet passé' : r.seats + ' place(s)' }}
+                {{ isRidePast(r) ? ('COMMON.PAST_RIDE' | translate) : r.seats + ' ' + ('COMMON.PLACES_S' | translate) }}
               </span>
             </div>
 
@@ -308,7 +308,7 @@
               [disabled]="isRidePast(r)"
               [class.ride-item__cancel-btn--disabled]="isRidePast(r)"
               (click)="openCancelModal(r)">
-              {{ isRidePast(r) ? 'Annulation impossible' : 'Annuler la réservation' }}
+              {{ isRidePast(r) ? ('DASHBOARD.CANCEL_IMPOSSIBLE' | translate) : ('DASHBOARD.CANCEL_RESERVATION' | translate) }}
             </button>
           </div>
         </div>
@@ -319,10 +319,10 @@
 
   <app-confirm-modal
     [visible]="showCancelModal"
-    title="Annuler la réservation"
-    [message]="reservationToCancel ? 'Voulez-vous annuler votre réservation ' + reservationToCancel.ride.from + ' → ' + reservationToCancel.ride.to + ' du ' + reservationToCancel.ride.date + ' ?' : ''"
-    confirmLabel="Oui, annuler"
-    cancelLabel="Non, garder"
+    [title]="'RESERVATIONS.CANCEL_TITLE' | translate"
+    [message]="reservationToCancel ? (reservationToCancel.ride.from + ' → ' + reservationToCancel.ride.to + ' - ' + reservationToCancel.ride.date) : ''"
+    [confirmLabel]="'RESERVATIONS.CANCEL_CONFIRM' | translate"
+    [cancelLabel]="'RESERVATIONS.CANCEL_KEEP' | translate"
     variant="danger"
     icon="trash"
     (confirmed)="confirmCancelReservation()"

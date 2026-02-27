@@ -1,50 +1,51 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 
 interface FooterLink {
-  label: string;
+  labelKey: string;
   href: string;
 }
 
 interface FooterColumn {
-  title: string;
+  titleKey: string;
   links: FooterLink[];
 }
 
 @Component({
   selector: 'app-landing-footer',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './landing-footer.component.html',
   styleUrls: ['./landing-footer.component.scss']
 })
 export class LandingFooterComponent {
   columns: FooterColumn[] = [
     {
-      title: 'Produit',
+      titleKey: 'LANDING.FOOTER_COL1_TITLE',
       links: [
-        { label: 'Fonctionnalités', href: '#' },
-        { label: 'Sécurité', href: '#' },
-        { label: 'Tarification', href: '#' },
-        { label: 'Roadmap', href: '#' }
+        { labelKey: 'LANDING.FOOTER_COL1_LINK1', href: '#' },
+        { labelKey: 'LANDING.FOOTER_COL1_LINK2', href: '#' },
+        { labelKey: 'LANDING.FOOTER_COL1_LINK3', href: '#' },
+        { labelKey: 'LANDING.FOOTER_COL1_LINK4', href: '#' }
       ]
     },
     {
-      title: 'Entreprise',
+      titleKey: 'LANDING.FOOTER_COL2_TITLE',
       links: [
-        { label: 'À propos', href: '#' },
-        { label: 'Blog', href: '#' },
-        { label: 'Carrières', href: '#' },
-        { label: 'Presse', href: '#' }
+        { labelKey: 'LANDING.FOOTER_COL2_LINK1', href: '#' },
+        { labelKey: 'LANDING.FOOTER_COL2_LINK2', href: '#' },
+        { labelKey: 'LANDING.FOOTER_COL2_LINK3', href: '#' },
+        { labelKey: 'LANDING.FOOTER_COL2_LINK4', href: '#' }
       ]
     },
     {
-      title: 'Support',
+      titleKey: 'LANDING.FOOTER_COL3_TITLE',
       links: [
-        { label: 'Documentation', href: '#' },
-        { label: 'Centre d\'aide', href: '#' },
-        { label: 'Contact', href: '#' },
-        { label: 'Statut', href: '#' }
+        { labelKey: 'LANDING.FOOTER_COL3_LINK1', href: '#' },
+        { labelKey: 'LANDING.FOOTER_COL3_LINK2', href: '#' },
+        { labelKey: 'LANDING.FOOTER_COL3_LINK3', href: '#' },
+        { labelKey: 'LANDING.FOOTER_COL3_LINK4', href: '#' }
       ]
     }
   ];

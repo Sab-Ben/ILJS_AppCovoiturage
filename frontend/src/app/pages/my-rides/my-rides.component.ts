@@ -9,12 +9,13 @@ import {Actions, ofType} from '@ngrx/effects';
 import {Subscription} from 'rxjs';
 import {ToastService} from '../../services/toast.service';
 import * as TrajetActions from '../../store/trajet/trajet.actions';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import * as TrajetSelectors from '../../store/trajet/trajet.selectors';
 
 @Component({
     selector: 'app-my-rides',
     standalone: true,
-    imports: [CommonModule, RouterLink, MapComponent, ConfirmModalComponent],
+    imports: [CommonModule, RouterLink, MapComponent, ConfirmModalComponent, TranslateModule],
     templateUrl: './my-rides.component.html',
     styleUrls: ['./my-rides.component.scss']
 })

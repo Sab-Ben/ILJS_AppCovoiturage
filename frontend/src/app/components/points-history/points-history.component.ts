@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 import { PointTransaction, PointTransactionType } from '../../models/point-transaction.model';
@@ -24,7 +25,7 @@ const TRANSACTION_CONFIG: Record<PointTransactionType, TransactionDisplay> = {
 @Component({
     selector: 'app-points-history',
     standalone: true,
-    imports: [CommonModule, UtcDatePipe],
+    imports: [CommonModule, UtcDatePipe, TranslateModule],
     templateUrl: './points-history.component.html',
     styleUrls: ['./points-history.component.scss']
 })

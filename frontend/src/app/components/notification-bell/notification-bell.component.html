@@ -10,11 +10,11 @@
 
   <div class="notif-panel" *ngIf="open" (click)="$event.stopPropagation()">
     <div class="notif-panel__header">
-      <h3 class="notif-panel__title">Notifications</h3>
+      <h3 class="notif-panel__title">{{ 'NOTIFICATIONS.TITLE' | translate }}</h3>
       <button *ngIf="unreadCount > 0"
               class="notif-panel__mark-all"
               (click)="markAllAsRead()">
-        Tout marquer lu
+        {{ 'NOTIFICATIONS.MARK_ALL_READ' | translate }}
       </button>
     </div>
 
@@ -84,7 +84,7 @@
       <svg viewBox="0 0 24 24" fill="none">
         <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
-      <p>Aucune notification</p>
+      <p>{{ 'NOTIFICATIONS.NO_NOTIFICATIONS' | translate }}</p>
     </div>
   </div>
 </div>

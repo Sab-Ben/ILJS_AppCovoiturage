@@ -4,23 +4,23 @@
       <svg viewBox="0 0 24 24" fill="none">
         <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      Retour au profil
+      {{ 'RIDES.BACK_TO_PROFILE' | translate }}
     </a>
 
     <h1 class="my-rides__title">
-      Mes <span class="my-rides__title-accent">trajets</span>
+      {{ 'RIDES.MY_RIDES_TITLE' | translate }}
     </h1>
 
     <div *ngIf="isLoading" class="my-rides__loading">
       <div class="my-rides__spinner"></div>
-      <span>Chargement de vos trajets...</span>
+      <span>{{ 'RIDES.LOADING_RIDES' | translate }}</span>
     </div>
 
     <div class="my-rides__layout" *ngIf="!isLoading">
       <div class="my-rides__list">
         <div *ngIf="trajets.length === 0" class="my-rides__empty">
-          <p>Vous n'avez pas encore publié de trajet.</p>
-          <a routerLink="/create-ride" class="my-rides__cta">Proposer un trajet</a>
+          <p>{{ 'RIDES.NO_RIDES_YET' | translate }}</p>
+          <a routerLink="/create-ride" class="my-rides__cta">{{ 'DASHBOARD.PROPOSE_RIDE' | translate }}</a>
         </div>
 
         <div *ngFor="let trajet of trajets"
@@ -51,7 +51,7 @@
             </span>
             <span class="ride-item__meta-item">
               <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/></svg>
-              {{ trajet.placesDisponibles }} place(s)
+              {{ trajet.placesDisponibles }} {{ 'COMMON.PLACES_S' | translate }}
             </span>
             <span *ngIf="trajet.distanceKm" class="ride-item__meta-item">
               {{ trajet.distanceKm }} km
@@ -62,16 +62,16 @@
           </div>
 
           <div class="ride-item__actions">
-            <span *ngIf="isTrajetPast(trajet.dateHeureDepart)" class="ride-item__past-badge">Trajet passé</span>
+            <span *ngIf="isTrajetPast(trajet.dateHeureDepart)" class="ride-item__past-badge">{{ 'COMMON.PAST_RIDE' | translate }}</span>
             <button *ngIf="!isTrajetPast(trajet.dateHeureDepart)"
                     class="ride-item__delete"
                     [disabled]="!isDeletable(trajet.dateHeureDepart)"
-                    [title]="!isDeletable(trajet.dateHeureDepart) ? 'Suppression impossible moins de 24h avant le départ' : ''"
+                    [title]="!isDeletable(trajet.dateHeureDepart) ? ('RIDES.DELETE_IMPOSSIBLE_24H' | translate) : ''"
                     (click)="$event.stopPropagation(); openDeleteModal(trajet)">
               <svg viewBox="0 0 24 24" fill="none">
                 <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              Supprimer
+              {{ 'COMMON.DELETE' | translate }}
             </button>
           </div>
         </div>
@@ -81,7 +81,7 @@
         <div class="my-rides__map-card">
           <div class="my-rides__map-header">
             <span *ngIf="selectedTrajet">{{ selectedTrajet.villeDepart }} → {{ selectedTrajet.villeArrivee }}</span>
-            <span *ngIf="!selectedTrajet" class="my-rides__map-placeholder">Sélectionnez un trajet</span>
+            <span *ngIf="!selectedTrajet" class="my-rides__map-placeholder">{{ 'RIDES.SELECT_RIDE_MAP' | translate }}</span>
           </div>
           <app-map
             [villeDepart]="selectedTrajet?.villeDepart || ''"
@@ -97,10 +97,10 @@
 
   <app-confirm-modal
     [visible]="showDeleteModal"
-    title="Supprimer le trajet"
+    [title]="'RIDES.DELETE_TITLE' | translate"
     [message]="getDeleteModalMessage()"
-    confirmLabel="Oui, supprimer"
-    cancelLabel="Non, garder"
+    [confirmLabel]="'MODAL.YES_DELETE' | translate"
+    [cancelLabel]="'MODAL.NO_KEEP' | translate"
     variant="danger"
     icon="trash"
     (confirmed)="confirmDelete()"

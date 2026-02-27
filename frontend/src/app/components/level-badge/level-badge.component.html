@@ -6,7 +6,7 @@
   </div>
 
   <div class="level-badge__rank-tag" [style.background]="currentLevelConfig.color + '1a'" [style.border-color]="currentLevelConfig.color + '33'" [style.color]="currentLevelConfig.color">
-    <span>Niveau {{ balance.levelRank }}</span>
+    <span>{{ 'DASHBOARD.LEVEL' | translate }} {{ balance.levelRank }}</span>
   </div>
 
   <p class="level-badge__title">{{ balance.levelLabel }}</p>
@@ -18,22 +18,22 @@
 
   <div class="level-badge__progress" *ngIf="nextLevelConfig">
     <div class="level-badge__progress-header">
-      <span class="level-badge__progress-label">Progression</span>
+      <span class="level-badge__progress-label">{{ 'DASHBOARD.PROGRESSION' | translate }}</span>
       <span class="level-badge__progress-value">{{ progressPercent }}%</span>
     </div>
     <div class="level-badge__progress-track">
       <div class="level-badge__progress-fill"
            [style.width.%]="progressPercent"
-           [style.background]="'linear-gradient(90deg, ' + currentLevelConfig.color + ', ' + (nextLevelConfig?.color || currentLevelConfig.color) + ')'">
+           [style.background]="'linear-gradient(90deg, ' + currentLevelConfig.color + ', ' + (nextLevelConfig.color || currentLevelConfig.color) + ')'">
       </div>
     </div>
     <p class="level-badge__progress-hint">
-      Encore <span class="level-badge__highlight" [style.color]="nextLevelConfig.color">{{ pointsRemaining }} pts</span> pour {{ nextLevelConfig.label }}
+      {{ 'DASHBOARD.REMAINING_FOR' | translate }} <span class="level-badge__highlight" [style.color]="nextLevelConfig.color">{{ pointsRemaining }} {{ 'COMMON.PTS' | translate }}</span> {{ 'DASHBOARD.FOR' | translate }} {{ nextLevelConfig.label }}
     </p>
   </div>
 
   <div class="level-badge__max" *ngIf="!nextLevelConfig">
-    <p class="level-badge__max-text">Niveau maximum atteint</p>
+    <p class="level-badge__max-text">{{ 'DASHBOARD.MAX_LEVEL' | translate }}</p>
   </div>
 
   <div class="level-badge__milestones">

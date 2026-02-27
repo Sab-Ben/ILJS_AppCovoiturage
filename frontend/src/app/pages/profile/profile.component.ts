@@ -7,6 +7,7 @@ import { Role } from '../../models/role.enum';
 import { Store } from '@ngrx/store';
 import { Actions, ofType } from '@ngrx/effects';
 import { Observable, Subscription } from 'rxjs';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import * as UserActions from '../../store/user/user.actions';
 import * as UserSelectors from '../../store/user/user.selectors';
 import * as AuthActions from '../../store/authentification/authentification.actions';
@@ -27,7 +28,7 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LevelBadgeComponent, PointsHistoryComponent, ConfirmModalComponent],
+  imports: [CommonModule, FormsModule, RouterLink, LevelBadgeComponent, PointsHistoryComponent, ConfirmModalComponent, TranslateModule],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
 })
@@ -56,7 +57,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private actions$: Actions,
     private toastService: ToastService,
     private pointService: PointService,
-    private reservationService: ReservationService
+    private reservationService: ReservationService,
+    private translateService: TranslateService
   ) {
     this.trajets$ = this.store.select(TrajetSelectors.selectAllTrajets);
     this.trajetsLoading$ = this.store.select(TrajetSelectors.selectTrajetsLoading);
@@ -84,7 +86,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.subscription.add(
       this.actions$.pipe(ofType(UserActions.updateProfileSuccess)).subscribe(() => {
         this.isEditing = false;
-        this.successMessage = 'Profil mis à jour avec succès !';
+        this.successMessage = this.translateService.instant('DASHBOARD.PROFILE_UPDATED');
         setTimeout(() => this.successMessage = '', 3000);
       })
     );
@@ -107,9 +109,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   get greeting(): string {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Bonjour';
-    if (hour < 18) return 'Bon après-midi';
-    return 'Bonsoir';
+    if (hour < 12) return this.translateService.instant('DASHBOARD.HELLO_MORNING');
+    if (hour < 18) return this.translateService.instant('DASHBOARD.HELLO_AFTERNOON');
+    return this.translateService.instant('DASHBOARD.HELLO_EVENING');
   }
 
   saveProfile(): void {
@@ -130,10 +132,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.testEnCours = false;
         const gained = result['pointsGagnes'] as number;
         const after = result['pointsApres'] as number;
-        this.testResultat = `+${gained} points ! Solde: ${after}`;
+        this.testResultat = '+' + gained + ' points ! Solde: ' + after;
         this.toastService.success(
           'Test reussi !',
-          `Le conducteur a recu ${gained} points pour le trajet Casablanca -> Rabat. Nouveau solde: ${after}`,
+          'Le conducteur a recu ' + gained + ' points pour le trajet Casablanca -> Rabat. Nouveau solde: ' + after,
           10000
         );
         this.store.dispatch(PointActions.loadBalance());
@@ -193,11 +195,17 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.closeCancelModal();
     this.reservationService.cancelReservation(reservation.id).subscribe({
       next: () => {
-        this.toastService.success('Annulation', 'Réservation annulée avec succès');
+        this.toastService.success(
+          this.translateService.instant('RESERVATIONS.CANCEL_TITLE'),
+          this.translateService.instant('DASHBOARD.CANCEL_SUCCESS')
+        );
         this.loadMyReservations();
       },
       error: (err) => {
-        this.toastService.error('Erreur', err?.error?.message || 'Impossible d\'annuler cette réservation.');
+        this.toastService.error(
+          this.translateService.instant('COMMON.ERROR'),
+          err?.error?.message || this.translateService.instant('DASHBOARD.CANCEL_ERROR')
+        );
       }
     });
   }
@@ -208,8 +216,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
       sessionStorage.removeItem('showWelcomeToast');
       setTimeout(() => {
         this.toastService.success(
-          'Bienvenue dans la communauté !',
-          'Vous avez reçu 30 points de bienvenue pour commencer votre aventure.',
+          this.translateService.instant('DASHBOARD.WELCOME_TITLE'),
+          this.translateService.instant('DASHBOARD.WELCOME_MESSAGE'),
           10000
         );
       }, 500);

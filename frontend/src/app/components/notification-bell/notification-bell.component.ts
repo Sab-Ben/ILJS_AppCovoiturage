@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
@@ -10,7 +11,7 @@ import { AppNotification } from '../../models/notification.model';
 @Component({
   selector: 'app-notification-bell',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './notification-bell.component.html',
   styleUrls: ['./notification-bell.component.scss']
 })
@@ -23,7 +24,8 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   constructor(
     private store: Store,
     private router: Router,
-    private elementRef: ElementRef
+    private elementRef: ElementRef,
+    private translateService: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -74,11 +76,12 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMin < 1) return "à l'instant";
-    if (diffMin < 60) return diffMin + ' min';
-    if (diffHours < 24) return diffHours + 'h';
-    if (diffDays < 7) return diffDays + 'j';
-    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    if (diffMin < 1) return this.translateService.instant('NOTIFICATIONS.JUST_NOW');
+    if (diffMin < 60) return diffMin + ' ' + this.translateService.instant('NOTIFICATIONS.MINUTES_AGO');
+    if (diffHours < 24) return diffHours + this.translateService.instant('NOTIFICATIONS.HOURS_AGO');
+    if (diffDays < 7) return diffDays + this.translateService.instant('NOTIFICATIONS.DAYS_AGO');
+    const lang = this.translateService.currentLang || 'fr';
+    return date.toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US', { day: 'numeric', month: 'short' });
   }
 
   markAsRead(notification: AppNotification): void {

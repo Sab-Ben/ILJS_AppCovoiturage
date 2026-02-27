@@ -11,4 +11,5 @@ export interface Trajet {
     longitudeDepart?: number;
     latitudeArrivee?: number;
     longitudeArrivee?: number;
+    prixPoints?: number;
 }
