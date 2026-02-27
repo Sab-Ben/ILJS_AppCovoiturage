@@ -12,5 +12,6 @@ public class UserDto {
     private String lastname;
     private String email;
     private Integer pointBalance;
+    private Integer totalPointsEarned;
     private Role role;
 }

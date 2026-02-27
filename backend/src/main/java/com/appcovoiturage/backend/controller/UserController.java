@@ -47,6 +47,7 @@ public class UserController {
                 .lastname(user.getLastname())
                 .email(user.getEmail())
                 .pointBalance(user.getPointBalance())
+                .totalPointsEarned(user.getTotalPointsEarned())
                 .role(user.getRole())
                 .build();
     }

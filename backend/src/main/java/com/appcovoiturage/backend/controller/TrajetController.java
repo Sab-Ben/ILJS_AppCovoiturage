@@ -41,7 +41,7 @@ public class TrajetController {
     public ResponseEntity<java.util.List<Trajet>> search(
             @RequestParam String from,
             @RequestParam String to,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
         return ResponseEntity.ok(trajetService.searchTrajets(from, to, date));
     }

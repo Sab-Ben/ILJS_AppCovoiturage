@@ -8,6 +8,7 @@ export interface Ride {
   availableSeats?: number;
   price?: number;
   driverName?: string;
+  driverEmail?: string;
 
   // ✅ nécessaire pour la carte/itinéraire
   fromLat?: number;

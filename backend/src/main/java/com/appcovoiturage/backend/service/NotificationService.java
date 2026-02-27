@@ -92,6 +92,44 @@ public class NotificationService {
         }
     }
 
+    public void notifyReservationConfirmed(User passager, Trajet trajet) {
+        String trajetLabel = trajet.getVilleDepart() + " → " + trajet.getVilleArrivee();
+        String conducteurName = trajet.getConducteur().getFirstname() + " " + trajet.getConducteur().getLastname();
+
+        createAndDispatch(
+                passager,
+                NotificationType.RESERVATION_CONFIRMED,
+                "Réservation confirmée",
+                "Votre réservation pour " + trajetLabel + " (conducteur : " + conducteurName + ") est confirmée",
+                "TRAJET",
+                trajet.getId()
+        );
+    }
+
+    public void notifyReservationCancelled(User passager, Trajet trajet) {
+        String trajetLabel = trajet.getVilleDepart() + " → " + trajet.getVilleArrivee();
+
+        createAndDispatch(
+                passager,
+                NotificationType.RESERVATION_CANCELLED,
+                "Réservation annulée",
+                "Votre réservation pour " + trajetLabel + " a été annulée. Vos points ont été remboursés",
+                "TRAJET",
+                trajet.getId()
+        );
+    }
+
+    public void notifyPointsDebited(User passager, int points, String itineraire, Long trajetId) {
+        createAndDispatch(
+                passager,
+                NotificationType.POINTS_DEBITED,
+                "-" + points + " points",
+                points + " points débités pour la réservation du trajet " + itineraire,
+                "TRAJET",
+                trajetId
+        );
+    }
+
     public void notifyTrajetDeleted(List<User> passagers, Trajet trajet) {
         String trajetLabel = trajet.getVilleDepart() + " → " + trajet.getVilleArrivee();
 
@@ -111,6 +149,28 @@ public class NotificationService {
                 log.warn("Email suppression trajet non envoyé à {}", passager.getEmail(), e);
             }
         }
+    }
+
+    public void notifyPointsCredited(User conducteur, int points, String itineraire, Long trajetId) {
+        createAndDispatch(
+                conducteur,
+                NotificationType.POINTS_CREDITED,
+                "+" + points + " points !",
+                "Vous avez gagné " + points + " points pour le trajet " + itineraire,
+                "TRAJET",
+                trajetId
+        );
+    }
+
+    public void notifyLevelUp(User user, String levelLabel, String avantages) {
+        createAndDispatch(
+                user,
+                NotificationType.LEVEL_UP,
+                "Niveau " + levelLabel + " débloqué !",
+                "Félicitations ! Vous êtes maintenant " + levelLabel + ". " + avantages,
+                "LEVEL",
+                null
+        );
     }
 
     // -------- utilisateur --------

@@ -49,6 +49,10 @@ public class Trajet {
     @Column(nullable = false)
     private Double longitudeArrivee;
 
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private Boolean pointsCredites = false;
+
     @ManyToOne
     @JoinColumn(name = "conducteur_id", nullable = false)
     private User conducteur;

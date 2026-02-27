@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface CreateReservationRequest {
@@ -16,6 +17,8 @@ export interface ReservationDto {
   seats: number;
   status: ReservationStatus;
   createdAt?: string;
+  passagerName?: string;
+  passagerEmail?: string;
 
   ride: {
     id: number;
@@ -39,10 +42,32 @@ export class ReservationService {
     return this.http.post<ReservationDto>(this.apiUrl, payload);
   }
 
+  reserveRide(trajetId: number): Observable<ReservationDto> {
+    return this.http.post<ReservationDto>(`${this.apiUrl}/trajets/${trajetId}/reservations`, {});
+  }
+
   // ✅ AJOUT : récupérer "mes réservations" (réservées / effectuées / annulées)
   getMyReservations(status: ReservationStatus): Observable<ReservationDto[]> {
     const params = new HttpParams().set('status', status);
     return this.http.get<ReservationDto[]>(`${this.apiUrl}/me`, { params });
+  }
+
+  getAllMyReservations(): Observable<ReservationDto[]> {
+    return this.http.get<ReservationDto[]>(`${this.apiUrl}/reservations/me`);
+  }
+
+  isAlreadyReserved(trajetId: number): Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/trajets/${trajetId}/is-reserved`);
+  }
+
+  getMyReservationForRide(trajetId: number): Observable<ReservationDto | null> {
+    return this.http.get<ReservationDto>(`${this.apiUrl}/trajets/${trajetId}/my-reservation`).pipe(
+      catchError(() => of(null))
+    );
+  }
+
+  getReservationsByRide(trajetId: number): Observable<ReservationDto[]> {
+    return this.http.get<ReservationDto[]>(`${this.apiUrl}/trajets/${trajetId}/reservations`);
   }
 
   cancelReservation(id: number): Observable<void> {

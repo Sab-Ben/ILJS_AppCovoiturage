@@ -1,0 +1,36 @@
+<div class="points-history">
+  <div class="points-history__header">
+    <h3 class="points-history__title">Historique des points</h3>
+    <span class="points-history__count">{{ transactions.length }} transaction(s)</span>
+  </div>
+
+  <div class="points-history__list" *ngIf="!loading && transactions.length > 0">
+    <div *ngFor="let tx of visibleTransactions" class="points-history__item">
+      <div class="points-history__item-icon">
+        <span>{{ getConfig(tx.type).icon }}</span>
+      </div>
+
+      <div class="points-history__item-info">
+        <p class="points-history__item-desc">{{ tx.description }}</p>
+        <span class="points-history__item-date">{{ tx.createdAt | date:'d MMM yyyy, HH:mm':'':'fr' }}</span>
+      </div>
+
+      <div class="points-history__item-amount" [ngClass]="getConfig(tx.type).colorClass">
+        {{ formatAmount(tx.amount) }}
+      </div>
+    </div>
+
+    <button *ngIf="hasMore" class="points-history__more-btn" (click)="showMore()">
+      Voir plus
+    </button>
+  </div>
+
+  <div class="points-history__empty" *ngIf="!loading && transactions.length === 0">
+    <span class="points-history__empty-icon">📭</span>
+    <p class="points-history__empty-text">Aucune transaction pour le moment</p>
+  </div>
+
+  <div class="points-history__loading" *ngIf="loading">
+    <div class="points-history__spinner"></div>
+  </div>
+</div>

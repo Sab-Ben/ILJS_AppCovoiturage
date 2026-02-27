@@ -24,6 +24,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - TZ=Africa/Casablanca
     depends_on:
       - db
     restart: always

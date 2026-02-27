@@ -10,6 +10,9 @@ import {Subject} from 'rxjs';
 import * as UserActions from '../../store/user/user.actions';
 import * as UserSelectors from '../../store/user/user.selectors';
 import * as AuthActions from '../../store/authentification/authentification.actions';
+import * as PointSelectors from '../../store/point/point.selectors';
+import * as PointActions from '../../store/point/point.actions';
+import {PointBalance} from '../../models/point-balance.model';
 
 describe('ProfileComponent', () => {
     let component: ProfileComponent;
@@ -23,7 +26,22 @@ describe('ProfileComponent', () => {
         lastname: 'Test',
         email: 'jean@test.com',
         role: Role.PASSAGER,
-        pointBalance: 100
+        pointBalance: 100,
+        totalPointsEarned: 250
+    };
+
+    const mockBalance: PointBalance = {
+        currentBalance: 100,
+        totalEarned: 250,
+        level: 'EXPLORATEUR',
+        levelLabel: 'Explorateur',
+        levelRank: 2,
+        nextLevel: 'VOYAGEUR',
+        nextLevelLabel: 'Voyageur',
+        pointsToNextLevel: 350,
+        nextLevelThreshold: 600,
+        currentLevelThreshold: 200,
+        levelProgressPercent: 12.5
     };
 
     beforeEach(async () => {
@@ -35,7 +53,8 @@ describe('ProfileComponent', () => {
                 provideRouter([]),
                 provideMockStore({
                     selectors: [
-                        {selector: UserSelectors.selectCurrentUser, value: passagerUser}
+                        {selector: UserSelectors.selectCurrentUser, value: passagerUser},
+                        {selector: PointSelectors.selectBalance, value: mockBalance}
                     ]
                 }),
                 provideMockActions(() => actions$)
@@ -59,32 +78,51 @@ describe('ProfileComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('devrait charger le profil au démarrage', () => {
+    it('devrait charger le profil et le solde au demarrage', () => {
         expect(store.dispatch).toHaveBeenCalledWith(UserActions.loadMyProfile());
+        expect(store.dispatch).toHaveBeenCalledWith(PointActions.loadBalance());
         expect(component.user).toEqual(passagerUser);
     });
 
-    it('doit dispatcher updateProfile et afficher succès sur retour action', () => {
+    it('doit avoir le balance charge', () => {
+        expect(component.balance).toEqual(mockBalance);
+        expect(component.balance?.level).toBe('EXPLORATEUR');
+    });
+
+    it('doit calculer la progression depuis le balance', () => {
+        expect(component.progressPercent).toBe(12.5);
+    });
+
+    it('doit retourner le seuil du prochain niveau', () => {
+        expect(component.nextLevelThreshold).toBe(600);
+    });
+
+    it('doit dispatcher updateProfile et afficher succes sur retour action', () => {
         vi.useFakeTimers();
 
         component.isEditing = true;
-        if (component.user) component.user.firstname = 'Modifié';
+        if (component.user) component.user.firstname = 'Modifie';
 
         component.saveProfile();
 
         expect(store.dispatch).toHaveBeenCalledWith(UserActions.updateProfile({user: component.user!}));
 
-        actions$.next(UserActions.updateProfileSuccess({user: {...passagerUser, firstname: 'Modifié'}}));
+        actions$.next(UserActions.updateProfileSuccess({user: {...passagerUser, firstname: 'Modifie'}}));
 
         expect(component.isEditing).toBe(false);
-        expect(component.successMessage).toContain('succès');
+        expect(component.successMessage).toContain('succ');
 
         vi.advanceTimersByTime(3000);
         expect(component.successMessage).toBe('');
     });
 
-    it('doit dispatcher AuthActions.logout() lors de la déconnexion', () => {
+    it('doit dispatcher AuthActions.logout() lors de la deconnexion', () => {
         component.logout();
         expect(store.dispatch).toHaveBeenCalledWith(AuthActions.logout());
+    });
+
+    it('doit supporter le tab historique', () => {
+        component.activeTab = 'history';
+        expect(component.activeTab).toBe('history');
     });
 });

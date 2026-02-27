@@ -62,9 +62,12 @@
           </div>
 
           <div class="ride-item__actions">
-            <button class="ride-item__delete"
+            <span *ngIf="isTrajetPast(trajet.dateHeureDepart)" class="ride-item__past-badge">Trajet passé</span>
+            <button *ngIf="!isTrajetPast(trajet.dateHeureDepart)"
+                    class="ride-item__delete"
                     [disabled]="!isDeletable(trajet.dateHeureDepart)"
-                    (click)="$event.stopPropagation(); deleteTrajet(trajet.id!)">
+                    [title]="!isDeletable(trajet.dateHeureDepart) ? 'Suppression impossible moins de 24h avant le départ' : ''"
+                    (click)="$event.stopPropagation(); openDeleteModal(trajet)">
               <svg viewBox="0 0 24 24" fill="none">
                 <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
@@ -91,4 +94,16 @@
       </div>
     </div>
   </div>
+
+  <app-confirm-modal
+    [visible]="showDeleteModal"
+    title="Supprimer le trajet"
+    [message]="getDeleteModalMessage()"
+    confirmLabel="Oui, supprimer"
+    cancelLabel="Non, garder"
+    variant="danger"
+    icon="trash"
+    (confirmed)="confirmDelete()"
+    (cancelled)="closeDeleteModal()">
+  </app-confirm-modal>
 </div>

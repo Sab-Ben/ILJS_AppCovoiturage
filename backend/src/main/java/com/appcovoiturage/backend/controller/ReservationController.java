@@ -40,6 +40,28 @@ public class ReservationController {
         );
     }
 
+    @GetMapping("/trajets/{trajetId}/is-reserved")
+    public ResponseEntity<Boolean> isAlreadyReserved(
+            @PathVariable Long trajetId,
+            Principal principal
+    ) {
+        return ResponseEntity.ok(
+                reservationService.isAlreadyReserved(trajetId, principal.getName())
+        );
+    }
+
+    @GetMapping("/trajets/{trajetId}/my-reservation")
+    public ResponseEntity<ReservationResponseDto> getMyReservationForRide(
+            @PathVariable Long trajetId,
+            Principal principal
+    ) {
+        ReservationResponseDto dto = reservationService.getMyReservationForRide(trajetId, principal.getName());
+        if (dto == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(dto);
+    }
+
     // Voir les réservations d'un trajet (conducteur du trajet uniquement)
     @GetMapping("/trajets/{trajetId}/reservations")
     public ResponseEntity<List<ReservationResponseDto>> getReservationsByTrajet(
@@ -52,16 +74,12 @@ public class ReservationController {
     }
 
 
-//    @PostMapping
-//    public ResponseEntity<ReservationResponse> create(@RequestBody ReservationRequest req,
-//                                                      @AuthenticationPrincipal User user) {
-//        return ResponseEntity.ok(reservationService.createReservation(req, user));
-//    }
-
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<Void> cancel(@PathVariable Long id,
-//                                       @AuthenticationPrincipal User user) {
-//        reservationService.cancelReservation(id, user);
-//        return ResponseEntity.noContent().build(); // 204
-//    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> cancelReservation(
+            @PathVariable Long id,
+            Principal principal
+    ) {
+        reservationService.cancelReservationByEmail(id, principal.getName());
+        return ResponseEntity.noContent().build();
+    }
 }

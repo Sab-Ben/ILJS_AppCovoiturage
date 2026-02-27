@@ -33,6 +33,7 @@ export class RideService {
       availableSeats: api?.placesDisponibles ?? undefined,
       price: api?.price ?? undefined, // si tu n'as pas "price" côté back, ça restera undefined
       driverName,
+      driverEmail: conducteur?.email ?? undefined,
       fromLat: api?.latitudeDepart ?? undefined,
       fromLng: api?.longitudeDepart ?? undefined,
       toLat: api?.latitudeArrivee ?? undefined,

@@ -29,6 +29,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/trajets/**").hasAuthority("CONDUCTEUR")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/trajets/**").hasAuthority("CONDUCTEUR")

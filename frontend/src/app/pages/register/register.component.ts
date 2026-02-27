@@ -6,6 +6,7 @@ import {Store} from '@ngrx/store';
 import {Actions, ofType} from '@ngrx/effects';
 import {Subscription} from 'rxjs';
 import * as AuthActions from '../../store/authentification/authentification.actions';
+import {ToastService} from '../../services/toast.service';
 
 @Component({
     selector: 'app-register',
@@ -23,10 +24,16 @@ export class RegisterComponent implements OnDestroy {
     constructor(
         private store: Store,
         private actions$: Actions,
-        private router: Router
+        private router: Router,
+        private toastService: ToastService
     ) {
         this.subscription.add(
             this.actions$.pipe(ofType(AuthActions.registerSuccess)).subscribe(() => {
+                this.toastService.success(
+                    'Bienvenue dans la communauté !',
+                    'Vous avez reçu 30 points de bienvenue pour commencer votre aventure.',
+                    7000
+                );
                 this.successMessage = 'Inscription réussie ! Vous allez être redirigé vers la connexion...';
                 setTimeout(() => {
                     this.router.navigate(['/auth']);

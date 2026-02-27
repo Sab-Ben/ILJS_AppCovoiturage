@@ -1,0 +1,221 @@
+@use 'theme' as *;
+
+$amber: hsl(38, 80%, 55%);
+
+.level-badge {
+  position: relative;
+  overflow: hidden;
+  background: var(--card-solid-bg);
+  border: 1px solid var(--card-solid-border);
+  border-radius: 24px;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: var(--card-solid-shadow);
+  transition: all 0.35s ease;
+
+  &:hover {
+    box-shadow: var(--card-solid-shadow-hover);
+    transform: translateY(-2px);
+  }
+
+  &__glow {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    opacity: var(--card-glow-opacity);
+  }
+
+  &__icon-wrapper {
+    position: relative;
+    z-index: 10;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.03);
+    animation: float-badge 4s ease-in-out infinite;
+  }
+
+  &__emoji {
+    font-size: 2rem;
+  }
+
+  &__rank-tag {
+    position: relative;
+    z-index: 10;
+    margin-top: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.9rem;
+    border: 1px solid;
+    border-radius: 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+
+  &__title {
+    position: relative;
+    z-index: 10;
+    font-family: 'Sora', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--card-value-color);
+    margin: 0.5rem 0 0;
+    letter-spacing: -0.02em;
+  }
+
+  &__avantages {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+  }
+
+  &__avantages-icon {
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+
+  &__avantages-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--card-desc-color);
+    line-height: 1.4;
+  }
+
+  &__progress {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    margin-top: 1.25rem;
+  }
+
+  &__progress-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.4rem;
+  }
+
+  &__progress-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--muted-fg);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  &__progress-value {
+    font-family: 'Sora', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--card-value-color);
+  }
+
+  &__progress-track {
+    width: 100%;
+    height: 6px;
+    background: var(--card-bar-track);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  &__progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 1.2s ease-out;
+  }
+
+  &__progress-hint {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    color: var(--card-desc-color);
+    margin: 0.5rem 0 0;
+    line-height: 1.6;
+  }
+
+  &__highlight {
+    font-weight: 700;
+  }
+
+  &__max-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    color: $amber;
+    font-weight: 600;
+    margin: 1rem 0 0;
+  }
+
+  &__milestones {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  &__milestone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  &__milestone-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.3s ease;
+
+    .level-badge__milestone--reached & {
+      border-color: transparent;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+    }
+
+    .level-badge__milestone--current & {
+      width: 12px;
+      height: 12px;
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  &__milestone-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: var(--muted-fg);
+  }
+}
+
+@keyframes float-badge {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}

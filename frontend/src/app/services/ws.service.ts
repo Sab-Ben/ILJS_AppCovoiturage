@@ -70,6 +70,17 @@ export class WsService {
     });
   }
 
+  subscribeToRideUpdates(
+    trajetId: number,
+    callback: (event: WsEvent<{ trajetId: number; availableSeats: number }>) => void
+  ): StompSubscription | null {
+    if (!this.client || !this.connected) return null;
+
+    return this.client.subscribe(`/topic/rides/${trajetId}`, (msg: IMessage) => {
+      callback(JSON.parse(msg.body));
+    });
+  }
+
   isConnected(): boolean {
     return this.connected;
   }

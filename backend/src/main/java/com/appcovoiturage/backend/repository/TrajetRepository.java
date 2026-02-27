@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface TrajetRepository extends JpaRepository<Trajet, Long> {
 
-    List<Trajet> findByConducteurId(Long conducteurId);
+    List<Trajet> findByConducteurIdOrderByDateHeureDepartDesc(Long conducteurId);
 
     // ✅ trajets passés du conducteur (historique)
     List<Trajet> findByConducteurIdAndDateHeureDepartBeforeOrderByDateHeureDepartDesc(
@@ -18,18 +18,26 @@ public interface TrajetRepository extends JpaRepository<Trajet, Long> {
             LocalDateTime now
     );
 
-    // ✅ recherche de trajets à venir (filtre ville départ/arrivée + date)
+    List<Trajet> findByPointsCreditesFalse();
+
     @Query("select t from Trajet t " +
             "where lower(t.villeDepart) like lower(concat('%', :from, '%')) " +
             "and lower(t.villeArrivee) like lower(concat('%', :to, '%')) " +
             "and t.dateHeureDepart between :start and :end " +
-            "and t.dateHeureDepart >= :now " +
             "order by t.dateHeureDepart asc")
     List<Trajet> searchUpcoming(
             @Param("from") String from,
             @Param("to") String to,
             @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end,
-            @Param("now") LocalDateTime now
+            @Param("end") LocalDateTime end
+    );
+
+    @Query("select t from Trajet t " +
+            "where lower(t.villeDepart) like lower(concat('%', :from, '%')) " +
+            "and lower(t.villeArrivee) like lower(concat('%', :to, '%')) " +
+            "order by t.dateHeureDepart desc")
+    List<Trajet> searchByVilles(
+            @Param("from") String from,
+            @Param("to") String to
     );
 }

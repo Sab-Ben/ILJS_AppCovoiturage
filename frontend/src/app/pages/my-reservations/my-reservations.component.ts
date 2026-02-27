@@ -3,16 +3,13 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { ReservationService } from '../../services/reservation.service';
+import { ToastService } from '../../services/toast.service';
+import { ConfirmModalComponent } from '../../components/confirm-modal/confirm-modal.component';
 
-
-export type ReservationStatus = 'RESERVED' | 'COMPLETED' | 'CANCELLED';
-
-export interface ReservationDto {
+export interface MyReservationDto {
   id: number;
   seats: number;
-  status: ReservationStatus;
   createdAt?: string;
-
   ride: {
     id: number;
     from: string;
@@ -20,7 +17,6 @@ export interface ReservationDto {
     date: string;
     departureTime?: string;
     availableSeats?: number;
-    price?: number;
     driverName?: string;
   };
 }
@@ -28,46 +24,38 @@ export interface ReservationDto {
 @Component({
   selector: 'app-my-reservations',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ConfirmModalComponent],
   templateUrl: './my-reservations.component.html',
   styleUrls: ['./my-reservations.component.scss'],
 })
 export class MyReservationsComponent implements OnInit, OnDestroy {
-  tab: 'reserved' | 'completed' = 'reserved';
-
   loading = false;
   errorMsg: string | null = null;
-
-  reserved: ReservationDto[] = [];
-  completed: ReservationDto[] = [];
+  reservations: MyReservationDto[] = [];
+  showCancelModal = false;
+  reservationToCancel: MyReservationDto | null = null;
 
   private destroy$ = new Subject<void>();
 
-  constructor(private reservationService: ReservationService) {}
+  constructor(
+    private reservationService: ReservationService,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit(): void {
-    this.loadAll();
+    this.loadReservations();
   }
 
-  loadAll(): void {
+  loadReservations(): void {
     this.loading = true;
     this.errorMsg = null;
 
-    // 2 appels (réservées + effectuées)
     this.reservationService
-      .getMyReservations('RESERVED')
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => (this.reserved = data ?? []),
-        error: () => (this.errorMsg = 'Erreur lors du chargement des réservations.'),
-      });
-
-    this.reservationService
-      .getMyReservations('COMPLETED')
+      .getAllMyReservations()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          this.completed = data ?? [];
+          this.reservations = data ?? [];
           this.loading = false;
         },
         error: () => {
@@ -77,33 +65,32 @@ export class MyReservationsComponent implements OnInit, OnDestroy {
       });
   }
 
-  switchTab(t: 'reserved' | 'completed'): void {
-    this.tab = t;
+  openCancelModal(r: MyReservationDto): void {
+    this.reservationToCancel = r;
+    this.showCancelModal = true;
   }
 
-  canCancel(r: ReservationDto): boolean {
-    return r.status === 'RESERVED';
+  closeCancelModal(): void {
+    this.showCancelModal = false;
+    this.reservationToCancel = null;
   }
 
-  cancel(r: ReservationDto): void {
-    if (!this.canCancel(r)) return;
-
-    const ok = confirm('Annuler cette réservation ?');
-    if (!ok) return;
-
-    this.reservationService.cancelReservation(r.id).subscribe({
+  confirmCancel(): void {
+    if (!this.reservationToCancel) return;
+    const reservation = this.reservationToCancel;
+    this.closeCancelModal();
+    this.reservationService.cancelReservation(reservation.id).subscribe({
       next: () => {
-        alert('Réservation annulée ✅');
-        this.loadAll();
+        this.toastService.success('Annulation', 'Réservation annulée avec succès');
+        this.loadReservations();
       },
       error: (err) => {
-        console.error(err);
-        alert(err?.error?.message || 'Erreur lors de l’annulation.');
+        this.toastService.error('Erreur', err?.error?.message || 'Impossible d\'annuler cette réservation.');
       },
     });
   }
 
-  trackById(_: number, r: ReservationDto) {
+  trackById(_: number, r: MyReservationDto): number {
     return r.id;
   }
 

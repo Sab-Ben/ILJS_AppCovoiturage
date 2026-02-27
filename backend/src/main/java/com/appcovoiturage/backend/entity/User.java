@@ -46,7 +46,13 @@ public class User implements UserDetails {
 
     private String password;
 
-    private Integer pointBalance;
+    @Builder.Default
+    @Column(columnDefinition = "integer default 0")
+    private Integer pointBalance = 0;
+
+    @Builder.Default
+    @Column(columnDefinition = "integer default 0")
+    private Integer totalPointsEarned = 0;
 
     @Enumerated(EnumType.STRING)
     private Role role;

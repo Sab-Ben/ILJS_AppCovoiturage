@@ -7,8 +7,12 @@ import com.appcovoiturage.backend.entity.User;
 import com.appcovoiturage.backend.repository.ReservationRepository;
 import com.appcovoiturage.backend.repository.TrajetRepository;
 import com.appcovoiturage.backend.repository.UserRepository;
+import com.appcovoiturage.backend.exception.BadRequestException;
+import com.appcovoiturage.backend.exception.ForbiddenException;
+import com.appcovoiturage.backend.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -29,10 +33,11 @@ public class TrajetService {
     private final UserRepository userRepository;
     private final ReservationRepository reservationRepository;
     private final NotificationService notificationService;
+    private final PointService pointService;
 
     public Trajet createTrajet(TrajetDto dto, String email) {
         User conducteur = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Conducteur non trouvé"));
+                .orElseThrow(() -> new NotFoundException("Conducteur non trouvé"));
 
         Trajet trajet = Trajet.builder()
                 .villeDepart(dto.getVilleDepart())
@@ -54,33 +59,37 @@ public class TrajetService {
 
     public java.util.List<Trajet> getTrajetsByConducteur(String email) {
         User conducteur = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
-        return trajetRepository.findByConducteurId(conducteur.getId());
+                .orElseThrow(() -> new NotFoundException("Utilisateur non trouvé"));
+        return trajetRepository.findByConducteurIdOrderByDateHeureDepartDesc(conducteur.getId());
     }
 
+    @Transactional
     public void deleteTrajet(Long id, String email) {
         Trajet trajet = trajetRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Trajet non trouvé"));
+                .orElseThrow(() -> new NotFoundException("Trajet non trouvé"));
 
         if (!trajet.getConducteur().getEmail().equals(email)) {
-            throw new RuntimeException("Vous n'avez pas le droit de supprimer ce trajet");
+            throw new ForbiddenException("Vous n'avez pas le droit de supprimer ce trajet");
         }
 
         LocalDateTime now = LocalDateTime.now();
         long heuresAvantDepart = ChronoUnit.HOURS.between(now, trajet.getDateHeureDepart());
 
         if (heuresAvantDepart < 24) {
-            throw new RuntimeException("Impossible de supprimer le trajet moins de 24 heures avant le départ.");
+            throw new BadRequestException("Impossible de supprimer le trajet moins de 24 heures avant le départ.");
         }
 
-        // ✅ Récupérer les passagers réservés avant suppression
-        List<User> passagers = reservationRepository.findByTrajetId(id)
-                .stream()
+        List<Reservation> reservations = reservationRepository.findByTrajetId(id);
+
+        List<User> passagers = reservations.stream()
                 .map(Reservation::getPassager)
                 .distinct()
                 .toList();
 
-        // ✅ Notifier (in-app + email) les passagers si besoin
+        reservations.forEach(pointService::refundPassengerPoints);
+
+        reservationRepository.deleteAll(reservations);
+
         if (!passagers.isEmpty()) {
             notificationService.notifyTrajetDeleted(passagers, trajet);
         }
@@ -89,16 +98,18 @@ public class TrajetService {
     }
 
     public List<Trajet> searchTrajets(String from, String to, LocalDate date) {
+        if (date == null) {
+            return trajetRepository.searchByVilles(from, to);
+        }
         LocalDateTime start = date.atStartOfDay();
         LocalDateTime end = date.atTime(LocalTime.MAX);
-
-        return trajetRepository.searchUpcoming(from, to, start, end, LocalDateTime.now());
+        return trajetRepository.searchUpcoming(from, to, start, end);
     }
 
 
     public List<CompletedTrajetDto> getCompletedTrajets(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+                .orElseThrow(() -> new NotFoundException("Utilisateur non trouvé"));
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -139,7 +150,7 @@ public class TrajetService {
 
     public Trajet getTrajetById(Long id) {
         return trajetRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Trajet non trouvé"));
+                .orElseThrow(() -> new NotFoundException("Trajet non trouvé"));
     }
 
 

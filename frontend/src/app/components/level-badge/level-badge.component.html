@@ -1,0 +1,50 @@
+<div class="level-badge" *ngIf="balance">
+  <div class="level-badge__glow" [style.background]="'radial-gradient(circle, ' + currentLevelConfig.color + '22 0%, transparent 70%)'"></div>
+
+  <div class="level-badge__icon-wrapper" [style.border-color]="currentLevelConfig.color">
+    <span class="level-badge__emoji">{{ currentLevelConfig.icon }}</span>
+  </div>
+
+  <div class="level-badge__rank-tag" [style.background]="currentLevelConfig.color + '1a'" [style.border-color]="currentLevelConfig.color + '33'" [style.color]="currentLevelConfig.color">
+    <span>Niveau {{ balance.levelRank }}</span>
+  </div>
+
+  <p class="level-badge__title">{{ balance.levelLabel }}</p>
+
+  <div class="level-badge__avantages" *ngIf="balance.levelAvantages">
+    <span class="level-badge__avantages-icon">✨</span>
+    <span class="level-badge__avantages-text">{{ balance.levelAvantages }}</span>
+  </div>
+
+  <div class="level-badge__progress" *ngIf="nextLevelConfig">
+    <div class="level-badge__progress-header">
+      <span class="level-badge__progress-label">Progression</span>
+      <span class="level-badge__progress-value">{{ progressPercent }}%</span>
+    </div>
+    <div class="level-badge__progress-track">
+      <div class="level-badge__progress-fill"
+           [style.width.%]="progressPercent"
+           [style.background]="'linear-gradient(90deg, ' + currentLevelConfig.color + ', ' + (nextLevelConfig?.color || currentLevelConfig.color) + ')'">
+      </div>
+    </div>
+    <p class="level-badge__progress-hint">
+      Encore <span class="level-badge__highlight" [style.color]="nextLevelConfig.color">{{ pointsRemaining }} pts</span> pour {{ nextLevelConfig.label }}
+    </p>
+  </div>
+
+  <div class="level-badge__max" *ngIf="!nextLevelConfig">
+    <p class="level-badge__max-text">Niveau maximum atteint</p>
+  </div>
+
+  <div class="level-badge__milestones">
+    <div *ngFor="let level of allLevels"
+         class="level-badge__milestone"
+         [class.level-badge__milestone--reached]="isLevelReached(level)"
+         [class.level-badge__milestone--current]="isCurrentLevel(level)">
+      <div class="level-badge__milestone-dot"
+           [style.background]="isLevelReached(level) ? level.color : ''">
+      </div>
+      <span class="level-badge__milestone-label">{{ level.threshold }}</span>
+    </div>
+  </div>
+</div>

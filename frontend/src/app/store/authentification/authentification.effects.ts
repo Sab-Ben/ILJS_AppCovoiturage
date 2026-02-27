@@ -13,6 +13,7 @@ export class AuthentificationEffects {
 
     login$ = createEffect(() => this.actions$.pipe(
         ofType(AuthActions.login),
+        tap(() => localStorage.removeItem('offline_trajets')),
         mergeMap(({ authRequest }) => this.authService.login(authRequest).pipe(
             map(response => AuthActions.loginSuccess({ token: response.token })),
             catchError(error => of(AuthActions.loginFailure({ error })))
@@ -30,7 +31,10 @@ export class AuthentificationEffects {
 
     logout$ = createEffect(() => this.actions$.pipe(
         ofType(AuthActions.logout),
-        tap(() => this.authService.logout()) // Le service gère déjà le sessionStorage et la redirection
+        tap(() => {
+            localStorage.removeItem('offline_trajets');
+            this.authService.logout();
+        })
     ), { dispatch: false });
 
     initAuth$ = createEffect(() => this.actions$.pipe(

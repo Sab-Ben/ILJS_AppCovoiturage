@@ -19,8 +19,10 @@ import { AuthentificationEffects } from './store/authentification/authentificati
 
 import { messageReducer } from './store/message/message.reducer';
 import { notificationReducer } from './store/notification/notification.reducer';
+import { pointReducer } from './store/point/point.reducer';
 import { MessageEffects } from './store/message/message.effects';
 import { NotificationEffects } from './store/notification/notification.effects';
+import { PointEffects } from './store/point/point.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -33,7 +35,8 @@ export const appConfig: ApplicationConfig = {
       trajet: trajetReducer,
       auth: authentificationReducer,
       message: messageReducer,
-      notification: notificationReducer
+      notification: notificationReducer,
+      point: pointReducer
     }),
 
     provideEffects([
@@ -41,7 +44,8 @@ export const appConfig: ApplicationConfig = {
       TrajetEffects,
       AuthentificationEffects,
       MessageEffects,
-      NotificationEffects
+      NotificationEffects,
+      PointEffects
     ]),
 
     provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }),

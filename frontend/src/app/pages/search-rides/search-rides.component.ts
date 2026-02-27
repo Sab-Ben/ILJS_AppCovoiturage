@@ -23,6 +23,8 @@ export class SearchRidesComponent implements OnInit {
   filteredResults: Trajet[] = [];
   isSearching = false;
   hasSearched = false;
+  reservationEnCours: number | null = null;
+  reservationMessage: { trajetId: number; text: string; success: boolean } | null = null;
 
   suggestionsDepart: { label: string; display_name: string }[] = [];
   suggestionsArrivee: { label: string; display_name: string }[] = [];
@@ -80,10 +82,20 @@ export class SearchRidesComponent implements OnInit {
     this.isSearching = true;
     this.hasSearched = true;
 
-    this.http.get<Trajet[]>(`${environment.apiUrl}/trajets`).subscribe({
+    const from = this.departure.split(',')[0].trim() || '';
+    const to = this.destination.split(',')[0].trim() || '';
+
+    const params: Record<string, string> = { from, to };
+    if (this.date) {
+      params['date'] = this.date;
+    }
+
+    this.http.get<Trajet[]>(`${environment.apiUrl}/trajets/search`, {
+      params
+    }).subscribe({
       next: (trajets) => {
         this.results = trajets;
-        this.filteredResults = this.filterResults(trajets);
+        this.filteredResults = trajets.filter(t => t.placesDisponibles > 0);
         this.isSearching = false;
       },
       error: () => {
@@ -94,14 +106,26 @@ export class SearchRidesComponent implements OnInit {
     });
   }
 
-  private filterResults(trajets: Trajet[]): Trajet[] {
-    return trajets.filter(t => {
-      const matchDepart = !this.departure ||
-        t.villeDepart.toLowerCase().includes(this.departure.toLowerCase().split(',')[0]);
-      const matchArrivee = !this.destination ||
-        t.villeArrivee.toLowerCase().includes(this.destination.toLowerCase().split(',')[0]);
-      const matchDate = !this.date || t.dateHeureDepart.startsWith(this.date);
-      return matchDepart && matchArrivee && matchDate && t.placesDisponibles > 0;
+  reserver(trajetId: number): void {
+    this.reservationEnCours = trajetId;
+    this.reservationMessage = null;
+
+    this.http.post<unknown>(
+      `${environment.apiUrl}/reservations/trajets/${trajetId}/reservations`, {}
+    ).subscribe({
+      next: () => {
+        this.reservationEnCours = null;
+        this.reservationMessage = { trajetId, text: 'Reservation confirmee !', success: true };
+        const trajet = this.filteredResults.find(t => t.id === trajetId);
+        if (trajet) {
+          trajet.placesDisponibles--;
+        }
+      },
+      error: (err) => {
+        this.reservationEnCours = null;
+        const message = err.error?.message || err.error || 'Erreur lors de la reservation';
+        this.reservationMessage = { trajetId, text: message, success: false };
+      }
     });
   }
 }

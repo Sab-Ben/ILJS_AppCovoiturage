@@ -262,4 +262,17 @@
     &:hover:not(:disabled) { background: rgba(239, 68, 68, 0.2); }
     &:disabled { opacity: 0.4; cursor: not-allowed; }
   }
+
+  &__past-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.75rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--muted-fg);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
 }

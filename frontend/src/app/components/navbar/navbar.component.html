@@ -45,6 +45,8 @@
       </svg>
     </button>
 
+    <app-notification-bell *ngIf="isAuthenticated()"></app-notification-bell>
+
     <a routerLink="/dashboard" class="nav__avatar">
       <svg viewBox="0 0 24 24" fill="none">
         <path d="M12 11a3 3 0 100-6 3 3 0 000 6zm0 2c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z" fill="currentColor"/>

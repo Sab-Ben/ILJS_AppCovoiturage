@@ -7,20 +7,32 @@ import com.appcovoiturage.backend.entity.Role;
 import com.appcovoiturage.backend.entity.User;
 import com.appcovoiturage.backend.repository.UserRepository;
 import com.appcovoiturage.backend.service.jwt.JwtService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class AuthenticationService {
 
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final PointService pointService;
+
+    public AuthenticationService(UserRepository repository,
+                                 PasswordEncoder passwordEncoder,
+                                 JwtService jwtService,
+                                 AuthenticationManager authenticationManager,
+                                 @Lazy PointService pointService) {
+        this.repository = repository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+        this.authenticationManager = authenticationManager;
+        this.pointService = pointService;
+    }
 
     public AuthenticationResponse register(RegisterRequest request) {
         var userOptional = repository.findByEmail(request.getEmail());
@@ -35,9 +47,13 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.CONDUCTEUR)
                 .pointBalance(0)
+                .totalPointsEarned(0)
                 .build();
 
         repository.save(user);
+
+        pointService.creditSignupBonus(user);
+
         var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse.builder()
                 .token(jwtToken)

@@ -1,26 +1,90 @@
-<div class="relative">
-  <button type="button" (click)="toggle()" class="px-3 py-2 rounded border">
-    🔔
-    <span *ngIf="unreadCount > 0" class="ml-1 text-xs font-bold">({{ unreadCount }})</span>
+<div class="notif-bell">
+  <button class="notif-bell__btn" (click)="toggle()">
+    <svg viewBox="0 0 24 24" fill="none">
+      <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9zM13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span *ngIf="unreadCount > 0" class="notif-bell__badge">
+      {{ unreadCount > 99 ? '99+' : unreadCount }}
+    </span>
   </button>
 
-  <div *ngIf="open" class="absolute right-0 mt-2 w-96 max-h-96 overflow-auto bg-white border rounded shadow z-50 p-2">
-    <div class="flex items-center justify-between mb-2">
-      <strong>Notifications</strong>
-      <button type="button" (click)="markAllAsRead()" class="text-sm underline">Tout lire</button>
+  <div class="notif-panel" *ngIf="open" (click)="$event.stopPropagation()">
+    <div class="notif-panel__header">
+      <h3 class="notif-panel__title">Notifications</h3>
+      <button *ngIf="unreadCount > 0"
+              class="notif-panel__mark-all"
+              (click)="markAllAsRead()">
+        Tout marquer lu
+      </button>
     </div>
 
-    <div *ngIf="notifications.length === 0" class="text-sm text-gray-500">
-      Aucune notification
-    </div>
+    <div class="notif-panel__list" *ngIf="notifications.length > 0">
+      <div *ngFor="let n of notifications"
+           class="notif-item"
+           [class.notif-item--unread]="!n.isRead"
+           (click)="markAsRead(n)">
 
-    <div *ngFor="let n of notifications" class="border-b py-2 cursor-pointer" (click)="markAsRead(n)">
-      <div class="flex items-center justify-between">
-        <strong [class.opacity-60]="n.isRead">{{ n.title }}</strong>
-        <span *ngIf="!n.isRead" class="text-xs">●</span>
+        <div class="notif-item__icon"
+             [class.notif-item__icon--points-up]="n.type === 'POINTS_CREDITED'"
+             [class.notif-item__icon--points-down]="n.type === 'POINTS_DEBITED'"
+             [class.notif-item__icon--level]="n.type === 'LEVEL_UP'"
+             [class.notif-item__icon--reservation]="n.type === 'RESERVATION_CREATED'"
+             [class.notif-item__icon--confirmed]="n.type === 'RESERVATION_CONFIRMED'"
+             [class.notif-item__icon--cancelled]="n.type === 'RESERVATION_CANCELLED'"
+             [class.notif-item__icon--deleted]="n.type === 'TRAJET_DELETED'"
+             [class.notif-item__icon--message]="n.type === 'MESSAGE_RECEIVED'">
+
+          <svg *ngIf="n.type === 'POINTS_CREDITED'" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 6v12M8 10l4-4 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+
+          <svg *ngIf="n.type === 'POINTS_DEBITED'" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 18V6M8 14l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+
+          <svg *ngIf="n.type === 'LEVEL_UP'" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+
+          <svg *ngIf="n.type === 'RESERVATION_CREATED'" viewBox="0 0 24 24" fill="none">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+
+          <svg *ngIf="n.type === 'RESERVATION_CONFIRMED'" viewBox="0 0 24 24" fill="none">
+            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+
+          <svg *ngIf="n.type === 'RESERVATION_CANCELLED'" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+            <path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+
+          <svg *ngIf="n.type === 'TRAJET_DELETED'" viewBox="0 0 24 24" fill="none">
+            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+
+          <svg *ngIf="n.type === 'MESSAGE_RECEIVED'" viewBox="0 0 24 24" fill="none">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <div class="notif-item__body">
+          <p class="notif-item__title">{{ n.title }}</p>
+          <p class="notif-item__content">{{ n.content }}</p>
+          <span class="notif-item__time">{{ getTimeAgo(n.createdAt) }}</span>
+        </div>
+
+        <div *ngIf="!n.isRead" class="notif-item__dot"></div>
       </div>
-      <div class="text-sm">{{ n.content }}</div>
-      <div class="text-xs text-gray-500">{{ n.createdAt | date:'short' }}</div>
+    </div>
+
+    <div class="notif-panel__empty" *ngIf="notifications.length === 0">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <p>Aucune notification</p>
     </div>
   </div>
 </div>

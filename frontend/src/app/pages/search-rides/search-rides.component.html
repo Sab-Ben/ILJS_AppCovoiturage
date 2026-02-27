@@ -164,6 +164,21 @@
               <span>{{ trajet.dureeEstimee }}</span>
             </div>
           </div>
+
+          <div style="margin-top: 1rem; display: flex; align-items: center; gap: 0.75rem;">
+            <button
+              (click)="reserver(trajet.id!)"
+              [disabled]="reservationEnCours === trajet.id"
+              style="padding: 0.6rem 1.5rem; border-radius: 8px; border: none; background: linear-gradient(135deg, #3b82f6, #6366f1); color: white; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: opacity 0.2s;"
+              [style.opacity]="reservationEnCours === trajet.id ? '0.5' : '1'">
+              {{ reservationEnCours === trajet.id ? 'Reservation...' : 'Reserver' }}
+            </button>
+            <span *ngIf="reservationMessage && reservationMessage.trajetId === trajet.id"
+                  [style.color]="reservationMessage.success ? '#4ade80' : '#f87171'"
+                  style="font-size: 0.85rem; font-weight: 500;">
+              {{ reservationMessage.text }}
+            </span>
+          </div>
         </div>
       </div>
     </div>

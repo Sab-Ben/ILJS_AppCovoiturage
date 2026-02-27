@@ -821,6 +821,11 @@ $blue: $primary;
       background: rgba($emerald, 0.1);
       color: $emerald;
     }
+
+    &--past {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--muted-fg);
+    }
   }
 
   &__status-dot {
@@ -883,5 +888,55 @@ $blue: $primary;
     color: var(--muted-fg);
 
     svg { width: 12px; height: 12px; }
+  }
+
+  &__cancel-btn {
+    margin-top: 0.75rem;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba($coral, 0.3);
+    background: rgba($coral, 0.08);
+    color: $coral;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      background: rgba($coral, 0.15);
+      border-color: rgba($coral, 0.5);
+    }
+
+    &--disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      border-color: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--muted-fg);
+    }
+  }
+}
+
+.voir-tout-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: $blue;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba($blue, 0.3);
   }
 }

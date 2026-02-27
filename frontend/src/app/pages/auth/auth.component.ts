@@ -78,6 +78,7 @@ export class AuthComponent implements OnInit, OnDestroy {
 
     this.subscription.add(
       this.actions$.pipe(ofType(AuthActions.registerSuccess)).subscribe(() => {
+        sessionStorage.setItem('showWelcomeToast', 'true');
         this.registerSuccess = 'Inscription réussie ! Vous allez être redirigé vers la connexion...';
         this.isLoading = false;
         setTimeout(() => {

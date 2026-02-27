@@ -3,21 +3,23 @@ import { NavbarComponent } from './navbar.component';
 import { AuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
 import { ThemeService } from '../../services/theme.service';
+import { WsService } from '../../services/ws.service';
+import { ToastService } from '../../services/toast.service';
 import { Router, ActivatedRoute } from '@angular/router';
+import { provideMockStore } from '@ngrx/store/testing';
 import { of } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { User } from '../../models/user.model';
 import { Role } from '../../models/role.enum';
-import { WsService } from '../../services/ws.service';
 
 describe('NavbarComponent', () => {
   let component: NavbarComponent;
   let fixture: ComponentFixture<NavbarComponent>;
 
-
   const authServiceMock = {
     isAuthenticated: vi.fn(),
-    logout: vi.fn()
+    logout: vi.fn(),
+    getToken: vi.fn().mockReturnValue('fake-token')
   };
 
   const userServiceMock = {
@@ -26,7 +28,19 @@ describe('NavbarComponent', () => {
 
   const themeServiceMock = {
     toggleTheme: vi.fn(),
-    darkMode: vi.fn() //
+    darkMode: vi.fn()
+  };
+
+  const wsServiceMock = {
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+    subscribeToUserNotifications: vi.fn().mockReturnValue({ unsubscribe: vi.fn() })
+  };
+
+  const toastServiceMock = {
+    show: vi.fn(),
+    success: vi.fn(),
+    error: vi.fn()
   };
 
   const routerMock = {
@@ -41,8 +55,11 @@ describe('NavbarComponent', () => {
         { provide: AuthService, useValue: authServiceMock },
         { provide: UserService, useValue: userServiceMock },
         { provide: ThemeService, useValue: themeServiceMock },
+        { provide: WsService, useValue: wsServiceMock },
+        { provide: ToastService, useValue: toastServiceMock },
         { provide: Router, useValue: routerMock },
-        { provide: ActivatedRoute, useValue: {} }
+        { provide: ActivatedRoute, useValue: {} },
+        provideMockStore()
       ]
     }).compileComponents();
 
@@ -56,8 +73,7 @@ describe('NavbarComponent', () => {
   });
 
   describe('Initialisation (ngOnInit)', () => {
-    it('devrait charger le profil utilisateur si authentifié', () => {
-      // ARRANGE
+    it('devrait connecter le WebSocket et charger le profil si authentifié', () => {
       const mockUser: User = {
         id: 1,
         firstname: 'Test',
@@ -69,67 +85,35 @@ describe('NavbarComponent', () => {
       authServiceMock.isAuthenticated.mockReturnValue(true);
       userServiceMock.getMyProfile.mockReturnValue(of(mockUser));
 
-      // ACT
       component.ngOnInit();
 
-      // ASSERT
-      expect(authServiceMock.isAuthenticated).toHaveBeenCalled();
+      expect(wsServiceMock.connect).toHaveBeenCalled();
       expect(userServiceMock.getMyProfile).toHaveBeenCalled();
       expect(component.user).toEqual(mockUser);
+      expect(wsServiceMock.subscribeToUserNotifications).toHaveBeenCalledWith(1, expect.any(Function));
     });
 
     it('ne devrait PAS charger le profil si NON authentifié', () => {
-      // ARRANGE
       authServiceMock.isAuthenticated.mockReturnValue(false);
 
-      // ACT
       component.ngOnInit();
 
-      // ASSERT
+      expect(wsServiceMock.connect).not.toHaveBeenCalled();
       expect(userServiceMock.getMyProfile).not.toHaveBeenCalled();
       expect(component.user).toBeUndefined();
     });
   });
 
   describe('Déconnexion (logout)', () => {
-    it('devrait appeler authService.logout, vider le user et rediriger', () => {
-      // ARRANGE
-      component.user = { id: 1 } as User; // On simule un user connecté
+    it('devrait déconnecter le WebSocket, logout et rediriger', () => {
+      component.user = { id: 1 } as User;
 
-      // ACT
       component.logout();
 
-      // ASSERT
+      expect(wsServiceMock.disconnect).toHaveBeenCalled();
       expect(authServiceMock.logout).toHaveBeenCalled();
-      expect(component.user).toBeUndefined(); // Le user local doit être vidé
-      expect(routerMock.navigate).toHaveBeenCalledWith(['/login']);
-    });
-  });
-
-  describe('Changement de Thème', () => {
-    it('devrait appeler themeService.toggleTheme', () => {
-      // ACT
-      component.themeService.toggleTheme();
-
-      // ASSERT
-      expect(themeServiceMock.toggleTheme).toHaveBeenCalled();
-    });
-  });
-
-  describe('Logique d\'affichage (Template Logic)', () => {
-    // Note: Ces tests vérifient indirectement les *ngIf du HTML
-    // en vérifiant l'état de la variable `user`.
-
-    it('devrait savoir si le user est PASSAGER', () => {
-      component.user = { role: Role.PASSAGER } as User;
-      // Tu n'as pas de getter isPassenger dans la dernière version fournie,
-      // mais on vérifie la logique utilisée dans le HTML:
-      expect(component.user?.role === 'PASSAGER').toBe(true);
-    });
-
-    it('devrait savoir si le user est CONDUCTEUR', () => {
-      component.user = { role: Role.CONDUCTEUR } as User;
-      expect(component.user?.role === 'CONDUCTEUR').toBe(true);
+      expect(component.user).toBeUndefined();
+      expect(routerMock.navigate).toHaveBeenCalledWith(['/auth']);
     });
   });
 });
