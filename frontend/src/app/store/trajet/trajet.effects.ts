@@ -1,36 +1,26 @@
+// frontend/src/app/store/trajet/trajet.effects.ts
 import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, mergeMap, switchMap, of, tap } from 'rxjs';
 import { TrajetService } from '../../services/trajet.service';
 import * as TrajetActions from './trajet.actions';
+import { OfflineQueueService } from '../../services/offline-queue.service';
 
 @Injectable()
 export class TrajetEffects {
     private actions$ = inject(Actions);
     private trajetService = inject(TrajetService);
+    private offlineQueue = inject(OfflineQueueService);
 
     loadTrajets$ = createEffect(() => this.actions$.pipe(
         ofType(TrajetActions.loadTrajets),
         switchMap(() => this.trajetService.getMyTrajets().pipe(
-            tap(trajets => {
-                console.log('[TrajetEffects] API /trajets/me retourne', trajets.length, 'trajets');
-                try {
-                    localStorage.setItem('offline_trajets', JSON.stringify(trajets));
-                } catch (e) {
-                    console.error('Impossible de sauvegarder les trajets en local', e);
-                }
-            }),
+            tap(trajets => localStorage.setItem('offline_trajets', JSON.stringify(trajets))),
             map(trajets => TrajetActions.loadTrajetsSuccess({ trajets })),
             catchError(error => {
-                console.warn('[TrajetEffects] Erreur API, fallback cache:', error);
-                const cachedTrajets = localStorage.getItem('offline_trajets');
-                if (cachedTrajets) {
-                    try {
-                        const trajets = JSON.parse(cachedTrajets);
-                        return of(TrajetActions.loadTrajetsSuccess({ trajets }));
-                    } catch (e) {
-                        console.error('Erreur de lecture du cache', e);
-                    }
+                const cached = localStorage.getItem('offline_trajets');
+                if (cached) {
+                    return of(TrajetActions.loadTrajetsSuccess({ trajets: JSON.parse(cached) }));
                 }
                 return of(TrajetActions.loadTrajetsFailure({ error }));
             })
@@ -39,17 +29,44 @@ export class TrajetEffects {
 
     createTrajet$ = createEffect(() => this.actions$.pipe(
         ofType(TrajetActions.createTrajet),
-        mergeMap(({ trajet }) => this.trajetService.createTrajet(trajet).pipe(
-            map(newTrajet => TrajetActions.createTrajetSuccess({ trajet: newTrajet })),
-            catchError(error => of(TrajetActions.createTrajetFailure({ error })))
-        ))
+        mergeMap((action) => {
+            if (!navigator.onLine) {
+                this.offlineQueue.enqueueAction(action);
+                // On retourne une action "Dummy" ou une action de succès temporaire pour l'UI
+                return of({ type: '[Trajet] Create Trajet Offline Queued' });
+            }
+
+            return this.trajetService.createTrajet(action.trajet).pipe(
+                map(newTrajet => TrajetActions.createTrajetSuccess({ trajet: newTrajet })),
+                catchError(error => {
+                    if (error.status === 0) { // Erreur réseau
+                        this.offlineQueue.enqueueAction(action);
+                        return of({ type: '[Trajet] Create Trajet Offline Queued' });
+                    }
+                    return of(TrajetActions.createTrajetFailure({ error }));
+                })
+            );
+        })
     ));
 
     deleteTrajet$ = createEffect(() => this.actions$.pipe(
         ofType(TrajetActions.deleteTrajet),
-        mergeMap(({ id }) => this.trajetService.deleteTrajet(id).pipe(
-            map(() => TrajetActions.deleteTrajetSuccess({ id })),
-            catchError(error => of(TrajetActions.deleteTrajetFailure({ error })))
-        ))
+        mergeMap((action) => {
+            if (!navigator.onLine) {
+                this.offlineQueue.enqueueAction(action);
+                return of({ type: '[Trajet] Delete Trajet Offline Queued' });
+            }
+
+            return this.trajetService.deleteTrajet(action.id).pipe(
+                map(() => TrajetActions.deleteTrajetSuccess({ id: action.id })),
+                catchError(error => {
+                    if (error.status === 0) {
+                        this.offlineQueue.enqueueAction(action);
+                        return of({ type: '[Trajet] Delete Trajet Offline Queued' });
+                    }
+                    return of(TrajetActions.deleteTrajetFailure({ error }));
+                })
+            );
+        })
     ));
 }

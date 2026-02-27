@@ -28,6 +28,7 @@ import { MessageEffects } from './store/message/message.effects';
 import { NotificationEffects } from './store/notification/notification.effects';
 import { PointEffects } from './store/point/point.effects';
 import { ReservationEffects } from './store/reservation/reservation.effects';
+import {OfflineEffects} from "./store/offline/offline.effects";
 
 function httpLoaderFactory(http: HttpClient): TranslateHttpLoader {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -78,7 +79,9 @@ export const appConfig: ApplicationConfig = {
       MessageEffects,
       NotificationEffects,
       PointEffects,
-      ReservationEffects
+      ReservationEffects,
+      OfflineEffects,
+      PointEffects
     ]),
 
     provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }),
