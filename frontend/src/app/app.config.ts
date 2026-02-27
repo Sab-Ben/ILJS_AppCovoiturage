@@ -23,9 +23,11 @@ import { AuthentificationEffects } from './store/authentification/authentificati
 import { messageReducer } from './store/message/message.reducer';
 import { notificationReducer } from './store/notification/notification.reducer';
 import { pointReducer } from './store/point/point.reducer';
+import { reservationReducer } from './store/reservation/reservation.reducer';
 import { MessageEffects } from './store/message/message.effects';
 import { NotificationEffects } from './store/notification/notification.effects';
 import { PointEffects } from './store/point/point.effects';
+import { ReservationEffects } from './store/reservation/reservation.effects';
 
 function httpLoaderFactory(http: HttpClient): TranslateHttpLoader {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -65,7 +67,8 @@ export const appConfig: ApplicationConfig = {
       auth: authentificationReducer,
       message: messageReducer,
       notification: notificationReducer,
-      point: pointReducer
+      point: pointReducer,
+      reservation: reservationReducer
     }),
 
     provideEffects([
@@ -74,7 +77,8 @@ export const appConfig: ApplicationConfig = {
       AuthentificationEffects,
       MessageEffects,
       NotificationEffects,
-      PointEffects
+      PointEffects,
+      ReservationEffects
     ]),
 
     provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }),

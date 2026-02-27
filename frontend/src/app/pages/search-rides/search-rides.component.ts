@@ -1,13 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { Store } from '@ngrx/store';
+import { Actions, ofType } from '@ngrx/effects';
 import { GeocodingService } from '../../services/geocoding.service';
-import { debounceTime, distinctUntilChanged, Subject, switchMap, map } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Subject, switchMap, map, takeUntil } from 'rxjs';
 import { Trajet } from '../../models/trajet.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
+import * as ReservationActions from '../../store/reservation/reservation.actions';
 
 @Component({
   selector: 'app-search-rides',
@@ -16,7 +19,7 @@ import { environment } from '../../../environments/environment';
   templateUrl: './search-rides.component.html',
   styleUrls: ['./search-rides.component.scss']
 })
-export class SearchRidesComponent implements OnInit {
+export class SearchRidesComponent implements OnInit, OnDestroy {
   departure = '';
   destination = '';
   date = '';
@@ -32,11 +35,44 @@ export class SearchRidesComponent implements OnInit {
 
   private searchDepart$ = new Subject<string>();
   private searchArrivee$ = new Subject<string>();
+  private destroy$ = new Subject<void>();
 
   constructor(
     private http: HttpClient,
-    private geocodingService: GeocodingService
-  ) {}
+    private geocodingService: GeocodingService,
+    private store: Store,
+    private actions$: Actions,
+    private translateService: TranslateService
+  ) {
+    this.actions$.pipe(
+      ofType(ReservationActions.reserveRideSuccess),
+      takeUntil(this.destroy$)
+    ).subscribe(({ reservation }) => {
+      const trajetId = reservation.ride.id;
+      this.reservationEnCours = null;
+      this.reservationMessage = {
+        trajetId,
+        text: this.translateService.instant('RIDES.RESERVATION_CONFIRMED'),
+        success: true
+      };
+      const trajet = this.filteredResults.find(t => t.id === trajetId);
+      if (trajet) {
+        trajet.placesDisponibles--;
+      }
+    });
+
+    this.actions$.pipe(
+      ofType(ReservationActions.reserveRideFailure),
+      takeUntil(this.destroy$)
+    ).subscribe(({ error }) => {
+      this.reservationEnCours = null;
+      this.reservationMessage = {
+        trajetId: 0,
+        text: error || this.translateService.instant('RIDES.SERVER_ERROR'),
+        success: false
+      };
+    });
+  }
 
   ngOnInit(): void {
     this.searchDepart$.pipe(
@@ -110,23 +146,11 @@ export class SearchRidesComponent implements OnInit {
   reserver(trajetId: number): void {
     this.reservationEnCours = trajetId;
     this.reservationMessage = null;
+    this.store.dispatch(ReservationActions.reserveRide({ rideId: trajetId }));
+  }
 
-    this.http.post<unknown>(
-      `${environment.apiUrl}/reservations/trajets/${trajetId}/reservations`, {}
-    ).subscribe({
-      next: () => {
-        this.reservationEnCours = null;
-        this.reservationMessage = { trajetId, text: 'Reservation confirmee !', success: true };
-        const trajet = this.filteredResults.find(t => t.id === trajetId);
-        if (trajet) {
-          trajet.placesDisponibles--;
-        }
-      },
-      error: (err) => {
-        this.reservationEnCours = null;
-        const message = err.error?.message || err.error || 'Erreur lors de la reservation';
-        this.reservationMessage = { trajetId, text: message, success: false };
-      }
-    });
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

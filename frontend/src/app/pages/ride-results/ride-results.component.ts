@@ -2,10 +2,12 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { Actions, ofType } from '@ngrx/effects';
 
 import { RideService } from '../../services/ride.service';
-import { ReservationService } from '../../services/reservation.service';
 import { Ride } from '../../models/ride.model';
+import * as ReservationActions from '../../store/reservation/reservation.actions';
 
 @Component({
   selector: 'app-ride-results',
@@ -30,8 +32,23 @@ export class RideResultsComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private rideService: RideService,
-    private reservationService: ReservationService
-  ) {}
+    private store: Store,
+    private actions$: Actions
+  ) {
+    this.actions$.pipe(
+      ofType(ReservationActions.reserveRideSuccess),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.router.navigate(['/my-reservations']);
+    });
+
+    this.actions$.pipe(
+      ofType(ReservationActions.reserveRideFailure),
+      takeUntil(this.destroy$)
+    ).subscribe(({ error }) => {
+      alert(error || 'Erreur lors de la réservation.');
+    });
+  }
 
   ngOnInit(): void {
     this.route.queryParamMap
@@ -73,7 +90,6 @@ export class RideResultsComponent implements OnInit, OnDestroy {
       });
   }
 
-  // ===== Helpers template (pour éviter "as any" dans le HTML) =====
   getDepartureTime(ride: Ride): string {
     return (ride as any).departureTime ?? '';
   }
@@ -92,7 +108,6 @@ export class RideResultsComponent implements OnInit, OnDestroy {
     );
   }
 
-  // ===== Réservation =====
   book(ride: Ride): void {
     if (!ride?.id) {
       alert("Impossible de réserver : id du trajet manquant.");
@@ -111,19 +126,7 @@ export class RideResultsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.reservationService
-      .reserveRide(Number(ride.id))
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          alert('Réservation effectuée !');
-          this.router.navigate(['/my-reservations']);
-        },
-        error: (err: { error?: { message?: string } }) => {
-          const msg = err?.error?.message ?? 'Erreur lors de la réservation.';
-          alert(msg);
-        },
-      });
+    this.store.dispatch(ReservationActions.reserveRide({ rideId: Number(ride.id) }));
   }
 
   goBackToSearch(): void {

@@ -4,16 +4,19 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject, switchMap, takeUntil } from 'rxjs';
 import { Store } from '@ngrx/store';
+import { Actions, ofType } from '@ngrx/effects';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { RideService } from '../../services/ride.service';
 import { MapService } from '../../services/map.service';
 import { WsService } from '../../services/ws.service';
 import { Ride } from '../../models/ride.model';
-import { ReservationService, ReservationDto } from '../../services/reservation.service';
+import { ReservationDto } from '../../services/reservation.service';
 import { ConfirmModalComponent } from '../../components/confirm-modal/confirm-modal.component';
 import { StompSubscription } from '@stomp/stompjs';
 import * as UserSelectors from '../../store/user/user.selectors';
+import * as ReservationActions from '../../store/reservation/reservation.actions';
+import * as ReservationSelectors from '../../store/reservation/reservation.selectors';
 
 @Component({
   selector: 'app-ride-detail',
@@ -27,12 +30,12 @@ export class RideDetailComponent implements OnInit, OnDestroy {
   selectedSeats = 1;
   desiredRoute = '';
   successMsg: string | null = null;
-  lastReservationId: number | null = null;
-  lastReservedSeats = 0;
   loading = false;
   errorMsg: string | null = null;
   alreadyReserved = false;
   showCancelModal = false;
+  lastReservationId: number | null = null;
+  lastReservedSeats = 0;
 
   isOwner = false;
   currentUserEmail = '';
@@ -47,19 +50,39 @@ export class RideDetailComponent implements OnInit, OnDestroy {
     private router: Router,
     private rideService: RideService,
     private mapService: MapService,
-    private reservationService: ReservationService,
     private wsService: WsService,
     private store: Store,
+    private actions$: Actions,
     private translateService: TranslateService
   ) {}
 
   ngOnInit(): void {
+    this.listenToStoreEvents();
+
     this.store.select(UserSelectors.selectCurrentUser)
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
         if (user) {
           this.currentUserEmail = user.email;
           this.checkOwnership();
+        }
+      });
+
+    this.store.select(ReservationSelectors.selectRideReservations)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(reservations => {
+        this.rideReservations = reservations;
+      });
+
+    this.store.select(ReservationSelectors.selectCurrentReservation)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(reservation => {
+        if (reservation) {
+          this.alreadyReserved = true;
+          this.lastReservationId = reservation.id;
+          this.lastReservedSeats = reservation.seats;
+        } else {
+          this.alreadyReserved = false;
         }
       });
 
@@ -90,7 +113,7 @@ export class RideDetailComponent implements OnInit, OnDestroy {
 
           const rideId = Number((ride as any).id);
           if (!this.isOwner) {
-            this.checkIfAlreadyReserved(rideId);
+            this.store.dispatch(ReservationActions.checkAlreadyReserved({ rideId }));
           }
           this.subscribeToSeatsUpdates(rideId);
 
@@ -149,34 +172,7 @@ export class RideDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.loading = true;
-
-    this.reservationService
-      .reserveRide(rideId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (res) => {
-          this.loading = false;
-          this.successMsg = this.translateService.instant('RIDES.RESERVATION_CONFIRMED');
-          this.alreadyReserved = true;
-
-          this.lastReservationId = res.id;
-          this.lastReservedSeats = 1;
-
-          if (this.ride && (this.ride as any).availableSeats != null) {
-            (this.ride as any).availableSeats =
-              Number((this.ride as any).availableSeats) - 1;
-          }
-
-          this.router.navigate(['/my-reservations']);
-        },
-        error: (err: unknown) => {
-          this.loading = false;
-          const httpErr = err as { error?: { message?: string } };
-          this.errorMsg =
-            httpErr?.error?.message ?? this.translateService.instant('RIDES.SERVER_ERROR');
-        },
-      });
+    this.store.dispatch(ReservationActions.reserveRide({ rideId }));
   }
 
   openCancelModal(): void {
@@ -192,34 +188,10 @@ export class RideDetailComponent implements OnInit, OnDestroy {
 
     if (!this.lastReservationId || !this.ride) return;
 
-    this.loading = true;
     this.errorMsg = null;
     this.successMsg = null;
 
-    this.reservationService
-      .cancelReservation(this.lastReservationId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.loading = false;
-          this.successMsg = this.translateService.instant('RIDES.CANCEL_RESERVATION_SUCCESS');
-
-          if (this.ride && (this.ride as any).availableSeats != null) {
-            (this.ride as any).availableSeats =
-              Number((this.ride as any).availableSeats) + this.lastReservedSeats;
-          }
-
-          this.lastReservationId = null;
-          this.lastReservedSeats = 0;
-          this.alreadyReserved = false;
-        },
-        error: (err: any) => {
-          this.loading = false;
-          console.error(err);
-          this.errorMsg =
-            err?.error?.message ?? this.translateService.instant('RIDES.CANCEL_RESERVATION_ERROR');
-        },
-      });
+    this.store.dispatch(ReservationActions.cancelReservation({ reservationId: this.lastReservationId }));
   }
 
   getRideId(): number | null {
@@ -240,6 +212,53 @@ export class RideDetailComponent implements OnInit, OnDestroy {
     return date.toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
+  private listenToStoreEvents(): void {
+    this.actions$.pipe(
+      ofType(ReservationActions.reserveRideSuccess),
+      takeUntil(this.destroy$)
+    ).subscribe(({ reservation }) => {
+      this.successMsg = this.translateService.instant('RIDES.RESERVATION_CONFIRMED');
+      this.alreadyReserved = true;
+      this.lastReservationId = reservation.id;
+      this.lastReservedSeats = 1;
+
+      if (this.ride && (this.ride as any).availableSeats != null) {
+        (this.ride as any).availableSeats = Number((this.ride as any).availableSeats) - 1;
+      }
+
+      this.router.navigate(['/my-reservations']);
+    });
+
+    this.actions$.pipe(
+      ofType(ReservationActions.reserveRideFailure),
+      takeUntil(this.destroy$)
+    ).subscribe(({ error }) => {
+      this.errorMsg = error || this.translateService.instant('RIDES.SERVER_ERROR');
+    });
+
+    this.actions$.pipe(
+      ofType(ReservationActions.cancelReservationSuccess),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.successMsg = this.translateService.instant('RIDES.CANCEL_RESERVATION_SUCCESS');
+
+      if (this.ride && (this.ride as any).availableSeats != null) {
+        (this.ride as any).availableSeats = Number((this.ride as any).availableSeats) + this.lastReservedSeats;
+      }
+
+      this.lastReservationId = null;
+      this.lastReservedSeats = 0;
+      this.alreadyReserved = false;
+    });
+
+    this.actions$.pipe(
+      ofType(ReservationActions.cancelReservationFailure),
+      takeUntil(this.destroy$)
+    ).subscribe(({ error }) => {
+      this.errorMsg = error || this.translateService.instant('RIDES.CANCEL_RESERVATION_ERROR');
+    });
+  }
+
   private checkOwnership(): void {
     if (!this.ride || !this.currentUserEmail) return;
     const wasOwner = this.isOwner;
@@ -255,17 +274,14 @@ export class RideDetailComponent implements OnInit, OnDestroy {
     if (!rideId || Number.isNaN(rideId)) return;
 
     this.loadingReservations = true;
-    this.reservationService.getReservationsByRide(rideId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (reservations) => {
-          this.rideReservations = reservations;
-          this.loadingReservations = false;
-        },
-        error: () => {
-          this.loadingReservations = false;
-        }
-      });
+    this.store.dispatch(ReservationActions.loadRideReservations({ rideId }));
+
+    this.actions$.pipe(
+      ofType(ReservationActions.loadRideReservationsSuccess, ReservationActions.loadRideReservationsFailure),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.loadingReservations = false;
+    });
   }
 
   private subscribeToSeatsUpdates(trajetId: number): void {
@@ -280,27 +296,10 @@ export class RideDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  private checkIfAlreadyReserved(trajetId: number): void {
-    if (!trajetId || Number.isNaN(trajetId)) return;
-    this.reservationService.getMyReservationForRide(trajetId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (reservation) => {
-          if (reservation) {
-            this.alreadyReserved = true;
-            this.lastReservationId = reservation.id;
-            this.lastReservedSeats = reservation.seats;
-          } else {
-            this.alreadyReserved = false;
-          }
-        },
-        error: () => this.alreadyReserved = false
-      });
-  }
-
   ngOnDestroy(): void {
     this.rideSub?.unsubscribe();
     this.mapService.clearRoute();
+    this.store.dispatch(ReservationActions.clearReservationState());
     this.destroy$.next();
     this.destroy$.complete();
   }

@@ -1,25 +1,14 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
-import { ReservationService } from '../../services/reservation.service';
+import { Observable, Subject, takeUntil } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { Actions, ofType } from '@ngrx/effects';
+import { ReservationDto } from '../../services/reservation.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmModalComponent } from '../../components/confirm-modal/confirm-modal.component';
-
-export interface MyReservationDto {
-  id: number;
-  seats: number;
-  createdAt?: string;
-  ride: {
-    id: number;
-    from: string;
-    to: string;
-    date: string;
-    departureTime?: string;
-    availableSeats?: number;
-    driverName?: string;
-  };
-}
+import * as ReservationActions from '../../store/reservation/reservation.actions';
+import * as ReservationSelectors from '../../store/reservation/reservation.selectors';
 
 @Component({
   selector: 'app-my-reservations',
@@ -29,44 +18,42 @@ export interface MyReservationDto {
   styleUrls: ['./my-reservations.component.scss'],
 })
 export class MyReservationsComponent implements OnInit, OnDestroy {
-  loading = false;
-  errorMsg: string | null = null;
-  reservations: MyReservationDto[] = [];
+  reservations$: Observable<ReservationDto[]> = this.store.select(ReservationSelectors.selectMyReservations);
+  loading$: Observable<boolean> = this.store.select(ReservationSelectors.selectReservationLoading);
+  error$: Observable<string | null> = this.store.select(ReservationSelectors.selectReservationError);
+
   showCancelModal = false;
-  reservationToCancel: MyReservationDto | null = null;
+  reservationToCancel: ReservationDto | null = null;
 
   private destroy$ = new Subject<void>();
 
   constructor(
-    private reservationService: ReservationService,
+    private store: Store,
+    private actions$: Actions,
     private toastService: ToastService
-  ) {}
+  ) {
+    this.actions$.pipe(
+      ofType(ReservationActions.cancelReservationSuccess),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.toastService.success('Annulation', 'Réservation annulée avec succès');
+      this.store.dispatch(ReservationActions.loadMyReservations());
+    });
+
+    this.actions$.pipe(
+      ofType(ReservationActions.cancelReservationFailure),
+      takeUntil(this.destroy$)
+    ).subscribe(({ error }) => {
+      this.toastService.error('Erreur', error || 'Impossible d\'annuler cette réservation.');
+    });
+  }
 
   ngOnInit(): void {
-    this.loadReservations();
+    this.store.dispatch(ReservationActions.loadMyReservations());
   }
 
-  loadReservations(): void {
-    this.loading = true;
-    this.errorMsg = null;
-
-    this.reservationService
-      .getMyReservations()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => {
-          this.reservations = data ?? [];
-          this.loading = false;
-        },
-        error: () => {
-          this.errorMsg = 'Erreur lors du chargement des réservations.';
-          this.loading = false;
-        },
-      });
-  }
-
-  openCancelModal(r: MyReservationDto): void {
-    this.reservationToCancel = r;
+  openCancelModal(reservation: ReservationDto): void {
+    this.reservationToCancel = reservation;
     this.showCancelModal = true;
   }
 
@@ -77,21 +64,13 @@ export class MyReservationsComponent implements OnInit, OnDestroy {
 
   confirmCancel(): void {
     if (!this.reservationToCancel) return;
-    const reservation = this.reservationToCancel;
+    const reservationId = this.reservationToCancel.id;
     this.closeCancelModal();
-    this.reservationService.cancelReservation(reservation.id).subscribe({
-      next: () => {
-        this.toastService.success('Annulation', 'Réservation annulée avec succès');
-        this.loadReservations();
-      },
-      error: (err) => {
-        this.toastService.error('Erreur', err?.error?.message || 'Impossible d\'annuler cette réservation.');
-      },
-    });
+    this.store.dispatch(ReservationActions.cancelReservation({ reservationId }));
   }
 
-  trackById(_: number, r: MyReservationDto): number {
-    return r.id;
+  trackById(_: number, reservation: ReservationDto): number {
+    return reservation.id;
   }
 
   ngOnDestroy(): void {

@@ -1,2 +1,4 @@
 ./ILJS_AppCovoiturage
 .docker-compose.override.yml
+node_modules/
+**/node_modules/
