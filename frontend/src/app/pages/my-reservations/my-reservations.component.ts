@@ -18,9 +18,9 @@ import * as ReservationSelectors from '../../store/reservation/reservation.selec
   styleUrls: ['./my-reservations.component.scss'],
 })
 export class MyReservationsComponent implements OnInit, OnDestroy {
-  reservations$: Observable<ReservationDto[]> = this.store.select(ReservationSelectors.selectMyReservations);
-  loading$: Observable<boolean> = this.store.select(ReservationSelectors.selectReservationLoading);
-  error$: Observable<string | null> = this.store.select(ReservationSelectors.selectReservationError);
+  reservations$!: Observable<ReservationDto[]>;
+  loading$!: Observable<boolean>;
+  error$!: Observable<string | null>;
 
   showCancelModal = false;
   reservationToCancel: ReservationDto | null = null;
@@ -32,6 +32,9 @@ export class MyReservationsComponent implements OnInit, OnDestroy {
     private actions$: Actions,
     private toastService: ToastService
   ) {
+    this.reservations$ = this.store.select(ReservationSelectors.selectMyReservations);
+    this.loading$ = this.store.select(ReservationSelectors.selectReservationLoading);
+    this.error$ = this.store.select(ReservationSelectors.selectReservationError);
     this.actions$.pipe(
       ofType(ReservationActions.cancelReservationSuccess),
       takeUntil(this.destroy$)

@@ -89,7 +89,7 @@ export class LandingNavbarComponent implements OnInit, OnDestroy {
   onCommencer(): void {
     this.closeMobileMenu();
     if (this.authService.isAuthenticated()) {
-      this.router.navigate(['/role-selection']);
+      this.router.navigate(['/dashboard']);
     } else {
       this.router.navigate(['/auth']);
     }

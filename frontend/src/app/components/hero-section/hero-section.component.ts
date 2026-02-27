@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-hero-section',
@@ -15,12 +17,24 @@ export class HeroSectionComponent {
   arrival = '';
   selectedDate = '';
 
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
+
   onSearch(): void {
-    if (this.departure && this.arrival && this.selectedDate) {
-      const params = new URLSearchParams({
-        departure: this.departure,
-        arrival: this.arrival,
-        date: this.selectedDate
+    if (!this.authService.isAuthenticated()) {
+      this.router.navigate(['/auth']);
+      return;
+    }
+
+    if (this.departure || this.arrival) {
+      this.router.navigate(['/search-rides'], {
+        queryParams: {
+          from: this.departure,
+          to: this.arrival,
+          date: this.selectedDate
+        }
       });
     }
   }

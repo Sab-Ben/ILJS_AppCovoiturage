@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { ProfileComponent } from './pages/profile/profile.component';
 import { authGuard } from './guards/auth.guard';
+import { noAuthGuard } from './guards/no-auth.guard';
 import { CreateTrajetComponent } from './pages/create-trajet/create-trajet.component';
 import { MyRidesComponent } from './pages/my-rides/my-rides.component';
 import { LandingComponent } from './pages/landing/landing.component';
@@ -13,8 +14,8 @@ import { CompletedRidesComponent } from './pages/completed-rides/completed-rides
 import { MessagingComponent } from './pages/messaging/messaging.component';
 
 export const routes: Routes = [
-  { path: '', component: LandingComponent },
-  { path: 'auth', component: AuthComponent },
+  { path: '', component: LandingComponent, canActivate: [noAuthGuard] },
+  { path: 'auth', component: AuthComponent, canActivate: [noAuthGuard] },
   { path: 'login', redirectTo: 'auth', pathMatch: 'full' },
   { path: 'register', redirectTo: 'auth', pathMatch: 'full' },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
