@@ -1,0 +1,11 @@
+@use 'theme' as *;
+
+.app-footer {
+  text-align: center;
+  padding: 1.5rem 0;
+  color: var(--muted-fg);
+  font-size: 0.85rem;
+  font-family: 'Inter', sans-serif;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}

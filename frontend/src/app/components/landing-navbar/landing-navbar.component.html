@@ -1,0 +1,59 @@
+<nav class="navbar" [class.navbar--scrolled]="isScrolled">
+  <a routerLink="/" class="navbar__logo">
+    <div class="navbar__logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-2-2.1-3.2C13.1 5.6 11.7 5 10.3 5H5c-1.7 0-3 1.3-3 3v6c0 .6.4 1 1 1h1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="7" cy="17" r="2" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="17" cy="17" r="2" stroke="currentColor" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <span class="navbar__logo-text">CoVoiture</span>
+  </a>
+
+  <div class="navbar__container">
+    <button class="navbar__hamburger" (click)="toggleMobileMenu()" [class.navbar__hamburger--open]="isMobileMenuOpen">
+      <span class="navbar__hamburger-line"></span>
+      <span class="navbar__hamburger-line"></span>
+      <span class="navbar__hamburger-line"></span>
+    </button>
+
+    <div class="navbar__menu" [class.navbar__menu--open]="isMobileMenuOpen">
+      <div class="navbar__links">
+        <a *ngFor="let section of navSections"
+           [href]="'#' + section.id"
+           class="navbar__link"
+           [class.navbar__link--active]="activeSection === section.id"
+           (click)="handleSmoothScroll($event, section.id)">
+          {{ section.labelKey | translate }}
+        </a>
+      </div>
+
+      <div class="navbar__actions">
+        <button class="navbar__lang-toggle" (click)="switchLanguage()">
+          {{ currentLang === 'fr' ? 'EN' : 'FR' }}
+        </button>
+
+        <button class="navbar__cta" (click)="onCommencer()">
+          {{ 'LANDING.CTA_START' | translate }}
+        </button>
+
+        <button class="navbar__theme-toggle" (click)="toggleTheme()" [attr.title]="isDarkMode ? ('NAV.LIGHT_MODE' | translate) : ('NAV.DARK_MODE' | translate)">
+          <svg *ngIf="isDarkMode" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg *ngIf="!isDarkMode" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>

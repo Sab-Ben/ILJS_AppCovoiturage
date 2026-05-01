@@ -1,0 +1,212 @@
+<div class="search-rides">
+  <div class="search-rides__hero">
+    <div class="search-rides__hero-glow"></div>
+    <div class="search-rides__hero-content">
+      <a routerLink="/dashboard" class="search-rides__back">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        {{ 'COMMON.BACK' | translate }}
+      </a>
+
+      <div class="search-rides__hero-text">
+        <h1 class="search-rides__title">
+          {{ 'RIDES.SEARCH_TITLE' | translate }}
+        </h1>
+        <p class="search-rides__subtitle">{{ 'RIDES.SEARCH_SUBTITLE' | translate }}</p>
+      </div>
+
+      <div class="search-form">
+        <div class="search-form__row">
+          <div class="search-form__field">
+            <div class="search-form__field-label">
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+              </svg>
+              <span>{{ 'COMMON.DEPARTURE' | translate }}</span>
+            </div>
+            <input type="text"
+                   [(ngModel)]="departure"
+                   [placeholder]="'RIDES.DEPARTURE_CITY' | translate"
+                   (input)="onDepartInput(departure)"
+                   (blur)="clearSuggestions()"
+                   autocomplete="off"
+                   class="search-form__input">
+            <ul *ngIf="suggestionsDepart.length > 0" class="suggestions">
+              <li *ngFor="let address of suggestionsDepart"
+                  class="suggestions__item"
+                  (mousedown)="selectDepart(address)">
+                {{ address.label }}
+              </li>
+            </ul>
+          </div>
+
+          <div class="search-form__separator">
+            <div class="search-form__separator-line"></div>
+            <div class="search-form__separator-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M7 17l9.2-9.2M17 17V7H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="search-form__separator-line"></div>
+          </div>
+
+          <div class="search-form__field">
+            <div class="search-form__field-label search-form__field-label--emerald">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="currentColor"/>
+                <circle cx="12" cy="9" r="2" fill="white"/>
+              </svg>
+              <span>{{ 'COMMON.ARRIVAL' | translate }}</span>
+            </div>
+            <input type="text"
+                   [(ngModel)]="destination"
+                   [placeholder]="'RIDES.ARRIVAL_CITY' | translate"
+                   (input)="onArriveeInput(destination)"
+                   (blur)="clearSuggestions()"
+                   autocomplete="off"
+                   class="search-form__input">
+            <ul *ngIf="suggestionsArrivee.length > 0" class="suggestions">
+              <li *ngFor="let address of suggestionsArrivee"
+                  class="suggestions__item"
+                  (mousedown)="selectArrivee(address)">
+                {{ address.label }}
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="search-form__bottom">
+          <div class="search-form__field search-form__field--date">
+            <div class="search-form__field-label search-form__field-label--amber">
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span>{{ 'COMMON.DATE' | translate }}</span>
+            </div>
+            <input type="date"
+                   [(ngModel)]="date"
+                   class="search-form__input">
+          </div>
+
+          <button class="search-form__btn" (click)="search()" [disabled]="isSearching">
+            <svg *ngIf="!isSearching" viewBox="0 0 24 24" fill="none">
+              <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+              <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span *ngIf="!isSearching">{{ 'RIDES.SEARCH_BTN' | translate }}</span>
+            <span *ngIf="isSearching" class="search-form__spinner"></span>
+            <span *ngIf="isSearching">{{ 'COMMON.SEARCHING' | translate }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="search-rides__results" *ngIf="hasSearched">
+    <div class="results">
+      <div class="results__header">
+        <div class="results__count-badge">
+          <span class="results__count-number">{{ filteredResults.length }}</span>
+          <span>{{ 'RIDES.RIDES_FOUND' | translate }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="filteredResults.length === 0" class="results__empty">
+        <div class="results__empty-circle">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <p class="results__empty-title">{{ 'RIDES.NO_RIDES_FOUND' | translate }}</p>
+        <span class="results__empty-hint">{{ 'RIDES.MODIFY_SEARCH' | translate }}</span>
+      </div>
+
+      <div class="results__list">
+        <div *ngFor="let trajet of filteredResults; let i = index" class="result-card" [style.animation-delay]="(i * 80) + 'ms'">
+          <div class="result-card__header">
+            <div class="result-card__route">
+              <div class="result-card__route-visual">
+                <div class="result-card__dot result-card__dot--start"></div>
+                <div class="result-card__connector"></div>
+                <div class="result-card__dot result-card__dot--end"></div>
+              </div>
+              <div class="result-card__cities">
+                <span class="result-card__city">{{ trajet.villeDepart }}</span>
+                <span class="result-card__city">{{ trajet.villeArrivee }}</span>
+              </div>
+            </div>
+            <div class="result-card__price" *ngIf="trajet.prixPoints">
+              <span class="result-card__price-value">{{ trajet.prixPoints }}</span>
+              <span class="result-card__price-label">{{ 'COMMON.PTS' | translate }}</span>
+            </div>
+          </div>
+
+          <div class="result-card__tags">
+            <div class="result-card__tag">
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              {{ trajet.dateHeureDepart | date:'dd MMM yyyy' }}
+            </div>
+            <div class="result-card__tag">
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              {{ trajet.dateHeureDepart | date:'HH:mm' }}
+            </div>
+            <div class="result-card__tag">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+              </svg>
+              {{ trajet.placesDisponibles }} {{ 'COMMON.PLACES_S' | translate }}
+            </div>
+            <div class="result-card__tag" *ngIf="trajet.distanceKm">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 22s-8-4.5-8-11.8A8 8 0 0120 10.2c0 7.3-8 11.8-8 11.8z" stroke="currentColor" stroke-width="2"/>
+              </svg>
+              {{ trajet.distanceKm }} km
+            </div>
+            <div class="result-card__tag" *ngIf="trajet.dureeEstimee">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              {{ trajet.dureeEstimee }}
+            </div>
+          </div>
+
+          <div class="result-card__footer">
+            <a class="result-card__detail-link" [routerLink]="['/ride', trajet.id]">
+              {{ 'COMMON.SEE_DETAIL' | translate }}
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+            <button
+              class="result-card__book-btn"
+              (click)="reserver(trajet.id!)"
+              [disabled]="reservationEnCours === trajet.id">
+              <svg *ngIf="reservationEnCours !== trajet.id" viewBox="0 0 24 24" fill="none">
+                <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span *ngIf="reservationEnCours === trajet.id" class="result-card__spinner"></span>
+              {{ reservationEnCours === trajet.id ? ('RIDES.BOOKING' | translate) : ('RIDES.BOOK' | translate) }}
+            </button>
+          </div>
+
+          <div *ngIf="reservationMessage && reservationMessage.trajetId === trajet.id" class="result-card__msg"
+               [class.result-card__msg--success]="reservationMessage.success"
+               [class.result-card__msg--error]="!reservationMessage.success">
+            {{ reservationMessage.text }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

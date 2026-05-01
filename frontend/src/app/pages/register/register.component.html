@@ -1,0 +1,113 @@
+<div class="register-container">
+    <h2 i18n="@@createAccountHeader">Créer un compte</h2>
+
+    <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+
+        <div *ngIf="errorMessage" class="alert error">
+            {{ errorMessage }}
+        </div>
+        <div *ngIf="successMessage" class="alert success">
+            {{ successMessage }}
+        </div>
+
+        <div class="form-group">
+            <label for="firstname" i18n="@@firstNameLabel">Prénom</label>
+            <input type="text"
+                   id="firstname"
+                   name="firstname"
+                   [(ngModel)]="user.firstname"
+                   required
+                   minlength="2"
+                   #firstname="ngModel"
+                   [class.invalid]="firstname.invalid && (firstname.dirty || firstname.touched)"
+                   placeholder="Votre prénom"
+                   i18n-placeholder="@@firstNamePlaceholder">
+
+            <div *ngIf="firstname.invalid && (firstname.dirty || firstname.touched)" class="error-msg">
+                <small *ngIf="firstname.errors?.['required']">Le prénom est requis.</small>
+                <small *ngIf="firstname.errors?.['minlength']">Le prénom doit faire au moins 2 caractères.</small>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="lastname" i18n="@@lastNameLabel">Nom</label>
+            <input type="text"
+                   id="lastname"
+                   name="lastname"
+                   [(ngModel)]="user.lastname"
+                   required
+                   minlength="2"
+                   #lastname="ngModel"
+                   [class.invalid]="lastname.invalid && (lastname.dirty || lastname.touched)"
+                   placeholder="Votre nom"
+                   i18n-placeholder="@@lastNamePlaceholder">
+
+            <div *ngIf="lastname.invalid && (lastname.dirty || lastname.touched)" class="error-msg">
+                <small *ngIf="lastname.errors?.['required']">Le nom est requis.</small>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="email" i18n="@@emailLabel">Email</label>
+            <input type="email"
+                   id="email"
+                   name="email"
+                   [(ngModel)]="user.email"
+                   required
+                   email
+                   #email="ngModel"
+                   [class.invalid]="email.invalid && (email.dirty || email.touched)"
+                   placeholder="exemple@email.com"
+                   i18n-placeholder="@@emailPlaceholder">
+
+            <div *ngIf="email.invalid && (email.dirty || email.touched)" class="error-msg">
+                <small *ngIf="email.errors?.['required']">L'email est requis.</small>
+                <small *ngIf="email.errors?.['email']">Format d'email invalide.</small>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="password" i18n="@@passwordLabel">Mot de passe</label>
+            <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    [(ngModel)]="user.password"
+                    required
+                    pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,}$"
+                    #password="ngModel"
+                    [class.invalid]="password.invalid && (password.dirty || password.touched)"
+                    placeholder="Mot de passe sécurisé"
+                    i18n-placeholder="@@passwordPlaceholder">
+
+            <div *ngIf="password.invalid && (password.dirty || password.touched)" class="error-msg">
+
+                <small *ngIf="password.errors?.['required']">
+                    Le mot de passe est requis.
+                </small>
+
+                <div *ngIf="password.errors?.['pattern']" class="alert-complexity">
+                    <small>Le mot de passe doit contenir :</small>
+                    <ul>
+                        <li>Au moins 8 caractères</li>
+                        <li>Une majuscule et une minuscule</li>
+                        <li>Un chiffre</li>
+                        <li>Un caractère spécial</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+      <button
+        type="submit"
+        [disabled]="!registerForm.form.valid || loading"
+        i18n="@@registerBtn">
+        {{ loading ? 'Inscription...' : "S'inscrire" }}
+      </button>
+    </form>
+
+    <p>
+        <span i18n="@@alreadyAccountQuestion">Déjà un compte ?</span>
+        &nbsp;<a routerLink="/login" i18n="@@loginLink">Se connecter</a>
+    </p>
+</div>

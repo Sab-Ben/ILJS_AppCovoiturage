@@ -1,0 +1,80 @@
+@use 'mixins' as *;
+@use 'variables' as *;
+@use 'sass:color';
+
+:host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  padding: 1rem;
+}
+
+.register-container {
+  @include card-style;
+  width: 100%;
+  max-width: 450px;
+  padding: 2.5rem;
+
+  h2 {
+    text-align: center;
+    color: $primary;
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 2rem;
+    @include dark-mode { color: $primary-dark-mode; }
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      label {
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      input {
+        @include input-style;
+      }
+    }
+
+    button[type="submit"] {
+      @include btn-primary;
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.9rem;
+    }
+  }
+
+  p {
+    margin-top: 1.5rem;
+    text-align: center;
+    color: $text-muted;
+    @include dark-mode { color: $text-muted-dark; }
+
+    a { @include link-primary; }
+  }
+}
+
+.error-msg {
+  color: #dc3545;
+  font-size: 0.875em;
+  margin-top: 0.25rem;
+
+  small {
+    display: block;
+  }
+}
+
+input.invalid {
+  border-color: #dc3545;
+  background-image: url("data:image/svg+xml,...");
+  padding-right: calc(1.5em + 0.75rem);
+}

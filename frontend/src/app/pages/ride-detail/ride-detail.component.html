@@ -1,0 +1,217 @@
+<div class="ride-detail">
+  <div class="ride-detail__container">
+
+    <a routerLink="/search-rides" class="ride-detail__back">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      {{ 'RIDES.BACK_TO_RESULTS' | translate }}
+    </a>
+
+    <div *ngIf="loading" class="ride-detail__loading">
+      <div class="ride-detail__spinner"></div>
+      <span>{{ 'RIDES.LOADING_RIDE' | translate }}</span>
+    </div>
+
+    <div *ngIf="errorMsg && !loading && !ride" class="ride-detail__error-banner">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      {{ errorMsg }}
+    </div>
+
+    <ng-container *ngIf="ride && !loading">
+
+      <div class="ride-detail__hero">
+        <div class="ride-detail__route">
+          <div class="ride-detail__route-visual">
+            <div class="ride-detail__dot ride-detail__dot--start"></div>
+            <div class="ride-detail__connector"></div>
+            <div class="ride-detail__dot ride-detail__dot--end"></div>
+          </div>
+          <div class="ride-detail__cities">
+            <h1 class="ride-detail__city">{{ ride.from }}</h1>
+            <h1 class="ride-detail__city">{{ ride.to }}</h1>
+          </div>
+        </div>
+
+        <div class="ride-detail__badges">
+          <span class="ride-detail__badge ride-detail__badge--seats" *ngIf="ride.availableSeats != null">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/></svg>
+            {{ ride.availableSeats }} {{ 'COMMON.PLACES_S' | translate }}
+          </span>
+          <span class="ride-detail__badge" *ngIf="ride.price != null">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6v12M8 10h8M8 14h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            {{ ride.price }} {{ 'RIDES.DH' | translate }}
+          </span>
+          <span class="ride-detail__badge ride-detail__badge--owner" *ngIf="isOwner">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            {{ 'RIDES.MY_RIDE' | translate }}
+          </span>
+        </div>
+      </div>
+
+      <div class="ride-detail__grid">
+
+        <div class="ride-detail__card">
+          <h3 class="ride-detail__card-title">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            {{ 'RIDES.INFORMATION' | translate }}
+          </h3>
+
+          <div class="ride-detail__info-list">
+            <div class="ride-detail__info-row">
+              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              <div>
+                <span class="ride-detail__info-label">{{ 'COMMON.DATE' | translate }}</span>
+                <span class="ride-detail__info-value">{{ ride.date }}</span>
+              </div>
+            </div>
+
+            <div class="ride-detail__info-row" *ngIf="ride.departureTime">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div>
+                <span class="ride-detail__info-label">{{ 'RIDES.DEPARTURE_TIME' | translate }}</span>
+                <span class="ride-detail__info-value">{{ ride.departureTime }}</span>
+              </div>
+            </div>
+
+            <div class="ride-detail__info-row" *ngIf="ride.driverName && !isOwner">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 11a3 3 0 100-6 3 3 0 000 6zm0 2c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z" fill="currentColor"/></svg>
+              <div>
+                <span class="ride-detail__info-label">{{ 'COMMON.DRIVER' | translate }}</span>
+                <span class="ride-detail__info-value">{{ ride.driverName }}</span>
+              </div>
+            </div>
+
+            <div class="ride-detail__info-row" *ngIf="!isOwner">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/></svg>
+              <div>
+                <span class="ride-detail__info-label">{{ 'RIDES.SEATS_REQUESTED' | translate }}</span>
+                <span class="ride-detail__info-value">{{ selectedSeats }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ride-detail__card">
+          <h3 class="ride-detail__card-title">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="9" r="2.5" stroke="currentColor" stroke-width="2"/></svg>
+            {{ 'COMMON.ROUTE' | translate }}
+          </h3>
+          <div id="ride-map" class="ride-detail__map"></div>
+        </div>
+
+      </div>
+
+      <!-- ========== VUE CONDUCTEUR : Liste des passagers ========== -->
+      <div *ngIf="isOwner" class="ride-detail__card ride-detail__card--passengers">
+        <h3 class="ride-detail__card-title">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          {{ 'RIDES.PASSENGERS' | translate }} ({{ rideReservations.length }})
+        </h3>
+
+        <div *ngIf="loadingReservations" class="ride-detail__loading ride-detail__loading--inline">
+          <div class="ride-detail__spinner"></div>
+          <span>{{ 'RIDES.LOADING_RESERVATIONS' | translate }}</span>
+        </div>
+
+        <div *ngIf="!loadingReservations && rideReservations.length === 0" class="ride-detail__empty-passengers">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/><path d="M23 11h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span>{{ 'RIDES.NO_PASSENGERS_YET' | translate }}</span>
+          <span class="ride-detail__empty-sub">{{ 'RIDES.PASSENGERS_WILL_APPEAR' | translate }}</span>
+        </div>
+
+        <div *ngIf="!loadingReservations && rideReservations.length > 0" class="ride-detail__passengers-list">
+          <div *ngFor="let r of rideReservations" class="ride-detail__passenger-card">
+            <div class="ride-detail__passenger-avatar">
+              {{ getPassengerInitials(r.passagerName || '') }}
+            </div>
+            <div class="ride-detail__passenger-info">
+              <span class="ride-detail__passenger-name">{{ r.passagerName || r.passagerEmail }}</span>
+              <span class="ride-detail__passenger-meta">{{ r.seats }} {{ 'COMMON.PLACES_S' | translate }} · {{ 'RIDES.RESERVED_ON' | translate }} {{ formatReservationDate(r.createdAt) }}</span>
+            </div>
+            <a *ngIf="r.passagerEmail" class="ride-detail__passenger-action" [routerLink]="['/messaging']" [queryParams]="{ trajetId: getRideId() }">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== VUE PASSAGER : Contacter le conducteur ========== -->
+      <div *ngIf="!isOwner && alreadyReserved" class="ride-detail__card">
+        <a class="ride-detail__btn ride-detail__btn--secondary" [routerLink]="['/messaging']" [queryParams]="{ trajetId: getRideId() }">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          {{ 'MESSAGING.CONTACT_DRIVER' | translate }}
+        </a>
+      </div>
+
+      <!-- ========== VUE PASSAGER : Formulaire de réservation ========== -->
+      <div *ngIf="!isOwner" class="ride-detail__card ride-detail__card--booking">
+        <h3 class="ride-detail__card-title">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          {{ 'RIDES.RESERVE_BTN' | translate }}
+        </h3>
+
+        <div *ngIf="!alreadyReserved" class="ride-detail__form-group">
+          <label class="ride-detail__label">{{ 'RIDES.DESIRED_ROUTE_LABEL' | translate }}</label>
+          <input
+            class="ride-detail__input"
+            type="text"
+            [(ngModel)]="desiredRoute"
+            [placeholder]="'RIDES.DESIRED_ROUTE_PLACEHOLDER' | translate"
+          />
+        </div>
+
+        <div *ngIf="alreadyReserved" class="ride-detail__already-reserved">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div>
+            <span>{{ 'RIDES.ALREADY_RESERVED_MSG' | translate }}</span>
+            <a routerLink="/my-reservations">{{ 'RIDES.VIEW_MY_RESERVATIONS' | translate }}</a>
+          </div>
+        </div>
+
+        <div class="ride-detail__booking-actions">
+          <button
+            *ngIf="!alreadyReserved"
+            class="ride-detail__btn ride-detail__btn--primary"
+            (click)="reserve()"
+            [disabled]="loading || ride.availableSeats === 0">
+            <svg *ngIf="!loading" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span *ngIf="loading" class="ride-detail__spinner-sm"></span>
+            {{ loading ? ('RIDES.RESERVING' | translate) : ('RIDES.CONFIRM_RESERVATION' | translate) }}
+          </button>
+
+          <button
+            *ngIf="alreadyReserved && lastReservationId"
+            class="ride-detail__btn ride-detail__btn--danger"
+            (click)="openCancelModal()"
+            [disabled]="loading">
+            {{ 'RIDES.CANCEL_RESERVATION' | translate }}
+          </button>
+        </div>
+
+        <div *ngIf="successMsg" class="ride-detail__msg ride-detail__msg--success">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          {{ successMsg }}
+        </div>
+
+        <div *ngIf="errorMsg && !loading" class="ride-detail__msg ride-detail__msg--error">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          {{ errorMsg }}
+        </div>
+      </div>
+
+    </ng-container>
+  </div>
+
+  <app-confirm-modal
+    [visible]="showCancelModal"
+    [title]="'RESERVATIONS.CANCEL_TITLE' | translate"
+    [message]="ride ? ('RIDES.CANCEL_QUESTION' | translate) + ' ' + ride.from + ' → ' + ride.to + ' ?' : ''"
+    [confirmLabel]="'RESERVATIONS.CANCEL_CONFIRM' | translate"
+    [cancelLabel]="'RESERVATIONS.CANCEL_KEEP' | translate"
+    variant="danger"
+    icon="trash"
+    (confirmed)="confirmCancel()"
+    (cancelled)="closeCancelModal()">
+  </app-confirm-modal>
+</div>

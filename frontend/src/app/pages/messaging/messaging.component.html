@@ -1,0 +1,98 @@
+<div class="messaging">
+  <div class="messaging__container">
+
+    <div class="messaging__sidebar" [class.messaging__sidebar--hidden-mobile]="showChatOnMobile">
+      <h2 class="messaging__sidebar-title">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        {{ 'MESSAGING.TITLE' | translate }}
+      </h2>
+
+      <div *ngIf="loadingConversations" class="messaging__loading">
+        <div class="messaging__spinner"></div>
+        <span>{{ 'COMMON.LOADING' | translate }}</span>
+      </div>
+
+      <div *ngIf="!loadingConversations && conversations.length === 0" class="messaging__empty">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>{{ 'MESSAGING.NO_CONVERSATIONS' | translate }}</span>
+        <span class="messaging__empty-sub">{{ 'MESSAGING.CONVERSATIONS_HINT' | translate }}</span>
+      </div>
+
+      <div *ngIf="!loadingConversations" class="messaging__conversation-list">
+        <button
+          *ngFor="let c of conversations"
+          type="button"
+          class="messaging__conversation-item"
+          [class.messaging__conversation-item--active]="selectedConversation?.id === c.id"
+          (click)="selectConversation(c)"
+        >
+          <div class="messaging__conversation-avatar">
+            {{ getInitials(getOtherParticipant(c)) }}
+          </div>
+          <div class="messaging__conversation-info">
+            <span class="messaging__conversation-name">{{ getOtherParticipant(c) }}</span>
+            <span class="messaging__conversation-route">{{ c.villeDepart }} → {{ c.villeArrivee }}</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <div class="messaging__chat" [class.messaging__chat--visible-mobile]="showChatOnMobile">
+      <ng-container *ngIf="selectedConversation; else noConv">
+
+        <div class="messaging__chat-header">
+          <button type="button" class="messaging__back-btn" (click)="backToConversationList()">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="messaging__chat-header-avatar">
+            {{ getInitials(getOtherParticipant(selectedConversation)) }}
+          </div>
+          <div class="messaging__chat-header-info">
+            <span class="messaging__chat-header-name">{{ getOtherParticipant(selectedConversation) }}</span>
+            <span class="messaging__chat-header-route">{{ selectedConversation.villeDepart }} → {{ selectedConversation.villeArrivee }}</span>
+          </div>
+        </div>
+
+        <div class="messaging__messages" #messagesContainer>
+          <div *ngIf="messages.length === 0" class="messaging__no-messages">
+            {{ 'MESSAGING.NO_MESSAGES' | translate }}
+          </div>
+
+          <div *ngFor="let msg of messages"
+               class="messaging__message"
+               [class.messaging__message--mine]="isMine(msg)"
+               [class.messaging__message--theirs]="!isMine(msg)">
+            <div class="messaging__bubble"
+                 [class.messaging__bubble--mine]="isMine(msg)"
+                 [class.messaging__bubble--theirs]="!isMine(msg)">
+              <div class="messaging__bubble-content">{{ msg.content }}</div>
+              <div class="messaging__bubble-time">{{ msg.sentAt | utcDate:'HH:mm' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="messaging__input-area">
+          <input
+            [(ngModel)]="messageInput"
+            (keydown.enter)="sendMessage()"
+            type="text"
+            class="messaging__input"
+            [placeholder]="'MESSAGING.INPUT_PLACEHOLDER' | translate"
+          />
+          <button type="button" class="messaging__send-btn" (click)="sendMessage()" [disabled]="!messageInput.trim()">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+
+      </ng-container>
+
+      <ng-template #noConv>
+        <div class="messaging__no-selection">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>{{ 'MESSAGING.SELECT_CONVERSATION' | translate }}</span>
+        </div>
+      </ng-template>
+    </div>
+
+  </div>
+</div>

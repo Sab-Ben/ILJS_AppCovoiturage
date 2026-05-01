@@ -1,0 +1,125 @@
+@use 'variables' as *;
+
+.toast-container {
+    position: fixed;
+    top: 1.5rem;
+    right: 1.5rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 420px;
+    width: calc(100% - 3rem);
+}
+
+.toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+
+    &--success {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+        border-left: 3px solid $success;
+
+        .toast__progress { background: $success; }
+    }
+
+    &--error {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+        border-left: 3px solid $danger;
+
+        .toast__progress { background: $danger; }
+    }
+
+    &--info {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));
+        border-left: 3px solid $info;
+
+        .toast__progress { background: $info; }
+    }
+
+    &--warning {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
+        border-left: 3px solid $warning;
+
+        .toast__progress { background: $warning; }
+    }
+}
+
+.toast__icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+    line-height: 1;
+}
+
+.toast__content {
+    flex: 1;
+    min-width: 0;
+}
+
+.toast__title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: $text-main;
+    margin: 0 0 0.25rem;
+}
+
+.toast__message {
+    font-size: 0.85rem;
+    color: $text-muted;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.toast__close {
+    background: none;
+    border: none;
+    color: $text-muted;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 6px;
+    flex-shrink: 0;
+    font-size: 1.3rem;
+    line-height: 1;
+    transition: background 0.2s, color 0.2s;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: $text-main;
+    }
+}
+
+.toast__progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 100%;
+    opacity: 0.6;
+    animation: shrink linear forwards;
+    transform-origin: left;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes shrink {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}

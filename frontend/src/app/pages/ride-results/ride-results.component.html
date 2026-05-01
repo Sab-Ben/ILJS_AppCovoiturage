@@ -1,0 +1,54 @@
+<div class="container">
+  <h2>Résultats de recherche</h2>
+
+  <div class="criteria bg-light p-3 mb-3">
+    <div><strong>Départ:</strong> {{ from }}</div>
+    <div><strong>Arrivée:</strong> {{ to }}</div>
+    <div><strong>Date:</strong> {{ date }}</div>
+  </div>
+
+  <div *ngIf="loading" class="info mb-3">Chargement…</div>
+
+  <div *ngIf="errorMsg && !loading" class="warning p-3 mb-3">
+    {{ errorMsg }}
+  </div>
+
+  <div class="results" *ngIf="!loading && rides.length">
+    <div class="ride-card mb-3" *ngFor="let ride of rides; trackBy: trackByRideId">
+      <div class="ride-main">
+        <div class="title">{{ ride.from }} → {{ ride.to }}</div>
+
+        <div class="meta">
+          <span>{{ ride.date }}</span>
+          <span *ngIf="getDepartureTime(ride)">• {{ getDepartureTime(ride) }}</span>
+        </div>
+
+        <div class="sub">
+          <strong>Places disponibles:</strong> {{ getAvailableSeats(ride) }}
+          &nbsp;&nbsp;
+          <strong>Conducteur:</strong> {{ getDriverName(ride) }}
+        </div>
+      </div>
+
+      <div class="ride-actions">
+        <a class="btn btn-secondary me-2" [routerLink]="['/ride-detail', ride.id]">
+          Voir détail
+        </a>
+
+        <button
+          class="btn btn-primary"
+          type="button"
+          (click)="book(ride)"
+          [disabled]="getAvailableSeats(ride) === 0"
+        >
+          Réserver
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+  <a class="back-link cursor-pointer" (click)="goBackToSearch()">
+    ⬅ Modifier la recherche
+  </a>
+</div>

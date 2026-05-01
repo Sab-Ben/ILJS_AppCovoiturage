@@ -1,0 +1,35 @@
+<section class="cta">
+  <div class="cta__container">
+    <div class="cta__box">
+      <div class="cta__box-content">
+        <div class="cta__badge">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          <span>{{ 'COMMON.FREE_REGISTRATION' | translate }}</span>
+        </div>
+
+        <h2 class="cta__title">
+          {{ 'LANDING.CTA_TITLE_1' | translate }}<br>
+          <span class="cta__title-accent">{{ 'LANDING.CTA_TITLE_2' | translate }}</span>
+        </h2>
+
+        <p class="cta__description">
+          {{ 'LANDING.CTA_DESCRIPTION' | translate }}
+        </p>
+
+        <div class="cta__buttons">
+          <button class="cta__button cta__button--outline" (click)="onAction()">
+            {{ 'LANDING.CTA_PROPOSE' | translate }}
+          </button>
+          <button class="cta__button cta__button--primary" (click)="onAction()">
+            {{ 'LANDING.CTA_FIND' | translate }}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

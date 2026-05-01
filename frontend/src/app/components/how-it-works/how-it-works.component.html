@@ -1,0 +1,36 @@
+<section id="comment-ca-marche" class="how-it-works">
+  <div class="how-it-works__container">
+    <div class="how-it-works__header">
+      <p class="how-it-works__label">{{ 'LANDING.HOW_LABEL' | translate }}</p>
+      <h2 class="how-it-works__title">{{ 'LANDING.HOW_TITLE_1' | translate }} <span class="how-it-works__title-accent">{{ 'LANDING.HOW_TITLE_2' | translate }}</span></h2>
+    </div>
+
+    <div class="how-it-works__grid">
+      <ng-container *ngFor="let step of steps; let i = index; let last = last; trackBy: trackByIndex">
+        <div
+          class="how-it-works__card"
+          [style.animation-delay]="(i * 150) + 'ms'"
+        >
+          <img [src]="step.image" alt="" class="how-it-works__card-bg"/>
+          <div class="how-it-works__card-overlay"></div>
+
+          <div class="how-it-works__card-badge" [style.animation-delay]="(i * 150 + 400) + 'ms'">
+            <span class="how-it-works__card-dot" [style.background]="step.dotColor"></span>
+            <span class="how-it-works__card-step">{{ step.stepKey | translate }}</span>
+          </div>
+
+          <div class="how-it-works__card-content">
+            <h3 class="how-it-works__card-title">{{ step.titleKey | translate }}</h3>
+            <p class="how-it-works__card-description">{{ step.descriptionKey | translate }}</p>
+          </div>
+        </div>
+
+        <div *ngIf="!last" class="how-it-works__arrow" [style.animation-delay]="(i * 150 + 600) + 'ms'">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</section>

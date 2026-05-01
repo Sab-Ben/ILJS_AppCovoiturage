@@ -1,0 +1,171 @@
+@use 'theme' as *;
+
+$coral: hsl(0, 75%, 60%);
+$amber: hsl(38, 80%, 55%);
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  animation: backdrop-in 0.2s ease;
+  padding: 1rem;
+}
+
+.modal {
+  @include glass;
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 24px;
+  padding: 2rem 2rem 1.5rem;
+  text-align: center;
+  animation: modal-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow:
+    0 25px 60px rgba(0, 0, 0, 0.4),
+    0 0 40px rgba(0, 0, 0, 0.15);
+
+  &--danger .modal__icon {
+    background: rgba($coral, 0.12);
+    color: $coral;
+    box-shadow: 0 0 30px rgba($coral, 0.15);
+  }
+
+  &--danger .modal__btn--confirm {
+    background: linear-gradient(135deg, $coral, hsl(15, 75%, 55%));
+    box-shadow: 0 4px 20px rgba($coral, 0.3);
+
+    &:hover {
+      box-shadow: 0 6px 25px rgba($coral, 0.45);
+      transform: translateY(-1px);
+    }
+  }
+
+  &--warning .modal__icon {
+    background: rgba($amber, 0.12);
+    color: $amber;
+    box-shadow: 0 0 30px rgba($amber, 0.15);
+  }
+
+  &--warning .modal__btn--confirm {
+    background: linear-gradient(135deg, $amber, hsl(25, 80%, 50%));
+    box-shadow: 0 4px 20px rgba($amber, 0.3);
+
+    &:hover {
+      box-shadow: 0 6px 25px rgba($amber, 0.45);
+      transform: translateY(-1px);
+    }
+  }
+
+  &--info .modal__icon {
+    background: rgba($primary, 0.12);
+    color: $primary;
+    box-shadow: 0 0 30px rgba($primary, 0.15);
+  }
+
+  &--info .modal__btn--confirm {
+    background: linear-gradient(135deg, $primary, $primary-hover);
+    box-shadow: 0 4px 20px rgba($primary, 0.3);
+
+    &:hover {
+      box-shadow: 0 6px 25px rgba($primary, 0.45);
+      transform: translateY(-1px);
+    }
+  }
+
+  &__icon-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+  }
+
+  &__icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+
+    svg {
+      width: 28px;
+      height: 28px;
+    }
+  }
+
+  &__title {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--fg);
+    margin: 0 0 0.5rem;
+  }
+
+  &__message {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--muted-fg);
+    margin: 0 0 1.75rem;
+    padding: 0 0.5rem;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  &__btn {
+    flex: 1;
+    padding: 0.75rem 1.25rem;
+    border-radius: 14px;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+
+    &--cancel {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--muted-fg);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: var(--fg);
+      }
+    }
+
+    &--confirm {
+      color: white;
+      border: none;
+
+      &:active {
+        transform: scale(0.97);
+      }
+    }
+  }
+}
+
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

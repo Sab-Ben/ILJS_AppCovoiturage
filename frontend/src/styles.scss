@@ -1,1 +1,159 @@
-/* You can add global styles to this file, and also import other style files */
+@use 'leaflet/dist/leaflet.css';
+@use "variables" as *;
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --bg-surface: #f9fafb;
+  --card: #f1f5f9;
+  --fg: #1f2937;
+  --muted-fg: #6b7280;
+  --border: #e5e7eb;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --primary-glow: rgba(59, 130, 246, 0.15);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(229, 231, 235, 0.6);
+  --hero-overlay-start: rgba(255, 255, 255, 0.9);
+  --hero-overlay-mid: rgba(255, 255, 255, 0.6);
+  --hero-overlay-end: rgba(255, 255, 255, 0.3);
+  --hero-overlay-bottom: rgba(255, 255, 255, 0.85);
+  --card-overlay-end: rgba(255, 255, 255, 0.85);
+  --card-overlay-mid: rgba(255, 255, 255, 0.4);
+  --search-input-bg: rgba(241, 245, 249, 0.4);
+  --search-border: rgba(229, 231, 235, 0.4);
+  --badge-bg: rgba(59, 130, 246, 0.08);
+  --badge-border: rgba(59, 130, 246, 0.15);
+  --glow-opacity: 0.08;
+  --step-badge-bg: rgba(255, 255, 255, 0.85);
+  --step-badge-border: rgba(229, 231, 235, 0.5);
+  --step-text: #1f2937;
+  --step-desc: #6b7280;
+  --arrow-bg: rgba(0, 0, 0, 0.08);
+  --arrow-bg-hover: rgba(0, 0, 0, 0.15);
+  --arrow-color: #1f2937;
+  --road-line: hsl(45, 90%, 55%);
+  --title-accent-start: hsl(217, 91%, 50%);
+  --title-accent-mid: hsl(260, 70%, 50%);
+  --title-accent-end: hsl(340, 75%, 50%);
+  --calendar-icon-filter: none;
+  --auth-card-bg: #ffffff;
+  --auth-card-border: rgba(229, 231, 235, 0.8);
+  --auth-card-shadow: 0 8px 40px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  --auth-feature-bg: rgba(255, 255, 255, 0.85);
+  --auth-tab-bg: #f1f5f9;
+  --auth-input-bg: #f8fafc;
+  --auth-input-focus-bg: #ffffff;
+  --auth-error-color: #dc2626;
+  --auth-success-color: #2563eb;
+  --card-solid-bg: #ffffff;
+  --card-solid-border: #e5e7eb;
+  --card-solid-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  --card-solid-shadow-hover: 0 8px 40px rgba(0, 0, 0, 0.1);
+  --card-label-color: #6b7280;
+  --card-tag-bg: rgba(0, 0, 0, 0.03);
+  --card-tag-border: #e5e7eb;
+  --card-tag-color: #6b7280;
+  --card-value-color: #1f2937;
+  --card-bar-track: #e5e7eb;
+  --card-desc-color: #6b7280;
+  --card-glow-opacity: 0;
+}
+
+:root.dark {
+  color-scheme: dark;
+  --bg: hsl(222, 47%, 8%);
+  --bg-surface: hsl(222, 40%, 10%);
+  --card: hsl(222, 40%, 12%);
+  --fg: hsl(210, 40%, 96%);
+  --muted-fg: hsl(215, 20%, 55%);
+  --border: hsl(222, 30%, 18%);
+  --primary: hsl(217, 91%, 60%);
+  --primary-hover: hsl(217, 91%, 50%);
+  --primary-glow: rgba(59, 130, 246, 0.3);
+  --glass-bg: hsla(222, 40%, 10%, 0.7);
+  --glass-border: hsla(222, 30%, 22%, 0.6);
+  --hero-overlay-start: hsla(222, 47%, 8%, 0.9);
+  --hero-overlay-mid: hsla(222, 47%, 8%, 0.6);
+  --hero-overlay-end: hsla(222, 47%, 8%, 0.3);
+  --hero-overlay-bottom: hsla(222, 47%, 8%, 0.85);
+  --card-overlay-end: rgba(0, 0, 0, 0.85);
+  --card-overlay-mid: rgba(0, 0, 0, 0.4);
+  --search-input-bg: hsla(222, 30%, 15%, 0.4);
+  --search-border: hsla(222, 30%, 22%, 0.4);
+  --badge-bg: hsla(217, 50%, 20%, 0.4);
+  --badge-border: hsla(217, 50%, 30%, 0.3);
+  --glow-opacity: 0.15;
+  --step-badge-bg: rgba(0, 0, 0, 0.5);
+  --step-badge-border: rgba(255, 255, 255, 0.08);
+  --step-text: #ffffff;
+  --step-desc: rgba(255, 255, 255, 0.65);
+  --arrow-bg: rgba(255, 255, 255, 0.12);
+  --arrow-bg-hover: rgba(255, 255, 255, 0.25);
+  --arrow-color: #ffffff;
+  --road-line: hsl(45, 90%, 60%);
+  --title-accent-start: hsl(217, 91%, 60%);
+  --title-accent-mid: hsl(260, 70%, 60%);
+  --title-accent-end: hsl(340, 75%, 55%);
+  --calendar-icon-filter: invert(1);
+  --auth-card-bg: hsla(222, 40%, 12%, 0.8);
+  --auth-card-border: hsla(222, 30%, 22%, 0.6);
+  --auth-card-shadow: 0 8px 40px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.15);
+  --auth-feature-bg: hsla(222, 40%, 10%, 0.7);
+  --auth-tab-bg: hsla(222, 30%, 15%, 0.6);
+  --auth-input-bg: hsla(222, 30%, 15%, 0.5);
+  --auth-input-focus-bg: hsla(222, 30%, 18%, 0.6);
+  --auth-error-color: #fca5a5;
+  --auth-success-color: #93c5fd;
+  --card-solid-bg: hsl(228, 28%, 11%);
+  --card-solid-border: hsl(225, 20%, 16%);
+  --card-solid-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  --card-solid-shadow-hover: 0 20px 60px rgba(0, 0, 0, 0.35);
+  --card-label-color: hsl(220, 15%, 55%);
+  --card-tag-bg: rgba(255, 255, 255, 0.04);
+  --card-tag-border: hsl(225, 20%, 18%);
+  --card-tag-color: hsl(220, 15%, 45%);
+  --card-value-color: #ffffff;
+  --card-bar-track: hsl(225, 20%, 16%);
+  --card-desc-color: hsl(220, 15%, 50%);
+  --card-glow-opacity: 1;
+}
+
+@layer base {
+  html, body {
+    @apply h-full antialiased;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg);
+    color: var(--fg);
+    margin: 0;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+input, select, textarea {
+  font-family: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
